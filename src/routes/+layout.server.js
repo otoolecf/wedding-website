@@ -1,13 +1,12 @@
 export function load({ url }) {
-  const branch = process.env.CF_PAGES_BRANCH || 'development';
+  // Log all environment variables that might be relevant
+  console.log('CF_PAGES_BRANCH:', process.env.CF_PAGES_BRANCH);
+  console.log('BRANCH:', process.env.BRANCH);
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('Current URL:', url.pathname);
 
-  // If we're on main branch and not on home page, redirect immediately
-  if ((branch === 'main' || branch === 'master') && url.pathname !== '/') {
-    return {
-      status: 302,
-      redirect: '/'
-    };
-  }
+  const branch = process.env.CF_PAGES_BRANCH || 'development';
+  console.log('Determined branch:', branch);
 
   return {
     branch,
