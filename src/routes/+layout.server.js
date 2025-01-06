@@ -1,5 +1,5 @@
 export function load({ url }) {
-  const branch = process.env.BRANCH || 'development';
+  const branch = process.env.CF_PAGES_BRANCH || 'development';
 
   // If we're on main branch and not on home page, redirect immediately
   if ((branch === 'main' || branch === 'master') && url.pathname !== '/') {
