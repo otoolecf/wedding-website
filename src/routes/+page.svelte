@@ -26,7 +26,7 @@
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      timeZone: 'America/Los_Angeles' // Specify Pacific timezone
+      timeZone: 'America/Chicago' // Specify Central timezone
     });
   });
 </script>
