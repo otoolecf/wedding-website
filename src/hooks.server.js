@@ -1,8 +1,7 @@
 export async function handle({ event, resolve }) {
-  const branch = process.env.BRANCH || 'development';
-  const isMainBranch = branch === 'main' || branch === 'master';
+  const isProduction = process.env.NODE_ENV === 'production';
 
-  if (isMainBranch && event.url.pathname !== '/') {
+  if (isProduction && event.url.pathname !== '/') {
     return new Response(null, {
       status: 302,
       headers: { Location: '/' }
