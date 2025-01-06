@@ -1,17 +1,21 @@
 export function load({ url }) {
-  console.log({
-    NODE_ENV: process.env.NODE_ENV,
-    CF_PAGES: process.env.CF_PAGES,
-    CF_PAGES_BRANCH: process.env.CF_PAGES_BRANCH,
-    CF_PAGES_URL: process.env.CF_PAGES_URL,
-    pathname: url.pathname
-  });
+  let debug = {};
+  try {
+    debug = {
+      nodeEnv: process.env.NODE_ENV,
+      cfBranch: process.env.CF_PAGES_BRANCH
+    };
+    console.log('Debug info:', debug);
+  } catch (error) {
+    console.error('Error accessing env vars:', error);
+  }
 
-  // Check if we're on the production branch
-  const isProduction = process.env.CF_PAGES_BRANCH === 'main';
+  // Default to production if we can't determine environment
+  const isProduction = process.env.NODE_ENV === 'production';
 
   return {
     isProduction,
-    pathname: url.pathname
+    pathname: url.pathname,
+    debug // including this temporarily for debugging
   };
 }
