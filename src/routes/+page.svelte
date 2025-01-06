@@ -4,19 +4,29 @@
 
   export let data;
 
-  const weddingDate = new Date('2026-04-18');
+  // Set the wedding date with a specific time in your timezone
+  const weddingDate = new Date('2026-04-18T16:00:00'); // 4:00 PM on your wedding day
   let daysUntil = 0;
   let formattedDate = '';
 
   onMount(() => {
+    // Calculate days until wedding, handling timezone differences
     const today = new Date();
-    daysUntil = Math.ceil((weddingDate - today) / (1000 * 60 * 60 * 24));
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const weddingStart = new Date(
+      weddingDate.getFullYear(),
+      weddingDate.getMonth(),
+      weddingDate.getDate()
+    );
+    daysUntil = Math.ceil((weddingStart - todayStart) / (1000 * 60 * 60 * 24));
 
+    // Format the date string
     formattedDate = weddingDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'America/Los_Angeles' // Specify Pacific timezone
     });
   });
 </script>
