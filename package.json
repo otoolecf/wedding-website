@@ -12,9 +12,10 @@
     "lint": "eslint ."
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
     "@eslint/compat": "^1.2.3",
     "@sveltejs/adapter-auto": "^3.0.0",
-    "@sveltejs/adapter-cloudflare": "^5.0.0",
+    "@sveltejs/adapter-cloudflare": "^5.0.1",
     "@sveltejs/kit": "^2.9.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "autoprefixer": "^10.4.20",
@@ -26,7 +27,8 @@
     "prettier-plugin-svelte": "^3.3.2",
     "svelte": "^5.0.0",
     "tailwindcss": "^3.4.16",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "wrangler": "^3.103.2"
   },
   "dependencies": {
     "@tailwindcss/container-queries": "^0.1.1",

@@ -1,0 +1,25 @@
+name = "wedding-site"
+compatibility_date = "2024-01-18"
+
+# Main worker script
+main = "./.svelte-kit/cloudflare/_worker.js"
+
+# D1 Database configuration
+[[d1_databases]]
+binding = "DB"
+database_name = "wedding-rsvps"
+database_id = "107ff1a2-e3a8-4f71-9a67-c3992d7a4f29"
+
+# Environment variables (if needed)
+[vars]
+# Add any environment variables here
+# EXAMPLE_VAR = "value"
+
+[env.production]
+routes = [
+  { pattern = "/admin*", zone_name = "martinelliotoole.com" }
+]
+
+# Development configuration
+[dev]
+port = 8788
