@@ -26,7 +26,16 @@
         body: JSON.stringify(formData)
       });
 
-      const result = await response.json();
+      // First get the raw text
+      const responseText = await response.text();
+
+      let result;
+      try {
+        // Then try to parse it as JSON
+        result = JSON.parse(responseText);
+      } catch (e) {
+        throw new Error(`Server returned invalid JSON: ${responseText}`);
+      }
 
       if (!response.ok) throw new Error(result.error || 'Failed to submit RSVP');
 
