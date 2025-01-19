@@ -4,9 +4,11 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [sveltekit()],
   server: {
-    fs: {
-      // Allow serving files from one level up
-      allow: ['..']
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8788',
+        changeOrigin: true
+      }
     }
   }
 });

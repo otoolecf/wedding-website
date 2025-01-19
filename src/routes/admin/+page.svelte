@@ -1,8 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
-
   let rsvps = [];
-  let loading = true;
   let error = null;
   let stats = {
     totalGuests: 0,
@@ -10,10 +7,13 @@
     notAttending: 0
   };
 
+  // Fetch data on component mount
   onMount(async () => {
     try {
       const response = await fetch('/api/admin/rsvps');
-      if (!response.ok) throw new Error('Failed to fetch RSVPs');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch RSVPs: ${response.statusText}`);
+      }
 
       const data = await response.json();
       rsvps = data.rsvps;
@@ -24,14 +24,13 @@
       stats.totalGuests = rsvps
         .filter((r) => r.attending === 'yes')
         .reduce((sum, r) => sum + (r.guests || 0) + 1, 0);
-    } catch (e) {
+    } catch (err) {
       error = 'Failed to load RSVPs';
-      console.error(e);
-    } finally {
-      loading = false;
+      console.error(err);
     }
   });
 
+  import { onMount } from 'svelte';
   function downloadCsv() {
     const headers = [
       'Name',
@@ -66,7 +65,6 @@
   }
 </script>
 
-// src/routes/admin/+page.svelte
 <div class="max-w-7xl mx-auto px-4 py-12">
   <div class="flex justify-between items-center mb-8">
     <h1 class="text-3xl font-light">RSVP Dashboard</h1>
@@ -78,11 +76,7 @@
     </button>
   </div>
 
-  {#if loading}
-    <div class="text-center py-12">
-      <p>Loading RSVPs...</p>
-    </div>
-  {:else if error}
+  {#if error}
     <div class="bg-red-50 text-red-600 p-4 rounded">
       {error}
     </div>
