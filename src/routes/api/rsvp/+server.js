@@ -36,7 +36,7 @@ export async function POST({ request, platform }) {
     }
 
     console.log(`[${requestId}] Preparing SQL insert`);
-    const stmt = platform.env.DB.prepare(`
+    const stmt = platform.env.RSVPS.prepare(`
       INSERT INTO rsvps (name, email, attending, guests, dietary_requirements, song)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
@@ -52,6 +52,7 @@ export async function POST({ request, platform }) {
       )
       .run();
 
+    console.log(`[${requestId}] RSVP raw result: `, result);
     console.log(`[${requestId}] RSVP successfully saved`, {
       success: true,
       meta: {
@@ -63,7 +64,7 @@ export async function POST({ request, platform }) {
     });
 
     // Look up the inserted record to confirm and log details
-    const inserted = await platform.env.DB.prepare(
+    const inserted = await platform.env.RSVPS.prepare(
       'SELECT * FROM rsvps WHERE email = ? ORDER BY created_at DESC LIMIT 1'
     )
       .bind(data.email)

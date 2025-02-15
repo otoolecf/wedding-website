@@ -12,7 +12,7 @@ export async function GET({ request, platform }) {
   if (isDevelopment) {
     try {
       // Mock database query or local development DB
-      const results = await platform.env.DB.prepare(
+      const results = await platform.env.RSVPS.prepare(
         `
         SELECT * FROM rsvps 
         ORDER BY created_at DESC
@@ -34,7 +34,7 @@ export async function GET({ request, platform }) {
 
   try {
     // Production database query
-    const results = await platform.env.DB.prepare(
+    const results = await platform.env.RSVPS.prepare(
       `
       SELECT * FROM rsvps 
       ORDER BY created_at DESC
