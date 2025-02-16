@@ -28,9 +28,9 @@ export async function POST({ request, platform }) {
   const fileHash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
   const fileExtension = file.name.split('.').pop();
-  const img_key = `${fileHash}.${fileExtension}`;
+  const img_key = `${fileHash}`;
   console.log(
-    `[${requestId}] image hashed, filename: ${file.name}, fileHash: ${fileHash}, img_key: ${img_key}`
+    `[${requestId}] image hashed, filename: ${file.name}, fileHash: ${fileHash}, img_key: ${img_key}, fileExtension: ${fileExtension}`
   );
 
   // Save the file to R2
@@ -56,7 +56,7 @@ export async function POST({ request, platform }) {
 
     // we also want to add the r2_key to metadata for easy lookup per https://developers.cloudflare.com/kv/api/list-keys/
     const img_KV_put = await platform.env.IMAGES_KV.put(`gallery:${img_gallery_idx}`, img_key, {
-      metadata: { r2_key: img_key }
+      metadata: { r2_key: img_key, file_ext: fileExtension }
     });
     console.log(`[${requestId}] img_KV_put!`, img_KV_put);
   } else {
