@@ -13,9 +13,6 @@ const config = {
     // This ensures proper path resolution
     paths: {
       base: ''
-    },
-    platformProxy: {
-      configPath: 'wrangler.toml'
     }
   },
   preprocess: vitePreprocess()
