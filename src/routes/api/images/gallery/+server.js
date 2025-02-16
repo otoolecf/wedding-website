@@ -17,7 +17,7 @@ export async function GET({ platform }) {
         return {
           id: img_data.metadata?.r2_key,
           kv_id: img_data.name,
-          src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${platform.env.IMAGES_BUCKET_NAME}/${img_data.metadata?.r2_key}`,
+          src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_data.metadata?.r2_key}`,
           alt: img_data.metadata?.alt
         };
       })
