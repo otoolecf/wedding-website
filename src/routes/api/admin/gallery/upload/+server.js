@@ -1,4 +1,4 @@
-// src/routes/api/admin/upload/+server.js
+// src/routes/api/admin/gallery/upload/+server.js
 
 /**
  * Site Image uploads will always add to the gallery. There is KV store with
@@ -23,8 +23,11 @@ export async function POST({ request, platform }) {
   const file = formData.get('file');
   const fileBuffer = await file.arrayBuffer();
   const fileHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
-  const img_key = `image:${fileHash}`;
-  console.log(`[${requestId}] image hashed, fileHash: ${fileHash}, img_key: ${img_key}`);
+  const fileExtension = file.name.split('.').pop();
+  const img_key = `:${fileHash}.${fileExtension}`;
+  console.log(
+    `[${requestId}] image hashed, filename: ${file.name}, fileHash: ${fileHash}, img_key: ${img_key}`
+  );
 
   // Save the file to R2
   // This will always update based on file hash

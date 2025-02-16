@@ -1,4 +1,4 @@
-// src/routes/api/admin/reorder/+server.js
+// src/routes/api/admin/gallery/reorder/+server.js
 export async function POST({ request, platform }) {
   // Reorder will be a drag-drop probably and just bump down things in the gallery. So will need to update several keys.
   // KV will need to store bidirectional to make this easier
@@ -54,7 +54,7 @@ export async function POST({ request, platform }) {
         const new_img_idx = operator === 'subtract' ? old_img_idx - 1 : old_img_idx + 1;
         const new_update_kv = {
           key: `gallery:${new_img_idx}`,
-          value: img_info.metadata.r2_key,
+          value: img_info.metadata?.r2_key,
           metadata: img_info.metadata
         };
         return new_update_kv;

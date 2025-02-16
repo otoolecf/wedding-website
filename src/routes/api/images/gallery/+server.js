@@ -15,10 +15,10 @@ export async function GET({ platform }) {
   const frontend_format = gallery_imgs.keys?.length
     ? gallery_imgs.keys.map((img_data) => {
         return {
-          id: img_data.metadata.r2_key,
+          id: img_data.metadata?.r2_key,
           kv_id: img_data.name,
-          src: `https://placeholder/${img_data.metadata.r2_key}`,
-          alt: img_data.metadata.alt
+          src: `https://${platform.env.SITE_URL}/${platform.env.IMAGES_BUCKET.name}/${img_data.metadata?.r2_key}`,
+          alt: img_data.metadata?.alt
         };
       })
     : [];

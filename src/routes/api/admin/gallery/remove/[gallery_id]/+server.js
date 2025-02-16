@@ -1,4 +1,4 @@
-// src/routes/api/admin/delete/+server.js
+// src/routes/api/admin/gallery/[gallery_id]/remove/+server.js
 export async function DELETE({ request, params, platform }) {
   // Delete will give us the current key to remove. Then we also need to reorder everything after.
   const jsonResponse = (data, status = 200) =>

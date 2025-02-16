@@ -41,7 +41,7 @@
         >
           <img
             src={photo.src}
-            alt={photo.alt}
+            alt={photo.id}
             class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <div

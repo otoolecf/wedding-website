@@ -13,13 +13,13 @@ database_id = "581d792c-603c-4a42-a9c4-c3dc69c8d41d"
 # Local KV store
 [[kv_namespaces]]
 binding = "IMAGES_KV"
-id = "wedding-images-kv-preview"
-preview_id = "wedding-images-kv-preview"
+id = "369da8797ec54abcb70d3c74745d599b"
+preview_id = "369da8797ec54abcb70d3c74745d599b"
 
 [[r2_buckets]]
 binding = "IMAGES_BUCKET"
 bucket_name = "wedding-images-preview"
-preview_bucket_name = "wedding-images-kv-preview"
+preview_bucket_name = "wedding-images-preview"
 
 # Preview environment configuration
 [env.preview]
@@ -36,7 +36,7 @@ bucket_name = "wedding-images-preview"
 
 [[env.preview.kv_namespaces]]
 binding = "IMAGES_KV"
-id = "wedding-images-kv-preview"
+id = "369da8797ec54abcb70d3c74745d599b"
 
 # Production environment configuration
 [env.production]
@@ -51,7 +51,7 @@ bucket_name = "wedding-images-prod"
 
 [[env.production.kv_namespaces]]
 binding = "IMAGES_KV"
-id = "wedding-images-kv-prod"
+id = "00fda7c59c9047f4b627c0d39d6d11d7"
 
 # Development configuration
 [dev]
