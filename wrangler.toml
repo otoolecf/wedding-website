@@ -66,11 +66,14 @@ watch_dir = "src"
 [vars]
 ENVIRONMENT = "development"
 SITE_URL = "https://wedding-website-7tp.pages.dev"
+IMAGES_BUCKET_NAME = "wedding-images-preview"
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
 SITE_URL = "https://wedding-website-7tp.pages.dev"
+IMAGES_BUCKET_NAME = "wedding-images-preview"
 
 [env.production.vars]
 ENVIRONMENT = "production"
 SITE_URL = "https://martinelliotoole.com"
+IMAGES_BUCKET_NAME = "wedding-images-prod"
