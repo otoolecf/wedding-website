@@ -22,7 +22,10 @@ export async function POST({ request, platform }) {
   const formData = await request.formData();
   const file = formData.get('file');
   const fileBuffer = await file.arrayBuffer();
-  const fileHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
+  const fileHashCrypto = await crypto.subtle.digest('MD5', fileBuffer);
+  const hashArray = Array.from(new Uint8Array(fileHashCrypto));
+  const fileHash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+
   const fileExtension = file.name.split('.').pop();
   const img_key = `:${fileHash}.${fileExtension}`;
   console.log(
