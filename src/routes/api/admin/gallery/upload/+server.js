@@ -21,13 +21,14 @@ export async function POST({ request, platform }) {
   console.log(`[${requestId}] New Upload submission received`);
   const formData = await request.formData();
   const file = formData.get('file');
+  console.log(`[${requestId}] file.name: ${file.name}`);
   const fileBuffer = await file.arrayBuffer();
   const fileHashCrypto = await crypto.subtle.digest('MD5', fileBuffer);
   const hashArray = Array.from(new Uint8Array(fileHashCrypto));
   const fileHash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
   const fileExtension = file.name.split('.').pop();
-  const img_key = `:${fileHash}.${fileExtension}`;
+  const img_key = `${fileHash}.${fileExtension}`;
   console.log(
     `[${requestId}] image hashed, filename: ${file.name}, fileHash: ${fileHash}, img_key: ${img_key}`
   );
