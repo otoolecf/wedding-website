@@ -5,15 +5,18 @@
   let images = writable([]);
   let selectedFile = null;
   let draggingItem = null;
+  let selectedImageId = null;
 
   onMount(async () => {
     await fetchImages();
   });
 
   async function fetchImages() {
+    console.log('fetching images.');
     const response = await fetch('/api/images/gallery');
     const data = await response.json();
-    images.set(data);
+    console.log('fetching images, result data: ', data);
+    images.set(data.images);
   }
 
   async function uploadImage() {
@@ -79,6 +82,17 @@
     }
     draggingItem = null;
   }
+
+  function handleImageClick(imageId) {
+    selectedImageId = imageId;
+  }
+
+  function handleKeyDown(event, imageId) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleImageClick(imageId);
+    }
+  }
 </script>
 
 <div class="p-4">
@@ -92,6 +106,11 @@
     {#each $images as image (image.id)}
       <div
         class="image-item relative border p-2 rounded shadow-md cursor-grab"
+        role="option"
+        tabindex="0"
+        aria-selected={selectedImageId === image.id}
+        on:click={() => handleImageClick(image.id)}
+        on:keydown={(event) => handleKeyDown(event, image.id)}
         draggable="true"
         on:dragstart={(event) => handleDragStart(event, image.id)}
         on:dragover={handleDragOver}
