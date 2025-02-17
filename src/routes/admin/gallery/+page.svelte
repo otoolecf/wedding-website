@@ -50,8 +50,7 @@
     if (response.ok) {
       const data = await response.json();
       console.log('delete complete, response data: ', data);
-      // Optimistically update the UI
-      images.update((currentImages) => currentImages.filter((img) => img.kv_id !== galleryId));
+      images.set(data.images); // Update the store with the new images
     } else {
       console.error('Delete failed');
     }
@@ -66,7 +65,7 @@
     if (response.ok) {
       const data = await response.json();
       console.log('save order complete, response data: ', data);
-      // No need to update the UI as it's already in the desired state
+      images.set(data.images); // Update the store with the new images
     } else {
       console.error('Save order failed');
     }
@@ -108,40 +107,44 @@
   </button>
 
   <div class="gallery mt-4">
-    {#each $images as image, index (image.kv_id)}
-      <div
-        class="image-item relative border p-2 rounded shadow-md cursor-pointer"
-        role="option"
-        tabindex="0"
-        aria-selected={selectedImageId === image.id}
-        on:click={() => handleImageClick(image.kv_id)}
-        on:keydown={(event) => handleKeyDown(event, image.kv_id)}
-      >
-        <img src={image.src} alt={image.id} class="w-full h-32 object-cover rounded" />
-        <button
-          class="delete-button absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
-          on:click={() => deleteImage(image.kv_id)}
+    {#if $images.length === 0}
+      <p>No images available. Upload your first image!</p>
+    {:else}
+      {#each $images as image, index (image.kv_id)}
+        <div
+          class="image-item relative border p-2 rounded shadow-md cursor-pointer"
+          role="option"
+          tabindex="0"
+          aria-selected={selectedImageId === image.id}
+          on:click={() => handleImageClick(image.kv_id)}
+          on:keydown={(event) => handleKeyDown(event, image.kv_id)}
         >
-          Delete
-        </button>
-        <div class="flex justify-between mt-2">
+          <img src={image.src} alt={image.id} class="w-full h-32 object-cover rounded" />
           <button
-            class="bg-gray-500 text-white px-2 py-1 rounded"
-            on:click={() => moveImage(index, -1)}
-            disabled={index === 0}
+            class="delete-button absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
+            on:click={() => deleteImage(image.kv_id)}
           >
-            Left
+            Delete
           </button>
-          <button
-            class="bg-gray-500 text-white px-2 py-1 rounded"
-            on:click={() => moveImage(index, 1)}
-            disabled={index === $images.length - 1}
-          >
-            Right
-          </button>
+          <div class="flex justify-between mt-2">
+            <button
+              class="bg-gray-500 text-white px-2 py-1 rounded"
+              on:click={() => moveImage(index, -1)}
+              disabled={index === 0}
+            >
+              Left
+            </button>
+            <button
+              class="bg-gray-500 text-white px-2 py-1 rounded"
+              on:click={() => moveImage(index, 1)}
+              disabled={index === $images.length - 1}
+            >
+              Right
+            </button>
+          </div>
         </div>
-      </div>
-    {/each}
+      {/each}
+    {/if}
   </div>
 
   <button class="bg-green-500 text-white px-4 py-2 rounded mt-4" on:click={saveOrder}>
