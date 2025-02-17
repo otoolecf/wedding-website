@@ -116,7 +116,7 @@
   >
 
   <div class="gallery grid grid-cols-3 gap-4 mt-4">
-    {#each $images as image (image.id)}
+    {#each $images as image (image.kv_id)}
       <div
         class="image-item relative border p-2 rounded shadow-md cursor-grab"
         role="option"
