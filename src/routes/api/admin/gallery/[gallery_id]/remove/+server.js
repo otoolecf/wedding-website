@@ -61,9 +61,22 @@ export async function DELETE({ request, params, platform }) {
   }
   console.log(`[${requestId}] KV updated!`);
 
+  const all_imgs_list_updated = await platform.env.IMAGES_KV.list({ prefix: `gallery:` });
+  const frontend_format = all_imgs_list_updated.keys?.length
+    ? all_imgs_list_updated.keys.map((img_data) => {
+        return {
+          id: img_data.metadata?.r2_key,
+          kv_id: img_data.name,
+          src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_data.metadata?.r2_key}`,
+          alt: img_data.metadata?.alt
+        };
+      })
+    : [];
+
   return jsonResponse({
     message: 'delete successful!',
     removed_key: r2_to_remove,
-    num_reordered: applied_updates.length
+    num_reordered: applied_updates.length,
+    images: frontend_format
   });
 }

@@ -29,9 +29,11 @@
       method: 'POST',
       body: formData
     });
-    console.log('upload complete, response: ', response);
     if (response.ok) {
-      await fetchImages();
+      const data = await response.json();
+      console.log('upload complete, response data: ', data);
+      images.set(data.images);
+      // await fetchImages();
     } else {
       console.error('Upload failed');
     }
@@ -44,7 +46,10 @@
     });
 
     if (response.ok) {
-      await fetchImages();
+      const data = await response.json();
+      console.log('delete complete, response data: ', data);
+      images.set(data.images);
+      // await fetchImages();
     } else {
       console.error('Delete failed');
     }
@@ -58,7 +63,10 @@
     });
 
     if (response.ok) {
-      await fetchImages();
+      const data = await response.json();
+      console.log('reorder complete, response data: ', data);
+      images.set(data.images);
+      // await fetchImages();
     } else {
       console.error('Reorder failed');
     }
