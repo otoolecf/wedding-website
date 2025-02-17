@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
 
+  // Initialize the store with an empty array
   let images = writable([]);
   let selectedFile = null;
   let selectedImageId = null;
@@ -23,15 +24,18 @@
 
     const formData = new FormData();
     formData.append('file', selectedFile);
+    formData.append('galleryState', JSON.stringify($images)); // Include the current gallery state
+
     console.log('formData: appended! uploading.');
     const response = await fetch('/api/admin/gallery/upload', {
       method: 'POST',
       body: formData
     });
+
     if (response.ok) {
       const data = await response.json();
       console.log('upload complete, response data: ', data);
-      images.set(data.images);
+      images.set(data.images); // Update the store with the new images
     } else {
       console.error('Upload failed');
     }
@@ -46,7 +50,8 @@
     if (response.ok) {
       const data = await response.json();
       console.log('delete complete, response data: ', data);
-      images.set(data.images);
+      // Optimistically update the UI
+      images.update((currentImages) => currentImages.filter((img) => img.kv_id !== galleryId));
     } else {
       console.error('Delete failed');
     }
@@ -61,7 +66,7 @@
     if (response.ok) {
       const data = await response.json();
       console.log('save order complete, response data: ', data);
-      images.set(data.images);
+      // No need to update the UI as it's already in the desired state
     } else {
       console.error('Save order failed');
     }

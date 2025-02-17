@@ -40,8 +40,8 @@ export async function POST({ request, platform }) {
     await platform.env.IMAGES_KV.put(`image:${img_uuid}`, JSON.stringify(img_metadata));
     console.log(`[${requestId}] Image metadata saved to KV store`);
 
-    // Receive the full state from the frontend
-    const currentState = await request.json();
+    // Receive the full state from the frontend via FormData
+    const currentState = JSON.parse(formData.get('galleryState'));
     const updatedImages = [
       ...currentState.images,
       {
