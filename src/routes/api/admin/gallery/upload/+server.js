@@ -41,7 +41,17 @@ export async function POST({ request, platform }) {
     console.log(`[${requestId}] Image metadata saved to KV store`);
 
     // Receive the full state from the frontend via FormData
-    const currentState = JSON.parse(formData.get('galleryState'));
+    const galleryState = formData.get('galleryState');
+    let currentState = { images: [] };
+    if (galleryState) {
+      currentState = JSON.parse(galleryState);
+    }
+
+    // Ensure currentState.images is an array
+    if (!Array.isArray(currentState.images)) {
+      currentState.images = [];
+    }
+
     const updatedImages = [
       ...currentState.images,
       {

@@ -24,7 +24,7 @@
 
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('galleryState', JSON.stringify($images)); // Include the current gallery state
+    formData.append('galleryState', JSON.stringify($images)); // Ensure $images is always an array
 
     console.log('formData: appended! uploading.');
     const response = await fetch('/api/admin/gallery/upload', {
