@@ -4,6 +4,11 @@
 
   // Initialize the store with an empty array
   let images = writable([]);
+
+  images.subscribe((value) => {
+    console.log('images updated, new images: ', value);
+  });
+
   let selectedFile = null;
   let selectedImageId = null;
   let fetching = false;
@@ -56,6 +61,7 @@
         const data = await response.json();
         console.log('upload complete, response data: ', data);
         images.set(data.images); // Update the store with the new images
+        console.log();
       } else {
         throw new Error('Upload failed');
       }
@@ -73,7 +79,8 @@
     console.log('deleteImage: galleryId: ', galleryId);
     try {
       const response = await fetch(`/api/admin/gallery/${galleryId}/remove`, {
-        method: 'DELETE'
+        method: 'POST',
+        body: JSON.stringify({ images: $images })
       });
 
       if (response.ok) {

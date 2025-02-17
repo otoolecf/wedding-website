@@ -46,11 +46,13 @@ export async function POST({ request, platform }) {
     if (galleryState) {
       currentState = JSON.parse(galleryState);
     }
-
+    console.log(`[${requestId}] currentState: `, currentState);
     // Ensure currentState.images is an array
     if (!Array.isArray(currentState.images)) {
+      console.log(`[${requestId}] currentState.images not array, adjusting.`);
       currentState.images = [];
     }
+    console.log(`[${requestId}] currentState.images: `, currentState.images);
 
     // Add the new image to the current state
     const newImage = {

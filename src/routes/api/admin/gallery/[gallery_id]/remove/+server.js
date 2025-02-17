@@ -1,5 +1,5 @@
 // src/routes/api/admin/gallery/[gallery_id]/remove/+server.js
-export async function DELETE({ request, params, platform }) {
+export async function POST({ request, params, platform }) {
   const jsonResponse = (data, status = 200) =>
     new Response(JSON.stringify(data), {
       status,
@@ -19,7 +19,7 @@ export async function DELETE({ request, params, platform }) {
   try {
     // Parse the current state of the gallery from the request body
     const currentState = await request.json();
-
+    console.log(`[${requestId}] currentState:  ${currentState}`);
     // Ensure currentState.images is an array
     if (!Array.isArray(currentState.images)) {
       return jsonResponse({ error: 'Invalid gallery state' }, 400);
