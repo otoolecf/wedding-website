@@ -24,12 +24,12 @@
 
     const formData = new FormData();
     formData.append('file', selectedFile);
-
+    console.log('formData: appended! uploading.');
     const response = await fetch('/api/admin/gallery/upload', {
       method: 'POST',
       body: formData
     });
-
+    console.log('upload complete, response: ', response);
     if (response.ok) {
       await fetchImages();
     } else {
@@ -38,6 +38,7 @@
   }
 
   async function deleteImage(galleryId) {
+    console.log('deleteImage: galleryId: ', galleryId);
     const response = await fetch(`/api/admin/gallery/${galleryId}/remove`, {
       method: 'DELETE'
     });
@@ -50,6 +51,7 @@
   }
 
   async function reorderImages(galleryKey, newIndex) {
+    console.log('reorderImages: galleryKey: ', galleryKey, ' newIndex: ', newIndex);
     const response = await fetch('/api/admin/gallery/reorder', {
       method: 'POST',
       body: JSON.stringify({ gallery_key: galleryKey, new_idx: newIndex })
@@ -64,6 +66,7 @@
 
   function handleFileChange(event) {
     selectedFile = event.target.files[0];
+    console.log('handleFileChange: selectedFile: ', selectedFile);
   }
 
   function handleDragStart(event, galleryKey) {
@@ -78,6 +81,7 @@
     event.preventDefault();
     if (draggingItem && targetKey !== draggingItem) {
       const newIndex = $images.findIndex((img) => img.id === targetKey);
+      console.log('handleDrop: newIndex: ', newIndex, ' draggingItem: ', draggingItem);
       await reorderImages(draggingItem, newIndex);
     }
     draggingItem = null;
@@ -85,6 +89,7 @@
 
   function handleImageClick(imageId) {
     selectedImageId = imageId;
+    console.log('handleImageClick: selectedImageId: ', selectedImageId);
   }
 
   function handleKeyDown(event, imageId) {

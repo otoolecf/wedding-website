@@ -14,11 +14,14 @@ export async function DELETE({ request, params, platform }) {
   }
 
   const requestId = crypto.randomUUID();
+  console.log(`[${requestId}] request: `, request);
+  console.log(`[${requestId}] params: `, params);
 
   console.log(`[${requestId}] New delete received, gallery_id: `, params.gallery_id);
   // get all, since we will have to reorder
   const gallery_imgs = await platform.env.IMAGES_KV.list({ prefix: `gallery:` });
   const existing_img = gallery_imgs?.keys.find((img_data) => img_data.name === params.gallery_id);
+  console.log(`[${requestId}] existing_img: `, existing_img);
   if (!existing_img) {
     return jsonResponse({ error: `gallery_id ${params.gallery_id} not found` }, 404);
   }
