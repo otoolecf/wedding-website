@@ -114,17 +114,17 @@
         role="option"
         tabindex="0"
         aria-selected={selectedImageId === image.id}
-        on:click={() => handleImageClick(image.id)}
-        on:keydown={(event) => handleKeyDown(event, image.id)}
+        on:click={() => handleImageClick(image.kv_id)}
+        on:keydown={(event) => handleKeyDown(event, image.kv_id)}
         draggable="true"
-        on:dragstart={(event) => handleDragStart(event, image.id)}
+        on:dragstart={(event) => handleDragStart(event, image.kv_id)}
         on:dragover={handleDragOver}
-        on:drop={(event) => handleDrop(event, image.id)}
+        on:drop={(event) => handleDrop(event, image.kv_id)}
       >
         <img src={image.src} alt={image.id} class="w-full h-32 object-cover rounded" />
         <button
           class="delete-button absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
-          on:click={() => deleteImage(image.id)}>Delete</button
+          on:click={() => deleteImage(image.kv_id)}>Delete</button
         >
       </div>
     {/each}
