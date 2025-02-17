@@ -52,14 +52,14 @@ export async function POST({ request, platform }) {
       currentState.images = [];
     }
 
-    const updatedImages = [
-      ...currentState.images,
-      {
-        id: img_uuid,
-        kv_id: `image:${img_uuid}`,
-        src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}`
-      }
-    ];
+    // Add the new image to the current state
+    const newImage = {
+      id: img_uuid,
+      kv_id: `image:${img_uuid}`,
+      src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}`
+    };
+
+    const updatedImages = [...currentState.images, newImage];
 
     // Update the gallery order in the KV store
     await platform.env.IMAGES_KV.put(

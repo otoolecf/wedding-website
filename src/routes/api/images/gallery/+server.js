@@ -1,6 +1,7 @@
 // src/routes/api/images/gallery/+server.js
 export async function GET({ platform }) {
   const requestId = crypto.randomUUID();
+
   // Helper function to create JSON responses
   const jsonResponse = (data, status = 200) =>
     new Response(JSON.stringify(data), {
@@ -8,20 +9,35 @@ export async function GET({ platform }) {
       headers: { 'Content-Type': 'application/json' }
     });
 
-  // List all the gallery R2 images in KV
-  console.log('platform.env.IMAGES_KV: ', platform.env.IMAGES_KV);
-  const gallery_imgs = await platform.env.IMAGES_KV.list({ prefix: `gallery:` });
-  console.log(`[${requestId}] gallery_imgs: `, gallery_imgs);
-  const frontend_format = gallery_imgs.keys?.length
-    ? gallery_imgs.keys.map((img_data) => {
-        return {
-          id: img_data.metadata?.r2_key,
-          kv_id: img_data.name,
-          src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_data.metadata?.r2_key}`,
-          alt: img_data.metadata?.alt
-        };
-      })
-    : [];
+  try {
+    // Fetch the gallery order from the KV store
+    const galleryOrder = await platform.env.IMAGES_KV.get('gallery_order');
+    const orderList = galleryOrder ? JSON.parse(galleryOrder) : [];
+    console.log(`[${requestId}] galleryOrder: `, orderList);
 
-  return jsonResponse({ images: frontend_format });
+    // Fetch the image metadata for each image in the order
+    const imagePromises = orderList.map(async (img_id) => {
+      const img_data = await platform.env.IMAGES_KV.get(`image:${img_id}`);
+      if (img_data) {
+        const { r2_key, alt } = JSON.parse(img_data);
+        return {
+          id: img_id,
+          kv_id: `image:${img_id}`,
+          src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${r2_key}`,
+          alt: alt || ''
+        };
+      }
+      return null;
+    });
+
+    // Wait for all image data to be fetched
+    const images = await Promise.all(imagePromises);
+    // Filter out any null values (in case some images were not found)
+    const frontend_format = images.filter((img) => img !== null);
+
+    return jsonResponse({ images: frontend_format });
+  } catch (error) {
+    console.error(`[${requestId}] Error fetching gallery images:`, error);
+    return jsonResponse({ error: 'Failed to fetch gallery images' }, 500);
+  }
 }

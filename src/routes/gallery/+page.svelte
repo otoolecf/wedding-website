@@ -1,9 +1,10 @@
-<!-- src/routes/gallery/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
 
   let photos = [];
   let error = null;
+  let loading = true;
+
   onMount(async () => {
     try {
       // Fetch the order of images from KV
@@ -16,6 +17,8 @@
     } catch (err) {
       error = 'Failed to load gallery images';
       console.error(err);
+    } finally {
+      loading = false;
     }
   });
 </script>
@@ -27,7 +30,9 @@
 <div class="max-w-4xl mx-auto px-4 py-12">
   <h1 class="text-4xl text-center font-light mb-12">Photo Gallery</h1>
 
-  {#if error}
+  {#if loading}
+    <div class="text-center text-gray-600 p-4 rounded">Loading images...</div>
+  {:else if error}
     <div class="bg-red-50 text-red-600 p-4 rounded">
       {error}
     </div>
@@ -41,7 +46,7 @@
         >
           <img
             src={photo.src}
-            alt={photo.id}
+            alt={photo.alt || photo.id}
             class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <div

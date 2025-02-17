@@ -17,7 +17,15 @@ export async function DELETE({ request, params, platform }) {
   console.log(`[${requestId}] New delete request received for gallery ID: ${params.gallery_id}`);
 
   try {
+    // Parse the current state of the gallery from the request body
     const currentState = await request.json();
+
+    // Ensure currentState.images is an array
+    if (!Array.isArray(currentState.images)) {
+      return jsonResponse({ error: 'Invalid gallery state' }, 400);
+    }
+
+    // Filter out the image to be deleted
     const remainingImages = currentState.images.filter((img) => img.kv_id !== params.gallery_id);
 
     // Update the gallery order in the KV store

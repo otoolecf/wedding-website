@@ -18,18 +18,22 @@ export async function POST({ request, platform }) {
 
   try {
     const data = await request.json();
+
+    // Validate that data.images is an array
     if (!Array.isArray(data.images)) {
       return jsonResponse({ error: 'Need an array of images' }, 400);
     }
 
-    // Update KV store with new order
+    // Extract the new order of image IDs
     const order_list = data.images.map((image) => image.id);
+
+    // Update the gallery order in the KV store
     await platform.env.IMAGES_KV.put('gallery_order', JSON.stringify(order_list));
     console.log(`[${requestId}] Gallery order updated in KV store`);
 
     return jsonResponse({
       message: 'reorder successful!',
-      images: data.images
+      images: data.images // Return the updated list of images
     });
   } catch (error) {
     console.error(`[${requestId}] Error processing reorder:`, error);
