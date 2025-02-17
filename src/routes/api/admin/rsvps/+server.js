@@ -8,7 +8,8 @@ export async function GET({ request, platform }) {
     });
 
   // Development Mode: Skip JWT and use mock DB
-  const isDevelopment = platform.env?.ENVIRONMENT !== 'production';
+  const isDevelopment =
+    platform.env?.ENVIRONMENT !== 'production' && platform.env?.ENVIRONMENT !== 'preview';
   if (isDevelopment) {
     try {
       // Mock database query or local development DB

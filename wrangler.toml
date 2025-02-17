@@ -57,6 +57,8 @@ id = "00fda7c59c9047f4b627c0d39d6d11d7"
 [dev]
 port = 8788
 ip = "localhost"
+local_protocol = "http"
+upstream_protocol = "https"
 
 # Build configuration
 [build]
