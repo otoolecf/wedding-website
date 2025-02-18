@@ -27,17 +27,14 @@ export async function POST({ request, params, platform }) {
 
     // Filter out the image to be deleted
     const remainingImages = currentState.images.filter((img) => img.kv_id !== params.gallery_id);
+    console.log(`[${requestId}] remainingImages: `, remainingImages);
+    // Extract the new order of image IDs
+    const order_list = remainingImages.map((image) => image.id);
+
+    console.log(`[${requestId}] New order before updating: `, JSON.stringify(order_list));
 
     // Update the gallery order in the KV store
-    await platform.env.IMAGES_KV.put(
-      'gallery_order',
-      JSON.stringify(remainingImages.map((img) => img.id))
-    );
-
-    console.log(
-      `[${requestId}] Gallery order updated in KV store! new order: `,
-      JSON.stringify(remainingImages.map((img) => img.id))
-    );
+    await platform.env.IMAGES_KV.put('gallery_order', JSON.stringify(order_list));
 
     const image_to_remove = currentState.images.find((img) => img.kv_id === params.gallery_id);
 
