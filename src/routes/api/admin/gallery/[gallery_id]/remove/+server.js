@@ -19,7 +19,7 @@ export async function POST({ request, params, platform }) {
   try {
     // Parse the current state of the gallery from the request body
     const currentState = await request.json();
-    console.log(`[${requestId}] currentState:  ${currentState}`);
+    console.log(`[${requestId}] currentState: `, currentState);
     // Ensure currentState.images is an array
     if (!Array.isArray(currentState.images)) {
       return jsonResponse({ error: 'Invalid gallery state' }, 400);
@@ -35,8 +35,12 @@ export async function POST({ request, params, platform }) {
     );
     console.log(`[${requestId}] Gallery order updated in KV store after deletion`);
 
+    const image_to_remove = currentState.images.find((img) => img.kv_id === params.gallery_id);
+
+    console.log(`[${requestId}] image_to_remove: `, image_to_remove);
     // Remove the image from R2
-    const r2_to_remove = currentState.images.find((img) => img.kv_id === params.gallery_id)?.id;
+    const r2_to_remove = image_to_remove?.id;
+    console.log(`[${requestId}] r2_to_remove: `, r2_to_remove);
     if (r2_to_remove) {
       await platform.env.IMAGES_BUCKET.delete(r2_to_remove);
       console.log(`[${requestId}] Image deleted from R2: ${r2_to_remove}`);
