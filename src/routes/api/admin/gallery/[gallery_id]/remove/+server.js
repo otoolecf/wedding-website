@@ -51,8 +51,8 @@ export async function POST({ request, params, platform }) {
     }
 
     // remove it from KV too
-    await platform.env.IMAGES_KV.put(params.gallery_id);
-    console.log(`[${requestId}] removed from KV, IDs: ${params.gallery_id}`);
+    await platform.env.IMAGES_KV.delete(params.gallery_id);
+    console.log(`[${requestId}] removed id from KV: ${params.gallery_id}`);
 
     return jsonResponse({
       message: 'delete successful!',
