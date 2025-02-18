@@ -176,45 +176,47 @@
     {:else if $images.length === 0}
       <p>No images available. Upload your first image!</p>
     {:else}
-      {#each $images as image, index (image.kv_id)}
-        <div
-          class="image-item relative border p-2 rounded shadow-md cursor-pointer"
-          role="option"
-          tabindex="0"
-          aria-selected={selectedImageId === image.id}
-          on:click={() => handleImageClick(image.kv_id)}
-          on:keydown={(event) => handleKeyDown(event, image.kv_id)}
-        >
-          <img src={image.src} alt={image.id} class="w-full h-32 object-cover rounded" />
-          <button
-            class="delete-button absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
-            on:click={() => deleteImage(image.kv_id)}
-            disabled={deleting}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {#each $images as image, index (image.kv_id)}
+          <div
+            class="image-item relative border p-2 rounded shadow-md cursor-pointer"
+            role="option"
+            tabindex="0"
+            aria-selected={selectedImageId === image.id}
+            on:click={() => handleImageClick(image.kv_id)}
+            on:keydown={(event) => handleKeyDown(event, image.kv_id)}
           >
-            {#if deleting && selectedImageId === image.kv_id}
-              Deleting...
-            {:else}
-              Delete
-            {/if}
-          </button>
-          <div class="flex justify-between mt-2">
+            <img src={image.src} alt={image.id} class="w-full h-32 object-cover rounded" />
             <button
-              class="bg-gray-500 text-white px-2 py-1 rounded"
-              on:click={() => moveImage(index, -1)}
-              disabled={index === 0 || saving}
+              class="delete-button absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
+              on:click={() => deleteImage(image.kv_id)}
+              disabled={deleting}
             >
-              Left
+              {#if deleting && selectedImageId === image.kv_id}
+                Deleting...
+              {:else}
+                Delete
+              {/if}
             </button>
-            <button
-              class="bg-gray-500 text-white px-2 py-1 rounded"
-              on:click={() => moveImage(index, 1)}
-              disabled={index === $images.length - 1 || saving}
-            >
-              Right
-            </button>
+            <div class="flex justify-between mt-2">
+              <button
+                class="bg-gray-500 text-white px-2 py-1 rounded"
+                on:click={() => moveImage(index, -1)}
+                disabled={index === 0 || saving}
+              >
+                Left
+              </button>
+              <button
+                class="bg-gray-500 text-white px-2 py-1 rounded"
+                on:click={() => moveImage(index, 1)}
+                disabled={index === $images.length - 1 || saving}
+              >
+                Right
+              </button>
+            </div>
           </div>
-        </div>
-      {/each}
+        {/each}
+      </div>
     {/if}
   </div>
 
@@ -230,15 +232,3 @@
     {/if}
   </button>
 </div>
-
-<style>
-  .gallery {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  .image-item {
-    flex: 1 1 calc(33.333% - 1rem); /* Adjust to one-third of the container width for three columns */
-    box-sizing: border-box;
-  }
-</style>
