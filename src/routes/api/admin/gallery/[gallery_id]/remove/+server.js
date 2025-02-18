@@ -33,7 +33,11 @@ export async function POST({ request, params, platform }) {
       'gallery_order',
       JSON.stringify(remainingImages.map((img) => img.id))
     );
-    console.log(`[${requestId}] Gallery order updated in KV store after deletion`);
+
+    console.log(
+      `[${requestId}] Gallery order updated in KV store! new order: `,
+      JSON.stringify(remainingImages.map((img) => img.id))
+    );
 
     const image_to_remove = currentState.images.find((img) => img.kv_id === params.gallery_id);
 
@@ -45,6 +49,10 @@ export async function POST({ request, params, platform }) {
       await platform.env.IMAGES_BUCKET.delete(r2_to_remove);
       console.log(`[${requestId}] Image deleted from R2: ${r2_to_remove}`);
     }
+
+    // remove it from KV too
+    await platform.env.IMAGES_KV.put(params.gallery_id);
+    console.log(`[${requestId}] removed from KV, IDs: ${params.gallery_id}`);
 
     return jsonResponse({
       message: 'delete successful!',
