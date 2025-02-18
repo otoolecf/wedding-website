@@ -39,7 +39,7 @@ export async function POST({ request, params, platform }) {
 
     console.log(`[${requestId}] image_to_remove: `, image_to_remove);
     // Remove the image from R2
-    const r2_to_remove = image_to_remove?.id;
+    const r2_to_remove = image_to_remove?.r2_key;
     console.log(`[${requestId}] r2_to_remove: `, r2_to_remove);
     if (r2_to_remove) {
       await platform.env.IMAGES_BUCKET.delete(r2_to_remove);

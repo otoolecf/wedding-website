@@ -57,6 +57,7 @@ export async function POST({ request, platform }) {
     // Add the new image to the current state
     const newImage = {
       id: img_uuid,
+      r2_key: img_key,
       kv_id: `image:${img_uuid}`,
       src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}`
     };
