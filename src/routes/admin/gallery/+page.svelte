@@ -48,7 +48,7 @@
     error = null;
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('galleryState', JSON.stringify($images)); // Ensure $images is always an array
+    formData.append('galleryState', JSON.stringify({ images: $images })); // Ensure $images is always an array
 
     console.log('formData: appended! uploading.');
     try {
