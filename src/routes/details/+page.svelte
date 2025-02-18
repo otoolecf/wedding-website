@@ -2,24 +2,26 @@
 <script>
   const details = {
     wedding: {
-      time: "4:00 PM",
-      date: "April 18, 2026",
-      location: "Windemere Farms",
-      address: "200 Windermere Rd, San Marcos, TX 78666",
-      image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png"
+      time: '4:00 PM',
+      date: 'April 18, 2026',
+      location: 'Windemere Farms',
+      address: '200 Windermere Rd, San Marcos, TX 78666',
+      image:
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png'
     },
     accommodation: {
-      hotel: "Melrose River Club",
-      code: "WEDDING2026",
-      note: "Reserve your room!",
-      address: "70 Riverbend Dr, San Marcos, TX 78666",
-      image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png"
+      hotel: 'Melrose River Club',
+      code: 'WEDDING2026',
+      note: 'Reserve your room!',
+      address: '70 Riverbend Dr, San Marcos, TX 78666',
+      image:
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png'
     }
   };
 </script>
 
 <svelte:head>
-  <title>Details | Connor's Wedding</title>
+  <title>Details | Connor & Colette Wedding</title>
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-12">
@@ -37,9 +39,9 @@
       </div>
     </div>
     <div class="md:w-1/2">
-      <img 
-        src={details.wedding.image} 
-        alt="Wedding Venue" 
+      <img
+        src={details.wedding.image}
+        alt="Wedding Venue"
         class="w-full h-full object-cover rounded-lg"
       />
     </div>
@@ -48,9 +50,9 @@
   <!-- Accommodation Section -->
   <div class="mt-12 flex flex-col md:flex-row gap-8 bg-white p-8 rounded-lg shadow-sm">
     <div class="md:w-1/2 order-2 md:order-1">
-      <img 
-        src={details.accommodation.image} 
-        alt="Accommodation" 
+      <img
+        src={details.accommodation.image}
+        alt="Accommodation"
         class="w-full h-full object-cover rounded-lg"
       />
     </div>

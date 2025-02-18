@@ -24,7 +24,7 @@
 </script>
 
 <svelte:head>
-  <title>Gallery | Colette & Connor's Wedding</title>
+  <title>Gallery | Connor & Colette Wedding</title>
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-12">

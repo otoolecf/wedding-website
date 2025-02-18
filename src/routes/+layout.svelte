@@ -13,6 +13,8 @@
         <li><a href="/details" class:active={data.pathname === '/details'}>Details</a></li>
         <li><a href="/gallery" class:active={data.pathname === '/gallery'}>Gallery</a></li>
         <li><a href="/rsvp" class:active={data.pathname === '/rsvp'}>RSVP</a></li>
+        <li><a href="/lodging" class:active={data.pathname === '/lodging'}>Lodging</a></li>
+        <li><a href="/faq" class:active={data.pathname === '/faq'}>FAQ</a></li>
         <li><a href="/registry" class:active={data.pathname === '/registry'}>Registry</a></li>
       </ul>
     </nav>

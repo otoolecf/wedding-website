@@ -50,7 +50,7 @@
 </script>
 
 <svelte:head>
-  <title>RSVP | Connor's Wedding</title>
+  <title>RSVP | Connor & Colette Wedding</title>
 </svelte:head>
 
 <div class="max-w-2xl mx-auto px-4 py-12">
