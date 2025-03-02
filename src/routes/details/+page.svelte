@@ -1,12 +1,16 @@
 <!-- src/routes/details/+page.svelte -->
 <script>
+  import AssignedImage from '$lib/components/AssignedImage.svelte';
+  import { IMAGE_LOCATIONS } from '$lib/imageLocations';
+
   const details = {
     wedding: {
       time: '4:00 PM',
       date: 'April 18, 2026',
       location: 'Windemere Farms',
       address: '200 Windermere Rd, San Marcos, TX 78666',
-      image:
+      locationId: IMAGE_LOCATIONS.DETAILS_VENUE,
+      fallbackSrc:
         'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png'
     },
     accommodation: {
@@ -14,7 +18,8 @@
       code: 'WEDDING2026',
       note: 'Reserve your room!',
       address: '70 Riverbend Dr, San Marcos, TX 78666',
-      image:
+      locationId: IMAGE_LOCATIONS.DETAILS_ACCOMMODATION,
+      fallbackSrc:
         'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png'
     }
   };
@@ -39,10 +44,11 @@
       </div>
     </div>
     <div class="md:w-1/2">
-      <img
-        src={details.wedding.image}
+      <AssignedImage
+        locationId={details.wedding.locationId}
+        fallbackSrc={details.wedding.fallbackSrc}
         alt="Wedding Venue"
-        class="w-full h-full object-cover rounded-lg"
+        className="w-full h-full object-cover rounded-lg"
       />
     </div>
   </div>
@@ -50,10 +56,11 @@
   <!-- Accommodation Section -->
   <div class="mt-12 flex flex-col md:flex-row gap-8 bg-white p-8 rounded-lg shadow-sm">
     <div class="md:w-1/2 order-2 md:order-1">
-      <img
-        src={details.accommodation.image}
+      <AssignedImage
+        locationId={details.accommodation.locationId}
+        fallbackSrc={details.accommodation.fallbackSrc}
         alt="Accommodation"
-        class="w-full h-full object-cover rounded-lg"
+        className="w-full h-full object-cover rounded-lg"
       />
     </div>
     <div class="md:w-1/2 space-y-4 order-1 md:order-2">

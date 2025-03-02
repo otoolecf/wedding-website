@@ -1,21 +1,23 @@
 <!-- src/routes/story/+page.svelte -->
 <script>
+  import AssignedImage from '$lib/components/AssignedImage.svelte';
+  import { IMAGE_LOCATIONS } from '$lib/imageLocations';
+
   const milestones = [
     {
       date: 'Fall 2015',
       title: 'How We Met',
       description: 'An awkward waiting around aggregiously early to an 8 AM friday physics class',
-      // Change this:
-      // image: '/api/placeholder/400/300'
-      // To this:
-      image:
+      locationId: IMAGE_LOCATIONS.STORY_HOW_WE_MET,
+      fallbackSrc:
         'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png'
     },
     {
       date: 'August 26, 2024',
       title: 'The Proposal',
       description: `After hours of driving with no food and a dissapointing stop at a closed Anderson's Pea Soup, a grumpy Colette went on a hike where Connor was walking too fast.`,
-      image:
+      locationId: IMAGE_LOCATIONS.STORY_PROPOSAL,
+      fallbackSrc:
         'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png'
     }
   ];
@@ -34,7 +36,12 @@
         class="flex flex-col md:flex-row gap-8 items-center {i % 2 ? 'md:flex-row-reverse' : ''}"
       >
         <div class="flex-1">
-          <img src={milestone.image} alt={milestone.title} class="rounded-lg shadow-lg w-full" />
+          <AssignedImage
+            locationId={milestone.locationId}
+            fallbackSrc={milestone.fallbackSrc}
+            alt={milestone.title}
+            className="rounded-lg shadow-lg w-full h-64 object-cover"
+          />
         </div>
         <div class="flex-1 text-center md:text-left">
           <div class="text-gray-500 mb-2">{milestone.date}</div>

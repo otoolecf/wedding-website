@@ -1,9 +1,15 @@
+<!-- src/routes/gallery/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
+  import Lightbox from '$lib/components/Lightbox.svelte';
 
   let photos = [];
   let error = null;
   let loading = true;
+
+  // Lightbox state
+  let lightboxVisible = false;
+  let currentImageIndex = 0;
 
   onMount(async () => {
     try {
@@ -21,6 +27,19 @@
       loading = false;
     }
   });
+
+  function openLightbox(index) {
+    currentImageIndex = index;
+    lightboxVisible = true;
+    // Prevent body scrolling when lightbox is open
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightboxVisible = false;
+    // Restore body scrolling
+    document.body.style.overflow = '';
+  }
 </script>
 
 <svelte:head>
@@ -40,22 +59,40 @@
     <div class="text-center text-gray-600 p-4 rounded">No images available in the gallery.</div>
   {:else}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {#each photos as photo}
+      {#each photos as photo, index}
         <div
-          class="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          class="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          on:click={() => openLightbox(index)}
+          on:keydown={(e) => e.key === 'Enter' && openLightbox(index)}
+          tabindex="0"
+          role="button"
+          aria-label={`View ${photo.caption || 'image'}`}
         >
-          <img
-            src={photo.src}
-            alt={photo.alt || photo.id}
-            class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          <div
-            class="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-4 translate-y-full group-hover:translate-y-0 transition-transform"
-          >
-            <p class="text-sm">R2 ID: {photo.id}, KV_ID: {photo.kv_id}</p>
+          <!-- Image container with consistent height but preserving aspect ratio -->
+          <div class="h-64 overflow-hidden">
+            <img
+              src={photo.src}
+              alt={photo.alt || photo.caption || 'Gallery image'}
+              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
           </div>
+
+          <!-- Caption overlay (always visible) -->
+          {#if photo.caption}
+            <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-3">
+              <p class="text-sm">{photo.caption}</p>
+            </div>
+          {/if}
         </div>
       {/each}
     </div>
   {/if}
+
+  <!-- Lightbox component for full-size viewing -->
+  <Lightbox
+    images={photos}
+    currentIndex={currentImageIndex}
+    show={lightboxVisible}
+    on:close={closeLightbox}
+  />
 </div>
