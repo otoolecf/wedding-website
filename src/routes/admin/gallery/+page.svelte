@@ -1,5 +1,6 @@
 <!-- src/routes/admin/gallery/+page.svelte -->
 <script>
+  import AdminNav from '$lib/components/AdminNav.svelte';
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
   import { getAllImageLocationIds, getImageLocationName } from '$lib/imageLocations';
@@ -406,6 +407,8 @@
     return `Assigned to ${locations.length} locations`;
   }
 </script>
+
+<AdminNav />
 
 <div class="p-4">
   <h1 class="text-2xl font-bold mb-4">Gallery Admin Panel</h1>

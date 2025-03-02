@@ -1,4 +1,6 @@
 <script>
+  import AdminNav from '$lib/components/AdminNav.svelte';
+
   let rsvps = [];
   let error = null;
   let stats = {
@@ -64,6 +66,8 @@
     a.click();
   }
 </script>
+
+<AdminNav />
 
 <div class="max-w-7xl mx-auto px-4 py-12">
   <div class="flex justify-between items-center mb-8">

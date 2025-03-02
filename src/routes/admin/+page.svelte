@@ -1,6 +1,8 @@
 <script>
-  // No script needed for this simple navigation page
+  import AdminNav from '$lib/components/AdminNav.svelte';
 </script>
+
+<AdminNav />
 
 <div class="max-w-7xl mx-auto px-4 py-12">
   <h1 class="text-3xl font-light mb-8">Admin Dashboard</h1>
