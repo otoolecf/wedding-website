@@ -1,39 +1,11 @@
-<!-- src/lib/components/Lightbox.svelte -->
+<!-- src/lib/components/GlobalLightbox.svelte -->
 <script>
-  import { createEventDispatcher } from 'svelte';
-
-  // Props
-  export let images = [];
-  export let currentIndex = 0;
-  export let show = false;
-
-  // Event dispatcher for handling close events
-  const dispatch = createEventDispatcher();
-
-  // Active image
-  $: activeImage = images[currentIndex] || null;
-
-  // Navigate between images
-  function nextImage() {
-    if (currentIndex < images.length - 1) {
-      currentIndex += 1;
-    }
-  }
-
-  function prevImage() {
-    if (currentIndex > 0) {
-      currentIndex -= 1;
-    }
-  }
-
-  // Close the lightbox
-  function closeLightbox() {
-    dispatch('close');
-  }
+  import { onMount } from 'svelte';
+  import { lightboxStore, closeLightbox, nextImage, prevImage } from '$lib/stores/lightbox';
 
   // Handle keyboard navigation
   function handleKeydown(event) {
-    if (!show) return;
+    if (!$lightboxStore.visible) return;
 
     switch (event.key) {
       case 'Escape':
@@ -47,11 +19,20 @@
         break;
     }
   }
+
+  // Set up keyboard event listener
+  onMount(() => {
+    window.addEventListener('keydown', handleKeydown);
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  });
+
+  // Get current image
+  $: activeImage = $lightboxStore.images[$lightboxStore.currentIndex] || null;
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
-
-{#if show && activeImage}
+{#if $lightboxStore.visible && activeImage}
   <!-- Lightbox overlay -->
   <div
     class="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
@@ -67,26 +48,26 @@
     </button>
 
     <!-- Navigation buttons -->
-    {#if images.length > 1}
+    {#if $lightboxStore.images.length > 1}
       <button
-        class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-4xl opacity-70 hover:opacity-100 focus:outline-none {currentIndex ===
+        class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-4xl opacity-70 hover:opacity-100 focus:outline-none {$lightboxStore.currentIndex ===
         0
           ? 'opacity-30 cursor-not-allowed'
           : ''}"
         on:click|stopPropagation={prevImage}
-        disabled={currentIndex === 0}
+        disabled={$lightboxStore.currentIndex === 0}
         aria-label="Previous image"
       >
         &lt;
       </button>
 
       <button
-        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-4xl opacity-70 hover:opacity-100 focus:outline-none {currentIndex ===
-        images.length - 1
+        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-4xl opacity-70 hover:opacity-100 focus:outline-none {$lightboxStore.currentIndex ===
+        $lightboxStore.images.length - 1
           ? 'opacity-30 cursor-not-allowed'
           : ''}"
         on:click|stopPropagation={nextImage}
-        disabled={currentIndex === images.length - 1}
+        disabled={$lightboxStore.currentIndex === $lightboxStore.images.length - 1}
         aria-label="Next image"
       >
         &gt;
@@ -106,9 +87,11 @@
       <div class="mt-4 text-white text-center w-full">
         <p class="mb-2 text-lg font-light">{activeImage.caption || 'No caption'}</p>
 
-        <div class="text-sm text-gray-400 mt-2">
-          {currentIndex + 1} / {images.length}
-        </div>
+        {#if $lightboxStore.images.length > 1}
+          <div class="text-sm text-gray-400 mt-2">
+            {$lightboxStore.currentIndex + 1} / {$lightboxStore.images.length}
+          </div>
+        {/if}
       </div>
     </div>
   </div>

@@ -13,7 +13,9 @@
   let selectedFile = null;
   let selectedImageId = null;
   let selectedLocationId = null;
+  let selectedLocationIds = []; // For multi-select
   let showAssignmentModal = false;
+  let showMultiAssignmentModal = false;
   let showEditModal = false;
   let editingImage = null;
   let editCaption = '';
@@ -23,6 +25,7 @@
   let deleting = false;
   let saving = false;
   let assigning = false;
+  let multiAssigning = false;
   let editing = false;
   let error = null;
 
@@ -214,6 +217,29 @@
     selectedLocationId = null;
   }
 
+  function openMultiAssignmentModal(imageId) {
+    selectedImageId = imageId;
+
+    // Initialize with currently assigned locations
+    const imageIdNoPrefix = imageId.replace('image:', '');
+    selectedLocationIds = getAssignedLocations(imageIdNoPrefix);
+
+    showMultiAssignmentModal = true;
+  }
+
+  function closeMultiAssignmentModal() {
+    showMultiAssignmentModal = false;
+    selectedLocationIds = [];
+  }
+
+  function toggleLocationSelection(locationId) {
+    if (selectedLocationIds.includes(locationId)) {
+      selectedLocationIds = selectedLocationIds.filter((id) => id !== locationId);
+    } else {
+      selectedLocationIds = [...selectedLocationIds, locationId];
+    }
+  }
+
   function openEditModal(image) {
     editingImage = image;
     editCaption = image.caption || '';
@@ -291,13 +317,72 @@
       const data = await response.json();
       assignments.set(data.assignments);
 
+      // Store the location name before closing the modal
+      const locationName = getImageLocationName(selectedLocationId) || 'selected location';
       closeAssignmentModal();
-      alert(`Image successfully assigned to ${getImageLocationName(selectedLocationId)}`);
+      alert(`Image successfully assigned to ${locationName}`);
     } catch (err) {
       console.error('Failed to assign image:', err);
       error = 'Failed to assign image';
     } finally {
       assigning = false;
+    }
+  }
+
+  async function saveMultipleAssignments() {
+    if (!selectedImageId) return;
+
+    multiAssigning = true;
+    try {
+      const imageId = selectedImageId.replace('image:', '');
+
+      // Get all current assignments
+      const currentAssignments = { ...$assignments };
+
+      // Remove any existing assignments for this image
+      const currentlyAssigned = getAssignedLocations(imageId);
+
+      // For each location that should no longer be assigned to this image
+      for (const locationId of currentlyAssigned) {
+        if (!selectedLocationIds.includes(locationId)) {
+          // Unassign this location
+          await fetch('/api/admin/gallery/unassign', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ locationId })
+          });
+        }
+      }
+
+      // For each newly selected location
+      for (const locationId of selectedLocationIds) {
+        if (!currentlyAssigned.includes(locationId)) {
+          // Assign this location
+          await fetch('/api/admin/gallery/assign', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              imageId,
+              locationId
+            })
+          });
+        }
+      }
+
+      // Refresh assignments
+      await fetchAssignments();
+
+      closeMultiAssignmentModal();
+      alert(`Image assignments updated successfully`);
+    } catch (err) {
+      console.error('Failed to update image assignments:', err);
+      error = 'Failed to update image assignments';
+    } finally {
+      multiAssigning = false;
     }
   }
 
@@ -329,6 +414,55 @@
       {error}
     </div>
   {/if}
+
+  <div class="bg-white p-4 rounded shadow-sm mb-6">
+    <h2 class="text-lg font-semibold mb-2">Upload New Image</h2>
+
+    <div class="grid grid-cols-1 gap-4 mb-4">
+      <div>
+        <label for="fileInput" class="block text-sm font-medium text-gray-700 mb-1">
+          Select Image
+        </label>
+        <input id="fileInput" type="file" class="w-full" on:change={handleFileChange} />
+      </div>
+
+      <div>
+        <label for="uploadCaption" class="block text-sm font-medium text-gray-700 mb-1">
+          Caption (optional)
+        </label>
+        <input
+          id="uploadCaption"
+          type="text"
+          class="w-full p-2 border rounded"
+          placeholder="Add a caption for this image..."
+        />
+      </div>
+
+      <div>
+        <label for="uploadAlt" class="block text-sm font-medium text-gray-700 mb-1">
+          Alt Text (optional)
+        </label>
+        <input
+          id="uploadAlt"
+          type="text"
+          class="w-full p-2 border rounded"
+          placeholder="Describe the image for accessibility..."
+        />
+      </div>
+    </div>
+
+    <button
+      class="bg-blue-500 text-white px-4 py-2 rounded"
+      on:click={uploadImage}
+      disabled={uploading || !selectedFile}
+    >
+      {#if uploading}
+        Uploading...
+      {:else}
+        Upload Image
+      {/if}
+    </button>
+  </div>
 
   <div class="gallery mt-4">
     {#if fetching}
@@ -368,7 +502,7 @@
 
               <button
                 class="bg-green-500 text-white px-2 py-1 rounded text-sm"
-                on:click={() => openAssignmentModal(image.id)}
+                on:click={() => openMultiAssignmentModal(image.id)}
               >
                 Assign
               </button>
@@ -415,7 +549,7 @@
     {/if}
   </button>
 
-  <!-- Assignment Modal -->
+  <!-- Assignment Modal (Single) -->
   {#if showAssignmentModal}
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -454,6 +588,68 @@
               Assigning...
             {:else}
               Assign Image
+            {/if}
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Multi-Assignment Modal -->
+  {#if showMultiAssignmentModal}
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">Assign Image to Locations</h2>
+
+        <div class="mb-4">
+          <p class="text-sm text-gray-500 mb-2">
+            Select one or more locations where this image should appear:
+          </p>
+
+          <div class="max-h-60 overflow-y-auto border rounded p-2">
+            {#each locationOptions as locationId}
+              <div class="py-2 border-b last:border-b-0">
+                <label class="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedLocationIds.includes(locationId)}
+                    on:change={() => toggleLocationSelection(locationId)}
+                    class="form-checkbox"
+                  />
+                  <span>{getImageLocationName(locationId)}</span>
+                </label>
+
+                {#if $assignments[locationId] && $assignments[locationId] !== selectedImageId.replace('image:', '')}
+                  <p class="ml-6 mt-1 text-yellow-600 text-xs">
+                    This location already has an assigned image. Selecting it will replace the
+                    current assignment.
+                  </p>
+                {/if}
+              </div>
+            {/each}
+          </div>
+
+          <p class="mt-2 text-xs text-gray-500">
+            Currently assigned to {selectedLocationIds.length} location{selectedLocationIds.length !==
+            1
+              ? 's'
+              : ''}.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button class="px-4 py-2 border rounded" on:click={closeMultiAssignmentModal}>
+            Cancel
+          </button>
+          <button
+            class="bg-blue-500 text-white px-4 py-2 rounded"
+            on:click={saveMultipleAssignments}
+            disabled={multiAssigning}
+          >
+            {#if multiAssigning}
+              Saving...
+            {:else}
+              Save Assignments
             {/if}
           </button>
         </div>

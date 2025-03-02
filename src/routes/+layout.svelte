@@ -1,6 +1,9 @@
+<!-- src/routes/+layout.svelte -->
 <script>
   import '../app.css';
   import { page } from '$app/stores';
+  import GlobalLightbox from '$lib/components/GlobalLightbox.svelte';
+
   export let data;
 </script>
 
@@ -32,3 +35,6 @@
     </div>
   </footer>
 {/if}
+
+<!-- Global lightbox that can be triggered from anywhere -->
+<GlobalLightbox />

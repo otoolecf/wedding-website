@@ -1,12 +1,14 @@
 <!-- src/lib/components/AssignedImage.svelte -->
 <script>
   import { onMount } from 'svelte';
+  import { openLightbox } from '$lib/stores/lightbox';
 
   // Props
   export let locationId;
   export let alt = '';
   export let className = '';
   export let fallbackSrc = '';
+  export let enableLightbox = true; // Set to false to disable lightbox
 
   // State
   let image = null;
@@ -29,6 +31,19 @@
       loading = false;
     }
   });
+
+  // Open the image in a lightbox when clicked
+  function handleClick() {
+    if (!enableLightbox || !image) return;
+
+    openLightbox([
+      {
+        src: image.src,
+        alt: alt || image.alt || `Image for ${locationId}`,
+        caption: image.caption || ''
+      }
+    ]);
+  }
 </script>
 
 {#if loading}
@@ -36,7 +51,16 @@
   <div class="bg-gray-200 animate-pulse {className}" style="min-height: 100px"></div>
 {:else if image}
   <!-- Image loaded successfully -->
-  <img src={image.src} alt={alt || image.alt || `Image for ${locationId}`} class={className} />
+  <div
+    class="{enableLightbox ? 'cursor-pointer' : ''} w-full h-full"
+    on:click={handleClick}
+    on:keydown={(e) => enableLightbox && e.key === 'Enter' && handleClick()}
+    tabindex={enableLightbox ? '0' : undefined}
+    role={enableLightbox ? 'button' : undefined}
+    aria-label={enableLightbox ? `View ${alt || image.alt || 'image'}` : undefined}
+  >
+    <img src={image.src} alt={alt || image.alt || `Image for ${locationId}`} class={className} />
+  </div>
 {:else if fallbackSrc}
   <!-- No assigned image, but fallback available -->
   <img src={fallbackSrc} alt={alt || `Fallback image for ${locationId}`} class={className} />

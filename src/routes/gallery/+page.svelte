@@ -1,15 +1,11 @@
 <!-- src/routes/gallery/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
-  import Lightbox from '$lib/components/Lightbox.svelte';
+  import { openLightbox } from '$lib/stores/lightbox';
 
   let photos = [];
   let error = null;
   let loading = true;
-
-  // Lightbox state
-  let lightboxVisible = false;
-  let currentImageIndex = 0;
 
   onMount(async () => {
     try {
@@ -28,17 +24,9 @@
     }
   });
 
-  function openLightbox(index) {
-    currentImageIndex = index;
-    lightboxVisible = true;
-    // Prevent body scrolling when lightbox is open
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeLightbox() {
-    lightboxVisible = false;
-    // Restore body scrolling
-    document.body.style.overflow = '';
+  function handleOpenGallery(index) {
+    // Open the lightbox with all photos, starting at the selected index
+    openLightbox(photos, index);
   }
 </script>
 
@@ -62,8 +50,8 @@
       {#each photos as photo, index}
         <div
           class="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-          on:click={() => openLightbox(index)}
-          on:keydown={(e) => e.key === 'Enter' && openLightbox(index)}
+          on:click={() => handleOpenGallery(index)}
+          on:keydown={(e) => e.key === 'Enter' && handleOpenGallery(index)}
           tabindex="0"
           role="button"
           aria-label={`View ${photo.caption || 'image'}`}
@@ -78,21 +66,11 @@
           </div>
 
           <!-- Caption overlay (always visible) -->
-          {#if photo.caption}
-            <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-3">
-              <p class="text-sm">{photo.caption}</p>
-            </div>
-          {/if}
+          <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-3">
+            <p class="text-sm">{photo.caption || 'No caption'}</p>
+          </div>
         </div>
       {/each}
     </div>
   {/if}
-
-  <!-- Lightbox component for full-size viewing -->
-  <Lightbox
-    images={photos}
-    currentIndex={currentImageIndex}
-    show={lightboxVisible}
-    on:close={closeLightbox}
-  />
 </div>
