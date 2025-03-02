@@ -1,38 +1,36 @@
-# sv
+# Wedding Website
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+This is a custom wedidng website using SvelteKit and Cloudflare.
 
-## Creating a project
+## Testing Locally
 
-If you're seeing this, you've probably already done this step. Congrats!
+To test locally, you will need 2 terminal windows, one for frontend and one for backend.
 
-```bash
-# create a new project in the current directory
-npx sv create
+### Frontend
 
-# create a new project in my-app
-npx sv create my-app
-```
+To get the frontend built, run:
 
-## Developing
+`npm run dev`
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+You can now access the site at `http://localhost:5173/` ; changes are tracked so every time you save code changes the site will be reloaded.
 
-```bash
-npm run dev
+### Backend
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+For a local test backend, run:
 
-## Building
+`wrangler dev`
 
-To create a production version of your app:
+This will build a local version of the cloudflare Workers backend and any of the resources you have defined in your `wrangler.toml` file.
 
-```bash
-npm run build
-```
+If you want to point to the actual cloud resources (e.g., R2 objects, KV storeag, etc.) while testing locally, you can run with the remote flag:
+`wrangler dev --remote`
 
-You can preview the production build with `npm run preview`.
+You can run `d` in the terminal window once built to open devtools.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Why Cloudflare?
+
+Cloudflare has a very generous free tier for backend serverless workers, no object storage egress fees (R2, the S3 equivalent), and domains are also much cheaper to purchase directly through cloudflare vs domain registry companies like GoDaddy.
+
+## Why Svelte?
+
+Svelte is very simple and straightforward to get a lightweight site up and running!
