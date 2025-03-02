@@ -49,7 +49,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {#each photos as photo, index}
         <div
-          class="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          class="relative group rounded-lg shadow-sm overflow-hidden cursor-pointer"
           on:click={() => handleOpenGallery(index)}
           on:keydown={(e) => e.key === 'Enter' && handleOpenGallery(index)}
           tabindex="0"
@@ -65,10 +65,14 @@
             />
           </div>
 
-          <!-- Caption overlay (always visible) -->
-          <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-3">
-            <p class="text-sm">{photo.caption || 'No caption'}</p>
-          </div>
+          <!-- Caption overlay (only visible on hover) -->
+          {#if photo.caption}
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end"
+            >
+              <p class="text-white p-4 text-center">{photo.caption}</p>
+            </div>
+          {/if}
         </div>
       {/each}
     </div>
