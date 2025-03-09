@@ -9,11 +9,13 @@ This is a custom wedding website using SvelteKit and Cloudflare.
 - Photo gallery with admin management
 - Theme customization system
 - Custom font support
+- Content editing
 
 ## Documentation
 
 - [Font Customization Guide](docs/font-customization-guide.md) - How to use Google Fonts and custom fonts
 - [Theme System Guide](docs/theme-system-guide.md) - How to customize colors and apply theme presets
+- [Content Setup Guide](docs/content-setup-guide.md) - How to set up and adjust site content
 
 ## Testing Locally
 

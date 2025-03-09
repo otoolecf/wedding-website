@@ -27,6 +27,15 @@
           Gallery
         </a>
         <a
+          href="/admin/content"
+          class="px-3 py-2 rounded hover:bg-gray-700 transition-colors {$page.url.pathname ===
+          '/admin/content'
+            ? 'bg-gray-700'
+            : ''}"
+        >
+          Content
+        </a>
+        <a
           href="/admin/rsvp"
           class="px-3 py-2 rounded hover:bg-gray-700 transition-colors {$page.url.pathname ===
           '/admin/rsvp'
