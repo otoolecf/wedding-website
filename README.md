@@ -1,6 +1,19 @@
 # Wedding Website
 
-This is a custom wedidng website using SvelteKit and Cloudflare.
+This is a custom wedding website using SvelteKit and Cloudflare.
+
+## Features
+
+- Responsive design for all devices
+- RSVP form with database storage
+- Photo gallery with admin management
+- Theme customization system
+- Custom font support
+
+## Documentation
+
+- [Font Customization Guide](docs/font-customization-guide.md) - How to use Google Fonts and custom fonts
+- [Theme System Guide](docs/theme-system-guide.md) - How to customize colors and apply theme presets
 
 ## Testing Locally
 
@@ -22,7 +35,7 @@ For a local test backend, run:
 
 This will build a local version of the cloudflare Workers backend and any of the resources you have defined in your `wrangler.toml` file.
 
-If you want to point to the actual cloud resources (e.g., R2 objects, KV storeag, etc.) while testing locally, you can run with the remote flag:
+If you want to point to the actual cloud resources (e.g., R2 objects, KV storage, etc.) while testing locally, you can run with the remote flag:
 `wrangler dev --remote`
 
 You can run `d` in the terminal window once built to open devtools.

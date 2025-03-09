@@ -31,18 +31,18 @@
   <h1 class="text-4xl text-center font-light mb-12">Photo Gallery</h1>
 
   {#if loading}
-    <div class="text-center text-gray-600 p-4 rounded">Loading images...</div>
+    <div class="text-center text-secondary p-4 rounded">Loading images...</div>
   {:else if error}
     <div class="bg-red-50 text-red-600 p-4 rounded">
       {error}
     </div>
   {:else if photos.length === 0}
-    <div class="text-center text-gray-600 p-4 rounded">No images available in the gallery.</div>
+    <div class="text-center text-secondary p-4 rounded">No images available in the gallery.</div>
   {:else}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {#each photos as photo}
         <div
-          class="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          class="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow bg-accent"
         >
           <img
             src={photo.src}

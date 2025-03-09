@@ -61,7 +61,9 @@
       <div class="space-y-4 text-center md:text-left">
         <p class="font-medium">{details.accommodation.hotel}</p>
         <p class="text-gray-600">{details.accommodation.address}</p>
-        <p>Booking Code: <span class="font-mono">{details.accommodation.code}</span></p>
+        <p>
+          Booking Code: <span class="font-mono text-primary">{details.accommodation.code}</span>
+        </p>
         <p class="text-gray-600">{details.accommodation.note}</p>
       </div>
     </div>

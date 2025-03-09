@@ -37,9 +37,9 @@
           <img src={milestone.image} alt={milestone.title} class="rounded-lg shadow-lg w-full" />
         </div>
         <div class="flex-1 text-center md:text-left">
-          <div class="text-gray-500 mb-2">{milestone.date}</div>
-          <h2 class="text-2xl mb-4">{milestone.title}</h2>
-          <p class="text-gray-600 leading-relaxed">{milestone.description}</p>
+          <div class="text-secondary mb-2">{milestone.date}</div>
+          <h2 class="text-2xl mb-4 text-primary">{milestone.title}</h2>
+          <p class="leading-relaxed">{milestone.description}</p>
         </div>
       </div>
     {/each}
