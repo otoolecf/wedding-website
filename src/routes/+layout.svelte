@@ -3,12 +3,49 @@
   import '$lib/styles/theme.css';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
+  import { getGoogleFontsUrl } from '$lib/theme/fonts';
 
   export let data;
 
+  // Extract custom fonts from theme for loading
+  let customFontsToLoad = [];
+
+  // Process theme fonts to determine which custom fonts need to be loaded
+  function processThemeFonts(theme) {
+    if (!theme || !theme.fonts) return [];
+
+    const customFonts = [];
+    const systemFonts = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy'];
+
+    // Helper to extract font family name from a font string with fallbacks
+    const extractFontFamily = (fontString) => {
+      if (!fontString) return null;
+      // Get the primary font name (before any commas)
+      const primaryFont = fontString.split(',')[0].trim();
+      // If it's not a system font and not already in our list, add it
+      if (!systemFonts.includes(primaryFont) && !customFonts.includes(primaryFont)) {
+        return primaryFont;
+      }
+      return null;
+    };
+
+    // Check heading font
+    const headingFont = extractFontFamily(theme.fonts.heading);
+    if (headingFont) customFonts.push(headingFont);
+
+    // Check body font
+    const bodyFont = extractFontFamily(theme.fonts.body);
+    if (bodyFont) customFonts.push(bodyFont);
+
+    return customFonts;
+  }
+
   // Apply theme when component mounts
   onMount(() => {
-    applyTheme(data.theme);
+    if (data.theme) {
+      applyTheme(data.theme);
+      customFontsToLoad = processThemeFonts(data.theme);
+    }
   });
 
   // Function to apply theme to CSS variables
@@ -30,14 +67,23 @@
       document.documentElement.style.setProperty('--font-body', theme.fonts.body);
     }
   }
+
+  // Create Google Fonts URL for custom fonts
+  function getCustomFontsUrl(fontList) {
+    if (!fontList || fontList.length === 0) return '';
+    const encodedFonts = fontList.map((font) => encodeURIComponent(font).replace(/%20/g, '+'));
+    return `https://fonts.googleapis.com/css2?${encodedFonts.map((font) => `family=${font}`).join('&')}&display=swap`;
+  }
 </script>
 
 <svelte:head>
-  <!-- Add Google Fonts -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cinzel&family=Cormorant+Garamond&family=Lato&family=Montserrat&family=Open+Sans&family=Playfair+Display&family=Roboto&display=swap"
-    rel="stylesheet"
-  />
+  <!-- Load built-in Google Fonts for presets -->
+  <link href={getGoogleFontsUrl()} rel="stylesheet" />
+
+  <!-- Load any custom fonts detected in the theme -->
+  {#if customFontsToLoad.length > 0}
+    <link href={getCustomFontsUrl(customFontsToLoad)} rel="stylesheet" />
+  {/if}
 </svelte:head>
 
 {#if data.isPreview}

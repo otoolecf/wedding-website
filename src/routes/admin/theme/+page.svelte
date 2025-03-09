@@ -2,6 +2,8 @@
 <script>
   import { onMount } from 'svelte';
   import { themePresets, presetList, getPreset } from '$lib/theme/presets';
+  import { allFonts, fontOptions } from '$lib/theme/fonts';
+  import CustomFontInput from '$lib/components/CustomFontInput.svelte';
 
   // Theme state
   let theme = {
@@ -18,26 +20,28 @@
     }
   };
 
-  // Font options for dropdown
-  const fontOptions = [
-    'sans-serif',
-    'serif',
-    'monospace',
-    'Playfair Display, serif',
-    'Montserrat, sans-serif',
-    'Lato, sans-serif',
-    'Roboto, sans-serif',
-    'Open Sans, sans-serif',
-    'Cinzel, serif',
-    'Cormorant Garamond, serif'
-  ];
-
   let status = '';
   let error = null;
   let saving = false;
   let preview = false;
   let selectedPresetId = '';
   let activeTab = 'presets'; // 'presets' or 'custom'
+  let fontCategory = 'all'; // 'all', 'serifs', 'sanSerifs', 'display', 'other'
+  let useCustomFontInput = { heading: false, body: false };
+
+  // Filtered fonts based on selected category
+  $: filteredFonts = fontCategory === 'all' ? allFonts : fontOptions[fontCategory] || allFonts;
+
+  // Handle font change from custom input
+  function handleHeadingFontChange(newFont) {
+    theme.fonts.heading = newFont;
+    if (preview) updateColorPreview();
+  }
+
+  function handleBodyFontChange(newFont) {
+    theme.fonts.body = newFont;
+    if (preview) updateColorPreview();
+  }
 
   onMount(async () => {
     try {
@@ -383,17 +387,78 @@
         <div class="space-y-6">
           <div>
             <label class="block text-gray-700 mb-2" for="heading-font">Heading Font</label>
-            <select
-              id="heading-font"
-              bind:value={theme.fonts.heading}
-              class="w-full p-2 border rounded"
-            >
-              {#each fontOptions as font}
-                <option value={font} style="font-family: {font}">
-                  {font}
-                </option>
-              {/each}
-            </select>
+
+            <!-- Font Category Selector -->
+            <div class="mb-3">
+              <div class="flex flex-wrap gap-2 text-sm">
+                <button
+                  class="px-2 py-1 rounded {fontCategory === 'all'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100'}"
+                  on:click={() => (fontCategory = 'all')}
+                >
+                  All Fonts
+                </button>
+                <button
+                  class="px-2 py-1 rounded {fontCategory === 'serifs'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100'}"
+                  on:click={() => (fontCategory = 'serifs')}
+                >
+                  Serif
+                </button>
+                <button
+                  class="px-2 py-1 rounded {fontCategory === 'sanSerifs'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100'}"
+                  on:click={() => (fontCategory = 'sanSerifs')}
+                >
+                  Sans-Serif
+                </button>
+                <button
+                  class="px-2 py-1 rounded {fontCategory === 'display'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100'}"
+                  on:click={() => (fontCategory = 'display')}
+                >
+                  Display/Script
+                </button>
+                <button
+                  class="px-2 py-1 rounded {fontCategory === 'other'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100'}"
+                  on:click={() => (fontCategory = 'other')}
+                >
+                  Other
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Font Input for Heading -->
+            <CustomFontInput
+              value={theme.fonts.heading}
+              onChange={handleHeadingFontChange}
+              label="Custom Heading Font"
+              id="custom-heading-font"
+              placeholder="E.g., Corben, cursive"
+            />
+
+            <!-- OR use preset fonts -->
+            <div class="mt-4">
+              <p class="text-sm text-gray-500 mb-2">Or select from presets:</p>
+              <select
+                id="heading-font"
+                bind:value={theme.fonts.heading}
+                class="w-full p-2 border rounded"
+              >
+                {#each filteredFonts as font}
+                  <option value={font.value} style="font-family: {font.value}">
+                    {font.label}
+                  </option>
+                {/each}
+              </select>
+            </div>
+
             <div class="mt-3 p-3 border rounded bg-gray-50">
               <p class="text-xl" style="font-family: {theme.fonts.heading}">
                 This is a heading preview
@@ -401,15 +466,34 @@
             </div>
           </div>
 
-          <div>
+          <div class="mt-8">
             <label class="block text-gray-700 mb-2" for="body-font">Body Font</label>
-            <select id="body-font" bind:value={theme.fonts.body} class="w-full p-2 border rounded">
-              {#each fontOptions as font}
-                <option value={font} style="font-family: {font}">
-                  {font}
-                </option>
-              {/each}
-            </select>
+
+            <!-- Custom Font Input for Body -->
+            <CustomFontInput
+              value={theme.fonts.body}
+              onChange={handleBodyFontChange}
+              label="Custom Body Font"
+              id="custom-body-font"
+              placeholder="E.g., Source Sans Pro, sans-serif"
+            />
+
+            <!-- OR use preset fonts -->
+            <div class="mt-4">
+              <p class="text-sm text-gray-500 mb-2">Or select from presets:</p>
+              <select
+                id="body-font"
+                bind:value={theme.fonts.body}
+                class="w-full p-2 border rounded"
+              >
+                {#each filteredFonts as font}
+                  <option value={font.value} style="font-family: {font.value}">
+                    {font.label}
+                  </option>
+                {/each}
+              </select>
+            </div>
+
             <div class="mt-3 p-3 border rounded bg-gray-50">
               <p style="font-family: {theme.fonts.body}">
                 This is a body text preview. The quick brown fox jumps over the lazy dog.

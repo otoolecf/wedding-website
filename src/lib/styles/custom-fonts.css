@@ -1,0 +1,40 @@
+/* src/lib/styles/custom-fonts.css */
+
+/* Example of defining custom fonts - replace with your actual font names and files */
+
+/* @font-face {
+  font-family: 'CustomFont';
+  src: url('/fonts/CustomFont-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CustomFont';
+  src: url('/fonts/CustomFont-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CustomFont';
+  src: url('/fonts/CustomFont-Italic.woff2') format('woff2');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+} */
+
+/* 
+  Define more custom fonts as needed.
+  Example:
+
+  @font-face {
+    font-family: 'WeddingScript';
+    src: url('/fonts/WeddingScript.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+*/
