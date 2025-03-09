@@ -1,28 +1,22 @@
 <!-- src/routes/registry/+page.svelte -->
 <script>
-  import AssignedImage from '$lib/components/AssignedImage.svelte';
-  import { IMAGE_LOCATIONS } from '$lib/imageLocations';
-
   const registries = [
     {
       name: 'Target',
       url: 'https://www.target.com/gift-registry/',
-      locationId: IMAGE_LOCATIONS.REGISTRY_TARGET,
-      fallbackSrc: 'https://picsum.photos/seed/target/400/200',
+      image: 'https://picsum.photos/seed/target/400/200',
       description: 'Home essentials and decor'
     },
     {
       name: 'Amazon',
       url: 'https://www.amazon.com/wedding',
-      locationId: IMAGE_LOCATIONS.REGISTRY_AMAZON,
-      fallbackSrc: 'https://picsum.photos/seed/amazon/400/200',
+      image: 'https://picsum.photos/seed/amazon/400/200',
       description: 'Everything under the sun'
     },
     {
       name: 'Crate & Barrel',
       url: 'https://www.crateandbarrel.com/gift-registry',
-      locationId: IMAGE_LOCATIONS.REGISTRY_CRATE_BARREL,
-      fallbackSrc: 'https://picsum.photos/seed/crate/400/200',
+      image: 'https://picsum.photos/seed/crate/400/200',
       description: 'Kitchen and entertaining must-haves'
     }
   ];
@@ -35,7 +29,7 @@
 <div class="max-w-4xl mx-auto px-4 py-12">
   <h1 class="text-4xl text-center font-light mb-6">Registry</h1>
 
-  <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">
+  <p class="text-center max-w-2xl mx-auto mb-12">
     Your presence at our wedding is the greatest gift of all. However, for those who have asked,
     we've created registries at the following stores:
   </p>
@@ -46,20 +40,21 @@
         <div
           class="bg-white p-6 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"
         >
-          <AssignedImage
-            locationId={registry.locationId}
-            fallbackSrc={registry.fallbackSrc}
+          <img
+            src={registry.image}
             alt={registry.name}
-            className="w-full h-48 object-cover rounded mb-4"
+            class="w-full h-48 object-cover rounded mb-4"
           />
-          <h2 class="text-xl font-medium mb-2 group-hover:text-gray-800">{registry.name}</h2>
-          <p class="text-gray-600 text-sm">{registry.description}</p>
+          <h2 class="text-xl font-medium mb-2 text-primary group-hover:opacity-80">
+            {registry.name}
+          </h2>
+          <p class="text-secondary text-sm">{registry.description}</p>
         </div>
       </a>
     {/each}
   </div>
 
-  <div class="mt-12 text-center text-gray-600">
+  <div class="mt-12 text-center">
     <h2 class="text-2xl font-light mb-4">Honeymoon Fund</h2>
     <p class="max-w-2xl mx-auto">
       If you'd prefer to contribute to our honeymoon adventures, we've set up a honeymoon fund that
@@ -67,7 +62,7 @@
     </p>
     <a
       href="#"
-      class="inline-block mt-6 bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-colors"
+      class="inline-block mt-6 btn-primary px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
     >
       Contribute to Our Honeymoon
     </a>

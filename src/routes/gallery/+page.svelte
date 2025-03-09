@@ -1,7 +1,5 @@
-<!-- src/routes/gallery/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
-  import { openLightbox } from '$lib/stores/lightbox';
 
   let photos = [];
   let error = null;
@@ -23,11 +21,6 @@
       loading = false;
     }
   });
-
-  function handleOpenGallery(index) {
-    // Open the lightbox with all photos, starting at the selected index
-    openLightbox(photos, index);
-  }
 </script>
 
 <svelte:head>
@@ -38,41 +31,29 @@
   <h1 class="text-4xl text-center font-light mb-12">Photo Gallery</h1>
 
   {#if loading}
-    <div class="text-center text-gray-600 p-4 rounded">Loading images...</div>
+    <div class="text-center text-secondary p-4 rounded">Loading images...</div>
   {:else if error}
     <div class="bg-red-50 text-red-600 p-4 rounded">
       {error}
     </div>
   {:else if photos.length === 0}
-    <div class="text-center text-gray-600 p-4 rounded">No images available in the gallery.</div>
+    <div class="text-center text-secondary p-4 rounded">No images available in the gallery.</div>
   {:else}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {#each photos as photo, index}
+      {#each photos as photo}
         <div
-          class="relative group rounded-lg shadow-sm overflow-hidden cursor-pointer"
-          on:click={() => handleOpenGallery(index)}
-          on:keydown={(e) => e.key === 'Enter' && handleOpenGallery(index)}
-          tabindex="0"
-          role="button"
-          aria-label={`View ${photo.caption || 'image'}`}
+          class="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow bg-accent"
         >
-          <!-- Image container with consistent height but preserving aspect ratio -->
-          <div class="h-64 overflow-hidden">
-            <img
-              src={photo.src}
-              alt={photo.alt || photo.caption || 'Gallery image'}
-              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
+          <img
+            src={photo.src}
+            alt={photo.alt || photo.id}
+            class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div
+            class="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-4 translate-y-full group-hover:translate-y-0 transition-transform"
+          >
+            <p class="text-sm">R2 ID: {photo.id}, KV_ID: {photo.kv_id}</p>
           </div>
-
-          <!-- Caption overlay (only visible on hover) -->
-          {#if photo.caption}
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end"
-            >
-              <p class="text-white p-4 text-center">{photo.caption}</p>
-            </div>
-          {/if}
         </div>
       {/each}
     </div>
