@@ -1,6 +1,6 @@
 // src/routes/pages/[slug]/+page.server.js
 
-export async function load({ params, platform, error }) {
+export async function load({ params, platform }) {
   const { slug } = params;
 
   try {
@@ -12,20 +12,14 @@ export async function load({ params, platform, error }) {
     const pageInfo = pagesData.find((page) => page.slug === slug);
 
     if (!pageInfo) {
-      return error(404, {
-        message: 'Page not found',
-        code: 'PAGE_NOT_FOUND'
-      });
+      throw new Error('Page not found');
     }
 
     // Get the full page data
     const pageData = await platform.env.IMAGES_KV.get(`page_builder_page:${pageInfo.id}`);
 
     if (!pageData) {
-      return error(404, {
-        message: 'Page content not found',
-        code: 'PAGE_CONTENT_NOT_FOUND'
-      });
+      throw new Error('Page content not found');
     }
 
     const page = JSON.parse(pageData);
@@ -36,9 +30,6 @@ export async function load({ params, platform, error }) {
     };
   } catch (err) {
     console.error(`Error loading page [${slug}]:`, err);
-    return error(500, {
-      message: 'Error loading page',
-      code: 'PAGE_LOAD_ERROR'
-    });
+    throw new Error('Error loading page: ' + err.message);
   }
 }
