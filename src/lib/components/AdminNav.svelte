@@ -27,6 +27,16 @@
           Gallery
         </a>
         <a
+          href="/admin/pages"
+          class="px-3 py-2 rounded hover:bg-gray-700 transition-colors {$page.url.pathname.startsWith(
+            '/admin/pages'
+          )
+            ? 'bg-gray-700'
+            : ''}"
+        >
+          Pages
+        </a>
+        <a
           href="/admin/content"
           class="px-3 py-2 rounded hover:bg-gray-700 transition-colors {$page.url.pathname ===
           '/admin/content'
@@ -43,6 +53,15 @@
             : ''}"
         >
           RSVPs
+        </a>
+        <a
+          href="/admin/theme"
+          class="px-3 py-2 rounded hover:bg-gray-700 transition-colors {$page.url.pathname ===
+          '/admin/theme'
+            ? 'bg-gray-700'
+            : ''}"
+        >
+          Theme
         </a>
       </div>
       <div class="ml-auto">
