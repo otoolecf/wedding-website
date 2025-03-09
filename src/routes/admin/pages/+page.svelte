@@ -1,305 +1,394 @@
-<!-- src/routes/admin/pages/+page.svelte -->
+<!-- src/routes/admin/pages/[pageId]/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
+  import { pageBuilderStore } from '$lib/page-builder/store';
+  import {
+    SECTION_TYPES,
+    getSectionTypeName,
+    getSectionTypeIcon,
+    getAvailableSectionTypes
+  } from '$lib/page-builder/schema';
   import AdminNav from '$lib/components/AdminNav.svelte';
+  import SectionEditor from '$lib/components/page-builder/SectionEditor.svelte';
+  import PagePreview from '$lib/components/page-builder/PagePreview.svelte';
+  import SaveFeedback from '$lib/components/page-builder/SaveFeedback.svelte';
 
-  // Page list state
-  let pages = [];
-  let loading = true;
-  let error = null;
+  export let data = {};
 
-  // New page form state
-  let showNewPageModal = false;
-  let newPageName = '';
-  let newPageSlug = '';
-  let creatingPage = false;
-  let createError = null;
+  // Get page ID from route params, with fallback
+  const pageId = data?.params?.pageId || '';
+
+  // UI state
+  let saving = false;
+  let showAddSectionModal = false;
+  let sectionTypes = getAvailableSectionTypes();
+  let debugMode = false; // For development debugging
+
+  // Subscribe to the page builder store
+  $: sections = $pageBuilderStore.sections;
+  $: selectedSectionId = $pageBuilderStore.selectedSectionId;
+  $: previewMode = $pageBuilderStore.previewMode;
+  $: isDirty = $pageBuilderStore.isDirty;
+  $: error = $pageBuilderStore.error;
+  $: isLoading = $pageBuilderStore.isLoading;
+  $: isSaving = $pageBuilderStore.isSaving;
 
   onMount(async () => {
-    await fetchPages();
+    // Toggle debug mode with keyboard shortcut (Ctrl+Shift+D)
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+        debugMode = !debugMode;
+        console.log('Debug mode:', debugMode);
+        e.preventDefault();
+      }
+    });
+
+    // Only load the page if we have a valid pageId
+    if (pageId) {
+      console.log('Loading page:', pageId);
+      // Load the page data
+      await pageBuilderStore.loadPage(pageId);
+    } else {
+      console.error('No pageId provided in route params');
+      pageBuilderStore.update((state) => ({
+        ...state,
+        error: 'Missing page ID. Please return to the pages list and try again.'
+      }));
+    }
   });
 
-  // Fetch all pages
-  async function fetchPages() {
-    loading = true;
-    error = null;
+  // Save the page
+  async function savePage() {
+    if (isSaving) return; // Prevent multiple saves
 
     try {
-      const response = await fetch('/api/admin/pages');
+      saving = true;
+      console.log('Saving page...');
+      await pageBuilderStore.savePage();
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch pages');
-      }
-
-      const data = await response.json();
-      pages = data.pages;
+      // Success feedback can come from the SaveFeedback component
     } catch (err) {
-      console.error('Error fetching pages:', err);
-      error = 'Failed to load pages. Please try again.';
+      console.error('Error during save:', err);
     } finally {
-      loading = false;
+      saving = false;
     }
   }
 
-  // Generate a slug from the page name
-  function generateSlug() {
-    if (!newPageName) return '';
-
-    newPageSlug = newPageName
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
+  // Auto-save feature with debounce
+  let autoSaveTimeout;
+  $: if (isDirty && !isSaving) {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+      console.log('Auto-saving changes...');
+      savePage();
+    }, 3000); // Auto-save after 3 seconds of inactivity
   }
 
-  // Open the new page modal
-  function openNewPageModal() {
-    newPageName = '';
-    newPageSlug = '';
-    createError = null;
-    showNewPageModal = true;
+  // Open the add section modal
+  function openAddSectionModal() {
+    showAddSectionModal = true;
   }
 
-  // Close the new page modal
-  function closeNewPageModal() {
-    showNewPageModal = false;
+  // Close the add section modal
+  function closeAddSectionModal() {
+    showAddSectionModal = false;
   }
 
-  // Create a new page
-  async function createNewPage() {
-    if (!newPageName) return;
+  // Add a new section
+  function addSection(sectionType) {
+    pageBuilderStore.addSection(sectionType);
+    closeAddSectionModal();
+  }
 
-    creatingPage = true;
-    createError = null;
-
-    try {
-      const response = await fetch('/api/admin/pages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: newPageName,
-          slug: newPageSlug
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create page');
-      }
-
-      const data = await response.json();
-
-      // Close the modal and refresh the page list
-      closeNewPageModal();
-      await fetchPages();
-
-      // Redirect to the new page editor
-      window.location.href = `/admin/pages/${data.page.id}`;
-    } catch (err) {
-      console.error('Error creating page:', err);
-      createError = err.message;
-    } finally {
-      creatingPage = false;
+  // Remove a section
+  function removeSection(sectionId) {
+    if (confirm('Are you sure you want to remove this section?')) {
+      pageBuilderStore.removeSection(sectionId);
     }
   }
 
-  // Delete a page
-  async function deletePage(pageId, pageName) {
-    if (
-      !confirm(
-        `Are you sure you want to delete the page "${pageName}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/admin/pages/${pageId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete page');
-      }
-
-      // Refresh the page list
-      await fetchPages();
-    } catch (err) {
-      console.error('Error deleting page:', err);
-      alert('Failed to delete page. Please try again.');
-    }
+  // Move a section up
+  function moveSectionUp(sectionId) {
+    pageBuilderStore.moveSection(sectionId, 'up');
   }
 
-  // Format date for display
-  function formatDate(dateString) {
-    if (!dateString) return 'N/A';
+  // Move a section down
+  function moveSectionDown(sectionId) {
+    pageBuilderStore.moveSection(sectionId, 'down');
+  }
 
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  // Select a section for editing
+  function selectSection(sectionId) {
+    pageBuilderStore.selectSection(sectionId);
+  }
+
+  // Toggle preview mode
+  function togglePreview() {
+    pageBuilderStore.togglePreview();
+  }
+
+  // Get currently selected section
+  $: selectedSection = sections.find((s) => s.id === selectedSectionId);
+
+  // Navigation prompt for unsaved changes
+  function handleBeforeUnload(event) {
+    if (isDirty) {
+      event.preventDefault();
+      return (event.returnValue = 'You have unsaved changes. Are you sure you want to leave?');
+    }
   }
 </script>
 
 <svelte:head>
-  <title>Page Builder | Wedding Admin</title>
+  <title>{$pageBuilderStore.pageName || 'Page Editor'} | Wedding Admin</title>
 </svelte:head>
+
+<svelte:window on:beforeunload={handleBeforeUnload} />
 
 <AdminNav />
 
-<div class="max-w-6xl mx-auto px-4 py-12">
-  <div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-light">Page Builder</h1>
-    <button
-      class="px-4 py-2 bg-primary text-white rounded hover:opacity-90"
-      on:click={openNewPageModal}
-    >
-      Create New Page
-    </button>
+<div class="min-h-screen bg-gray-50">
+  <div class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center">
+        <a href="/admin/pages" class="text-gray-500 hover:text-gray-700 mr-3">
+          <span>←</span>
+        </a>
+        <h1 class="text-xl font-semibold">{$pageBuilderStore.pageName || 'Loading...'}</h1>
+        {#if $pageBuilderStore.pageSlug}
+          <span class="ml-3 text-sm text-gray-500">
+            /pages/<span class="font-mono">{$pageBuilderStore.pageSlug}</span>
+          </span>
+        {/if}
+      </div>
+
+      <div class="flex items-center gap-4">
+        <SaveFeedback showDebug={debugMode} />
+
+        <div class="space-x-2 flex items-center">
+          <button
+            class="px-3 py-1 border rounded bg-white hover:bg-gray-50 text-sm transition-colors"
+            on:click={togglePreview}
+          >
+            {previewMode ? 'Exit Preview' : 'Preview'}
+          </button>
+
+          {#if $pageBuilderStore.pageSlug}
+            <a
+              href={`/pages/${$pageBuilderStore.pageSlug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-3 py-1 border bg-green-50 text-green-700 border-green-300 rounded text-sm hover:bg-green-100 transition-colors"
+            >
+              View Live
+            </a>
+          {/if}
+
+          <button
+            class="px-4 py-1 bg-primary text-white rounded hover:opacity-90 transition-colors text-sm"
+            on:click={savePage}
+            disabled={saving || !isDirty || isSaving}
+          >
+            {#if isSaving}
+              Saving...
+            {:else}
+              Save
+            {/if}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   {#if error}
-    <div class="bg-red-50 text-red-600 p-4 rounded mb-6">
-      {error}
+    <div class="max-w-7xl mx-auto px-4 py-3 mt-3">
+      <div class="bg-red-50 text-red-600 p-3 rounded">
+        {error}
+      </div>
     </div>
   {/if}
 
-  <div class="bg-white rounded-lg shadow-sm p-6">
-    <h2 class="text-xl font-medium mb-4">Your Pages</h2>
+  {#if !pageId}
+    <div class="max-w-7xl mx-auto px-4 py-12 text-center">
+      <p class="text-red-600">
+        Missing page ID. Please return to the <a href="/admin/pages" class="underline">pages list</a
+        > and try again.
+      </p>
+    </div>
+  {:else if isLoading}
+    <div class="max-w-7xl mx-auto px-4 py-12 text-center">
+      <div class="inline-block animate-spin mr-2">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </div>
+      <span>Loading page...</span>
+    </div>
+  {:else if previewMode}
+    <!-- Preview Mode -->
+    <div class="max-w-5xl mx-auto px-4 py-4 bg-white mt-4 shadow-sm rounded mb-8">
+      <PagePreview {sections} />
+    </div>
+  {:else}
+    <!-- Editor Mode -->
+    <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-6">
+      <!-- Section List -->
+      <div class="col-span-12 md:col-span-4 lg:col-span-3">
+        <div class="bg-white p-4 rounded shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="font-medium">Page Sections</h2>
+            <button
+              class="px-2 py-1 text-xs bg-primary text-white rounded hover:opacity-90"
+              on:click={openAddSectionModal}
+            >
+              Add Section
+            </button>
+          </div>
 
-    {#if loading}
-      <div class="py-8 text-center">
-        <p>Loading pages...</p>
-      </div>
-    {:else if pages.length === 0}
-      <div class="py-8 text-center">
-        <p class="text-gray-500">You haven't created any pages yet.</p>
-        <button
-          class="mt-4 px-4 py-2 bg-primary text-white rounded hover:opacity-90"
-          on:click={openNewPageModal}
-        >
-          Create Your First Page
-        </button>
-      </div>
-    {:else}
-      <div class="overflow-x-auto">
-        <table class="w-full table-auto">
-          <thead>
-            <tr class="bg-gray-50">
-              <th class="px-4 py-2 text-left">Page Name</th>
-              <th class="px-4 py-2 text-left">Slug</th>
-              <th class="px-4 py-2 text-left">Last Modified</th>
-              <th class="px-4 py-2 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each pages as page}
-              <tr class="border-t">
-                <td class="px-4 py-3">{page.name}</td>
-                <td class="px-4 py-3">
-                  <span class="font-mono text-sm">{page.slug}</span>
-                </td>
-                <td class="px-4 py-3 text-sm text-gray-600">
-                  {formatDate(page.lastModified)}
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <div class="flex justify-end space-x-2">
-                    <a
-                      href={`/admin/pages/${page.id}`}
-                      class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
+          {#if sections.length === 0}
+            <div class="py-8 text-center">
+              <p class="text-gray-500 text-sm">No sections yet.</p>
+              <button
+                class="mt-3 px-3 py-1 bg-primary text-white rounded hover:opacity-90 text-sm"
+                on:click={openAddSectionModal}
+              >
+                Add Your First Section
+              </button>
+            </div>
+          {:else}
+            <ul class="space-y-2 max-h-[70vh] overflow-y-auto pr-2">
+              {#each sections as section, index}
+                {@const isSelected = section.id === selectedSectionId}
+                <li
+                  class="border rounded p-2 hover:bg-gray-50 cursor-pointer transition-colors flex items-center justify-between {isSelected
+                    ? 'bg-blue-50 border-blue-300'
+                    : ''}"
+                  on:click={() => selectSection(section.id)}
+                >
+                  <div class="flex items-center">
+                    <span
+                      class="text-xs bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center mr-2"
                     >
-                      Edit
-                    </a>
-                    <a
-                      href={`/pages/${page.slug}`}
-                      target="_blank"
-                      class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm"
-                      rel="noopener noreferrer"
-                    >
-                      View
-                    </a>
+                      {index + 1}
+                    </span>
+                    <span>{getSectionTypeName(section.type)}</span>
+                  </div>
+
+                  <div class="flex space-x-1">
                     <button
-                      class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-sm"
-                      on:click={() => deletePage(page.id, page.name)}
+                      class="text-gray-500 hover:text-gray-700"
+                      disabled={index === 0}
+                      on:click|stopPropagation={() => moveSectionUp(section.id)}
                     >
-                      Delete
+                      ↑
+                    </button>
+                    <button
+                      class="text-gray-500 hover:text-gray-700"
+                      disabled={index === sections.length - 1}
+                      on:click|stopPropagation={() => moveSectionDown(section.id)}
+                    >
+                      ↓
+                    </button>
+                    <button
+                      class="text-red-500 hover:text-red-700"
+                      on:click|stopPropagation={() => removeSection(section.id)}
+                    >
+                      ×
                     </button>
                   </div>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        </div>
       </div>
-    {/if}
-  </div>
+
+      <!-- Section Editor -->
+      <div class="col-span-12 md:col-span-8 lg:col-span-9">
+        {#if selectedSection}
+          <SectionEditor section={selectedSection} />
+        {:else if sections.length > 0}
+          <div class="bg-white p-6 rounded shadow-sm text-center py-12">
+            <p class="text-gray-500">Select a section to edit its content</p>
+          </div>
+        {:else}
+          <div class="bg-white p-6 rounded shadow-sm text-center py-12">
+            <p class="text-gray-500">Add your first section to get started</p>
+            <button
+              class="mt-4 px-4 py-2 bg-primary text-white rounded hover:opacity-90"
+              on:click={openAddSectionModal}
+            >
+              Add Section
+            </button>
+          </div>
+        {/if}
+      </div>
+    </div>
+  {/if}
 </div>
 
-<!-- New Page Modal -->
-{#if showNewPageModal}
+<!-- Add Section Modal -->
+{#if showAddSectionModal}
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-      <h2 class="text-xl font-semibold mb-4">Create New Page</h2>
-
-      {#if createError}
-        <div class="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">
-          {createError}
-        </div>
-      {/if}
-
-      <div class="mb-4">
-        <label for="page-name" class="block text-sm font-medium text-gray-700 mb-1">
-          Page Name
-        </label>
-        <input
-          id="page-name"
-          type="text"
-          bind:value={newPageName}
-          on:input={generateSlug}
-          class="w-full p-2 border rounded"
-          placeholder="My Custom Page"
-        />
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Add New Section</h2>
+        <button class="text-gray-500 hover:text-gray-700 text-2xl" on:click={closeAddSectionModal}>
+          ×
+        </button>
       </div>
 
-      <div class="mb-4">
-        <label for="page-slug" class="block text-sm font-medium text-gray-700 mb-1">
-          Page Slug
-        </label>
-        <div class="flex">
-          <span class="bg-gray-100 px-3 py-2 rounded-l border border-r-0 text-gray-500"
-            >/pages/</span
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto p-2"
+      >
+        {#each sectionTypes as sectionType}
+          <button
+            class="border rounded p-4 text-left hover:bg-gray-50 hover:border-gray-400 transition-colors"
+            on:click={() => addSection(sectionType.type)}
           >
-          <input
-            id="page-slug"
-            type="text"
-            bind:value={newPageSlug}
-            class="flex-1 p-2 border rounded-r"
-            placeholder="my-custom-page"
-          />
-        </div>
-        <p class="text-xs text-gray-500 mt-1">
-          This will be the URL of your page. Use only lowercase letters, numbers, and hyphens.
-        </p>
+            <div class="font-medium mb-1">{sectionType.name}</div>
+            <p class="text-sm text-gray-600 mb-3">{sectionType.description}</p>
+            <div class="text-xs bg-primary text-white px-2 py-1 rounded inline-block">
+              Add {sectionType.name}
+            </div>
+          </button>
+        {/each}
       </div>
 
-      <div class="flex justify-end gap-2">
-        <button
-          class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors"
-          on:click={closeNewPageModal}
-        >
+      <div class="mt-6 text-right">
+        <button class="px-4 py-2 border rounded hover:bg-gray-50" on:click={closeAddSectionModal}>
           Cancel
         </button>
-        <button
-          class="px-4 py-2 bg-primary text-white rounded hover:opacity-90 transition-colors"
-          on:click={createNewPage}
-          disabled={!newPageName || !newPageSlug || creatingPage}
-        >
-          {#if creatingPage}
-            Creating...
-          {:else}
-            Create Page
-          {/if}
-        </button>
       </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Debug Panel (only shown in debug mode) -->
+{#if debugMode}
+  <div
+    class="fixed bottom-0 right-0 bg-gray-800 text-white p-4 w-96 max-h-72 overflow-y-auto text-xs"
+  >
+    <h3 class="text-sm font-bold mb-2">Debug Info</h3>
+    <div class="space-y-1">
+      <p>Page ID: {pageId}</p>
+      <p>Sections: {sections.length}</p>
+      <p>isDirty: {isDirty}</p>
+      <p>isLoading: {isLoading}</p>
+      <p>isSaving: {isSaving}</p>
+      <p>Selected: {selectedSectionId}</p>
+      <button
+        class="mt-2 px-2 py-1 bg-blue-500 text-xs text-white rounded"
+        on:click={() => pageBuilderStore.diagnose()}
+      >
+        Diagnose Store
+      </button>
     </div>
   </div>
 {/if}

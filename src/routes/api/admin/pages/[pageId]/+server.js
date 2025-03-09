@@ -25,19 +25,23 @@ export async function GET({ request, params, platform }) {
 
   try {
     // Fetch the page data
+    console.log(`[${requestId}] Fetching page_builder_page:${pageId} from KV`);
     const pageData = await platform.env.IMAGES_KV.get(`page_builder_page:${pageId}`);
 
     if (!pageData) {
+      console.error(`[${requestId}] Page not found with ID ${pageId}`);
       return jsonResponse({ error: 'Page not found' }, 404);
     }
 
     const page = JSON.parse(pageData);
+    console.log(
+      `[${requestId}] Retrieved page: ${page.name}, ${page.sections?.length || 0} sections`
+    );
 
-    console.log(`[${requestId}] Retrieved page: ${page.name}`);
     return jsonResponse({ page });
   } catch (error) {
     console.error(`[${requestId}] Error fetching page:`, error);
-    return jsonResponse({ error: 'Failed to fetch page' }, 500);
+    return jsonResponse({ error: `Failed to fetch page: ${error.message}` }, 500);
   }
 }
 
@@ -65,70 +69,135 @@ export async function PUT({ request, params, platform }) {
   }
 
   try {
-    const data = await request.json();
+    // Log request info
+    console.log(`[${requestId}] Processing page update for: ${pageId}`);
 
-    if (!data.page) {
+    // Get request body
+    let requestBody;
+    try {
+      const requestText = await request.text();
+      console.log(`[${requestId}] Request body length: ${requestText.length} bytes`);
+      requestBody = JSON.parse(requestText);
+    } catch (e) {
+      console.error(`[${requestId}] Error parsing request body:`, e);
+      return jsonResponse({ error: 'Invalid JSON in request body' }, 400);
+    }
+
+    if (!requestBody.page) {
+      console.error(`[${requestId}] No page data in request`);
       return jsonResponse({ error: 'Page data is required' }, 400);
     }
 
     // Get the existing page to verify it exists
+    console.log(`[${requestId}] Fetching existing page from KV`);
     const existingPageData = await platform.env.IMAGES_KV.get(`page_builder_page:${pageId}`);
 
     if (!existingPageData) {
+      console.error(`[${requestId}] Page not found with ID ${pageId}`);
       return jsonResponse({ error: 'Page not found' }, 404);
     }
 
-    const existingPage = JSON.parse(existingPageData);
+    let existingPage;
+    try {
+      existingPage = JSON.parse(existingPageData);
+      console.log(`[${requestId}] Found existing page: ${existingPage.name}`);
+    } catch (e) {
+      console.error(`[${requestId}] Error parsing existing page data:`, e);
+      return jsonResponse({ error: 'Error reading existing page data' }, 500);
+    }
 
     // If slug is changing, check for uniqueness
-    if (data.page.slug !== existingPage.slug) {
+    if (requestBody.page.slug !== existingPage.slug) {
+      console.log(
+        `[${requestId}] Slug changing from ${existingPage.slug} to ${requestBody.page.slug}`
+      );
+
       const pagesList = await platform.env.IMAGES_KV.get('page_builder_pages_list');
       const pagesData = JSON.parse(pagesList || '[]');
 
-      const conflictingPage = pagesData.find((p) => p.slug === data.page.slug && p.id !== pageId);
+      const conflictingPage = pagesData.find(
+        (p) => p.slug === requestBody.page.slug && p.id !== pageId
+      );
       if (conflictingPage) {
+        console.error(`[${requestId}] Slug conflict with page ID: ${conflictingPage.id}`);
         return jsonResponse({ error: 'A page with this slug already exists' }, 409);
       }
     }
 
-    // Update the page
+    // Update the page with thorough validation
+    const pageSections = Array.isArray(requestBody.page.sections) ? requestBody.page.sections : [];
+    const sectionsCount = pageSections.length;
+
+    console.log(`[${requestId}] Updating page with ${sectionsCount} sections`);
+
     const updatedPage = {
       ...existingPage,
-      name: data.page.name || existingPage.name,
-      slug: data.page.slug || existingPage.slug,
-      sections: data.page.sections || existingPage.sections,
+      name: requestBody.page.name || existingPage.name,
+      slug: requestBody.page.slug || existingPage.slug,
+      sections: pageSections,
       lastModified: new Date().toISOString()
     };
 
-    // Save the updated page
-    await platform.env.IMAGES_KV.put(`page_builder_page:${pageId}`, JSON.stringify(updatedPage));
+    // Save the updated page with enhanced error handling
+    try {
+      console.log(`[${requestId}] Writing updated page to KV`);
+      await platform.env.IMAGES_KV.put(`page_builder_page:${pageId}`, JSON.stringify(updatedPage));
+      console.log(`[${requestId}] Page data saved successfully`);
+    } catch (kvError) {
+      console.error(`[${requestId}] Error writing to KV:`, kvError);
+      return jsonResponse({ error: 'Failed to save page to database' }, 500);
+    }
 
     // Update the page list
-    const pagesList = await platform.env.IMAGES_KV.get('page_builder_pages_list');
-    let pagesData = JSON.parse(pagesList || '[]');
+    try {
+      console.log(`[${requestId}] Updating pages list`);
+      const pagesList = await platform.env.IMAGES_KV.get('page_builder_pages_list');
+      let pagesData = JSON.parse(pagesList || '[]');
 
-    pagesData = pagesData.map((p) => {
-      if (p.id === pageId) {
-        return {
-          id: updatedPage.id,
-          name: updatedPage.name,
-          slug: updatedPage.slug,
-          lastModified: updatedPage.lastModified
-        };
-      }
-      return p;
-    });
+      pagesData = pagesData.map((p) => {
+        if (p.id === pageId) {
+          return {
+            id: updatedPage.id,
+            name: updatedPage.name,
+            slug: updatedPage.slug,
+            lastModified: updatedPage.lastModified
+          };
+        }
+        return p;
+      });
 
-    await platform.env.IMAGES_KV.put('page_builder_pages_list', JSON.stringify(pagesData));
+      await platform.env.IMAGES_KV.put('page_builder_pages_list', JSON.stringify(pagesData));
+      console.log(`[${requestId}] Pages list updated successfully`);
+    } catch (listError) {
+      console.error(`[${requestId}] Error updating pages list:`, listError);
+      // We don't return an error here since the main page data was already saved
+      // Just log the error and continue
+    }
 
-    console.log(`[${requestId}] Updated page: ${updatedPage.name}`);
+    console.log(`[${requestId}] Page update complete: ${updatedPage.name}`);
     return jsonResponse({
       message: 'Page updated successfully',
-      page: updatedPage
+      page: updatedPage,
+      diagnostics: {
+        requestId,
+        timestamp: new Date().toISOString(),
+        sectionsCount
+      }
     });
   } catch (error) {
     console.error(`[${requestId}] Error updating page:`, error);
-    return jsonResponse({ error: 'Failed to update page' }, 500);
+    return jsonResponse(
+      {
+        error: 'Failed to update page',
+        message: error.message,
+        diagnostics: {
+          requestId,
+          errorType: error.name,
+          timestamp: new Date().toISOString()
+        }
+      },
+      500
+    );
   }
 }
 

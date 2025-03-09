@@ -1,6 +1,6 @@
 <!-- src/lib/components/page-builder/SectionEditor.svelte -->
 <script>
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, afterUpdate } from 'svelte';
   import { pageBuilderStore } from '$lib/page-builder/store';
   import { SECTION_SCHEMA } from '$lib/page-builder/schema';
   import AssignedImage from '$lib/components/AssignedImage.svelte';
@@ -11,94 +11,182 @@
 
   // Local state
   let initialized = false;
-  let editor = null;
+  let editors = {}; // Store multiple editors
   let tinymceLoaded = false;
   let showImageSelector = false;
   let currentImageField = null;
+  let editorStatus = { loading: false, error: null };
 
   // Add TinyMCE script if not already loaded
   onMount(() => {
+    loadTinyMCE();
+  });
+
+  function loadTinyMCE() {
+    if (typeof window === 'undefined') return;
+
     if (!window.tinymce) {
+      editorStatus.loading = true;
+      console.log('Loading TinyMCE script...');
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js';
+      script.integrity =
+        'sha512-UHqGV6cerl7/zfGW/h49OdCQZwxF2CTSTcgOviBfH7VygKLLpTguKKBK1tHIf6PZ+QbB6IQ+a4SSi2m2M4g1OA==';
+      script.crossOrigin = 'anonymous';
+      script.referrerPolicy = 'no-referrer';
       script.onload = () => {
+        console.log('TinyMCE script loaded successfully');
         tinymceLoaded = true;
-        initializeEditor();
+        editorStatus.loading = false;
+        initializeAllEditors();
+      };
+      script.onerror = (e) => {
+        console.error('Error loading TinyMCE script:', e);
+        editorStatus.loading = false;
+        editorStatus.error = 'Failed to load editor';
       };
       document.head.appendChild(script);
     } else {
+      console.log('TinyMCE already loaded');
       tinymceLoaded = true;
-      initializeEditor();
-    }
-  });
-
-  onDestroy(() => {
-    if (editor) {
-      try {
-        editor.remove();
-      } catch (e) {
-        console.error('Error removing editor:', e);
-      }
-    }
-  });
-
-  // Initialize or re-initialize the editor when the section changes
-  $: if (initialized && section) {
-    if (editor) {
-      try {
-        editor.remove();
-      } catch (e) {
-        console.error('Error removing editor:', e);
-      }
-    }
-
-    if (tinymceLoaded) {
-      setTimeout(initializeEditor, 0); // Initialize on next tick
+      initializeAllEditors();
     }
   }
 
-  // Initialize TinyMCE for rich text editing
-  function initializeEditor() {
+  onDestroy(() => {
+    // Remove all editors when component is destroyed
+    if (window.tinymce) {
+      try {
+        Object.values(editors).forEach((editor) => {
+          if (editor) {
+            editor.remove();
+          }
+        });
+      } catch (e) {
+        console.error('Error removing editors:', e);
+      }
+    }
+  });
+
+  // Initialize all editors when section changes
+  $: if (section && tinymceLoaded) {
+    initializeAllEditors();
+  }
+
+  // Initialize all TinyMCE editors for rich text fields
+  function initializeAllEditors() {
     if (!tinymceLoaded || !section) return;
+    console.log('Initializing editors for section:', section.id);
 
     const schema = SECTION_SCHEMA[section.type];
-    if (!schema) return;
+    if (!schema) {
+      console.warn('No schema found for section type:', section.type);
+      return;
+    }
 
-    // Find all richtext fields
+    // First, remove existing editors
+    Object.values(editors).forEach((editor) => {
+      if (editor) {
+        try {
+          editor.remove();
+        } catch (e) {
+          console.error('Error removing editor:', e);
+        }
+      }
+    });
+    editors = {};
+
+    // Initialize editors for all richtext fields
     Object.entries(schema.properties).forEach(([propName, config]) => {
       if (config.type === 'richtext') {
-        const selector = `#editor-${section.id}-${propName}`;
-        const editorElement = document.querySelector(selector);
-
-        if (editorElement) {
-          window.tinymce.init({
-            target: editorElement,
-            height: 300,
-            menubar: false,
-            plugins: 'lists link image table code help wordcount',
-            toolbar:
-              'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | bullist numlist | link | removeformat',
-            content_style:
-              'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; line-height: 1.6; }',
-            setup: (ed) => {
-              editor = ed;
-              editor.on('init', () => {
-                editor.setContent(section.properties[propName] || '');
-              });
-              editor.on('change', () => {
-                updateProperty(propName, editor.getContent());
-              });
-            }
-          });
-        }
+        initializeEditor(propName);
       }
     });
 
     initialized = true;
   }
 
+  // Initialize TinyMCE for a specific field
+  function initializeEditor(propName) {
+    const selector = `#editor-${section.id}-${propName}`;
+    const editorElement = document.querySelector(selector);
+
+    if (!editorElement) {
+      console.warn(`Editor element not found for selector: ${selector}`);
+      return;
+    }
+
+    console.log(`Initializing editor for field: ${propName}`);
+
+    window.tinymce
+      .init({
+        target: editorElement,
+        height: 300,
+        menubar: false,
+        plugins: [
+          'advlist',
+          'autolink',
+          'lists',
+          'link',
+          'image',
+          'charmap',
+          'preview',
+          'anchor',
+          'searchreplace',
+          'visualblocks',
+          'code',
+          'fullscreen',
+          'insertdatetime',
+          'media',
+          'table',
+          'help',
+          'wordcount'
+        ],
+        toolbar:
+          'undo redo | blocks | ' +
+          'bold italic forecolor | alignleft aligncenter ' +
+          'alignright alignjustify | bullist numlist outdent indent | ' +
+          'removeformat | help',
+        content_style:
+          'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; line-height: 1.6; }',
+        setup: (ed) => {
+          // Store the editor instance
+          editors[propName] = ed;
+
+          ed.on('init', () => {
+            console.log(`Editor initialized for ${propName}`);
+            const content = section.properties[propName] || '';
+            ed.setContent(content);
+
+            // Add a visual cue that the editor is ready
+            const editorWrapper = document.querySelector(
+              `div[aria-label*="editor-${section.id}-${propName}"]`
+            );
+            if (editorWrapper) {
+              editorWrapper.style.border = '1px solid #4f46e5';
+            }
+          });
+
+          // Use multiple events to ensure changes are captured
+          ed.on('change keyup blur', () => {
+            const content = ed.getContent();
+            console.log(`Content updated for ${propName}`, content.substring(0, 50) + '...');
+            updateProperty(propName, content);
+          });
+        }
+      })
+      .then((editors) => {
+        console.log(`TinyMCE editor successfully initialized for ${propName}`);
+      })
+      .catch((err) => {
+        console.error(`Failed to initialize TinyMCE editor for ${propName}:`, err);
+        editorStatus.error = `Failed to initialize editor for ${propName}`;
+      });
+  }
+
   // Update a property in the section
   function updateProperty(propName, value) {
+    console.log(`Updating property ${propName} with value length: ${value.length}`);
     const updates = {};
     updates[propName] = value;
     pageBuilderStore.updateSection(section.id, updates);
@@ -133,6 +221,16 @@
       <span class="text-xs bg-gray-200 px-2 py-1 rounded">{section.id}</span>
     </div>
 
+    {#if editorStatus.loading}
+      <div class="p-4 bg-blue-50 text-blue-700 rounded mb-4">Loading editor...</div>
+    {/if}
+
+    {#if editorStatus.error}
+      <div class="p-4 bg-red-50 text-red-700 rounded mb-4">
+        {editorStatus.error}
+      </div>
+    {/if}
+
     <div class="space-y-6">
       {#each Object.entries(schema.properties) as [propName, config]}
         <div class="field">
@@ -155,7 +253,10 @@
           {:else if config.type === 'richtext'}
             <!-- Rich text editor -->
             <div class="border rounded">
-              <textarea id="editor-{section.id}-{propName}"></textarea>
+              <div id="editor-{section.id}-{propName}" class="min-h-[100px]"></div>
+              <div class="p-2 text-xs bg-gray-50 text-gray-500 border-t">
+                Tip: Use the toolbar above for formatting options. Changes are saved automatically.
+              </div>
             </div>
           {:else if config.type === 'select'}
             <!-- Select dropdown -->
@@ -195,10 +296,8 @@
                   <button
                     class="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
                     on:click={() => {
-                      alert(
-                        'Image selector not implemented - you would select from your gallery here'
-                      );
-                      // You would implement an image selection modal here
+                      currentImageField = propName;
+                      showImageSelector = true;
                     }}
                   >
                     Select Image
@@ -244,12 +343,13 @@
                     <textarea
                       class="w-full p-2 border rounded"
                       rows="4"
+                      value={item.content}
                       on:input={(e) => {
                         const newArray = [...section.properties[propName]];
                         newArray[index] = { ...newArray[index], content: e.target.value };
                         updateProperty(propName, newArray);
-                      }}>{item.content}</textarea
-                    >
+                      }}
+                    ></textarea>
                   </div>
                 {/each}
 
@@ -275,5 +375,34 @@
         </div>
       {/each}
     </div>
+
+    <!-- Debug information -->
+    <details class="mt-6 border-t pt-4">
+      <summary class="text-sm text-gray-500 cursor-pointer">Debug Information</summary>
+      <div
+        class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono whitespace-pre-wrap max-h-48 overflow-y-auto"
+      >
+        Section ID: {section.id}
+        Type: {section.type}
+        TinyMCE Loaded: {tinymceLoaded ? 'Yes' : 'No'}
+        Editor Status: {JSON.stringify(editorStatus)}
+        Editors initialized: {Object.keys(editors).join(', ') || 'None'}
+      </div>
+    </details>
+  {/if}
+
+  <!-- Image Selector Modal -->
+  {#if showImageSelector}
+    <ImageSelectorModal
+      show={true}
+      selectedImageId={section.properties[currentImageField]}
+      on:select={(e) => {
+        updateProperty(currentImageField, e.detail);
+        showImageSelector = false;
+      }}
+      on:close={() => {
+        showImageSelector = false;
+      }}
+    />
   {/if}
 </div>
