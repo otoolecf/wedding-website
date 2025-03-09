@@ -17,6 +17,10 @@
       <h2 class="text-xl font-medium">Manage Gallery</h2>
       <p class="text-gray-600">Upload, delete, and reorder images in the gallery.</p>
     </a>
+    <a href="/admin/content" class="block p-4 bg-white rounded shadow hover:bg-gray-100 transition">
+      <h2 class="text-xl font-medium">Manage Content</h2>
+      <p class="text-gray-600">Edit website text content with a rich text editor.</p>
+    </a>
     <a href="/admin/theme" class="block p-4 bg-white rounded shadow hover:bg-gray-100 transition">
       <h2 class="text-xl font-medium">Manage Theme</h2>
       <p class="text-gray-600">Customize site colors, fonts, and appearance.</p>
