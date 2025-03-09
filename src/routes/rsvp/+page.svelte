@@ -67,29 +67,31 @@
       class="space-y-6 bg-white p-8 rounded-lg shadow-sm"
     >
       <div class="space-y-2">
-        <label for="name" class="block text-gray-700">Full Name</label>
+        <label for="name" class="block">Full Name</label>
         <input
           type="text"
           id="name"
           bind:value={formData.name}
           required
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-200"
+          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+          style="focus-ring-color: var(--color-primary)"
         />
       </div>
 
       <div class="space-y-2">
-        <label for="email" class="block text-gray-700">Email</label>
+        <label for="email" class="block">Email</label>
         <input
           type="email"
           id="email"
           bind:value={formData.email}
           required
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-200"
+          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+          style="focus-ring-color: var(--color-primary)"
         />
       </div>
 
       <div class="space-y-2">
-        <label class="block text-gray-700">Will you be attending?</label>
+        <label class="block">Will you be attending?</label>
         <div class="space-x-4">
           <label class="inline-flex items-center">
             <input type="radio" bind:group={formData.attending} value="yes" class="mr-2" />
@@ -104,34 +106,37 @@
 
       {#if formData.attending === 'yes'}
         <div class="space-y-2">
-          <label for="guests" class="block text-gray-700">Number of Additional Guests</label>
+          <label for="guests" class="block">Number of Additional Guests</label>
           <input
             type="number"
             id="guests"
             bind:value={formData.guests}
             min="0"
             max="4"
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-200"
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+            style="focus-ring-color: var(--color-primary)"
           />
         </div>
 
         <div class="space-y-2">
-          <label for="dietary" class="block text-gray-700">Dietary Requirements</label>
+          <label for="dietary" class="block">Dietary Requirements</label>
           <textarea
             id="dietary"
             bind:value={formData.dietaryRequirements}
             rows="3"
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-200"
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+            style="focus-ring-color: var(--color-primary)"
           ></textarea>
         </div>
 
         <div class="space-y-2">
-          <label for="song" class="block text-gray-700">Song Request</label>
+          <label for="song" class="block">Song Request</label>
           <input
             type="text"
             id="song"
             bind:value={formData.song}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-200"
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+            style="focus-ring-color: var(--color-primary)"
             placeholder="What song will get you on the dance floor?"
           />
         </div>
@@ -145,7 +150,7 @@
 
       <button
         type="submit"
-        class="w-full bg-black text-white py-3 rounded-full hover:bg-gray-800 transition-colors disabled:opacity-50"
+        class="w-full py-3 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50 btn-primary"
         disabled={submitting}
       >
         {submitting ? 'Submitting...' : 'Submit RSVP'}

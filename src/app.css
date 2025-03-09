@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-family: var(--font-body, sans-serif);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading, sans-serif);
+  }
+
+  body {
+    color: var(--color-text, #333333);
+    background-color: var(--color-background, #ffffff);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-white;
+  }
+
+  .btn-outline {
+    @apply border border-primary text-primary bg-theme-background;
+  }
+}
