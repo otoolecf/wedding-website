@@ -1,6 +1,7 @@
 <!-- src/lib/components/page-builder/SectionEditor.svelte -->
 <script>
   import SectionPreview from './SectionPreview.svelte';
+  import TemplateSelector from './TemplateSelector.svelte';
   import { onMount, onDestroy, afterUpdate } from 'svelte';
   import { pageBuilderStore } from '$lib/page-builder/store';
   import { SECTION_SCHEMA } from '$lib/page-builder/schema';
@@ -348,231 +349,250 @@
   $: schema = SECTION_SCHEMA[section.type] || null;
 </script>
 
-<div class="bg-white p-6 rounded shadow-sm">
-  {#if !section}
-    <p class="text-center py-4 text-gray-500">No section selected</p>
-  {:else if !schema}
-    <p class="text-center py-4 text-red-500">Unknown section type: {section.type}</p>
-  {:else}
-    <div class="mb-4 flex justify-between items-center">
-      <h2 class="text-xl font-medium">{schema.name}</h2>
-      <span class="text-xs bg-gray-200 px-2 py-1 rounded">{section.id}</span>
-    </div>
+<div class="section-editor">
+  <TemplateSelector />
+  <div class="sections-container">
+    <div class="bg-white p-6 rounded shadow-sm">
+      {#if !section}
+        <p class="text-center py-4 text-gray-500">No section selected</p>
+      {:else if !schema}
+        <p class="text-center py-4 text-red-500">Unknown section type: {section.type}</p>
+      {:else}
+        <div class="mb-4 flex justify-between items-center">
+          <h2 class="text-xl font-medium">{schema.name}</h2>
+          <span class="text-xs bg-gray-200 px-2 py-1 rounded">{section.id}</span>
+        </div>
 
-    {#if editorStatus.loading}
-      <div class="p-4 bg-blue-50 text-blue-700 rounded mb-4">Loading editor...</div>
-    {/if}
+        {#if editorStatus.loading}
+          <div class="p-4 bg-blue-50 text-blue-700 rounded mb-4">Loading editor...</div>
+        {/if}
 
-    {#if editorStatus.error}
-      <div class="p-4 bg-red-50 text-red-700 rounded mb-4">
-        {editorStatus.error}
-      </div>
-    {/if}
+        {#if editorStatus.error}
+          <div class="p-4 bg-red-50 text-red-700 rounded mb-4">
+            {editorStatus.error}
+          </div>
+        {/if}
 
-    <div class="space-y-6">
-      {#each Object.entries(schema.properties) as [propName, config]}
-        <div class="field">
-          <label
-            class="block text-sm font-medium text-gray-700 mb-1"
-            for="editor-{section.id}-{propName}"
-          >
-            {formatFieldLabel(propName)}
-          </label>
-
-          {#if config.type === 'text'}
-            <!-- Text input -->
-            <input
-              type="text"
-              id="editor-{section.id}-{propName}"
-              value={section.properties[propName]}
-              class="w-full p-2 border rounded"
-              on:input={(e) => updateProperty(propName, e.target.value)}
-            />
-          {:else if config.type === 'richtext'}
-            <!-- Rich text editor -->
-            <div class="border rounded">
-              <!-- This key element will prevent the div from being recreated during re-renders -->
-              <div id="editor-container-{section.id}-{propName}" class="editor-container"></div>
-              <div class="p-2 text-xs bg-gray-50 text-gray-500 border-t">
-                Tip: Use the toolbar above for formatting options. Changes are saved automatically.
-              </div>
-            </div>
-          {:else if config.type === 'select'}
-            <!-- Select dropdown - only show alignment and maxWidth for image sections when image is present -->
-            {#if (propName === 'alignment' || propName === 'maxWidth') && section.type === 'image' && !section.properties.imageId}
-              <div class="text-sm text-gray-500 italic">
-                Select an image first to adjust these settings
-              </div>
-            {:else}
-              <select
-                id="editor-{section.id}-{propName}"
-                class="w-full p-2 border rounded"
-                value={section.properties[propName]}
-                on:change={(e) => updateProperty(propName, e.target.value)}
-                disabled={(propName === 'alignment' || propName === 'maxWidth') &&
-                  section.type === 'image' &&
-                  !section.properties.imageId}
+        <div class="space-y-6">
+          {#each Object.entries(schema.properties) as [propName, config]}
+            <div class="field">
+              <label
+                class="block text-sm font-medium text-gray-700 mb-1"
+                for="editor-{section.id}-{propName}"
               >
-                {#each config.options as option}
-                  <option value={option}>{formatFieldLabel(option)}</option>
-                {/each}
-              </select>
-            {/if}
-          {:else if config.type === 'image'}
-            <!-- Image selector -->
-            <div class="border rounded p-3 bg-gray-50">
-              {#if section.properties[propName]}
-                <div class="mb-2">
-                  <AssignedImage
-                    locationId={section.properties[propName]}
-                    className="w-full h-40 object-cover rounded"
-                  />
+                {formatFieldLabel(propName)}
+              </label>
+
+              {#if config.type === 'text'}
+                <!-- Text input -->
+                <input
+                  type="text"
+                  id="editor-{section.id}-{propName}"
+                  value={section.properties[propName]}
+                  class="w-full p-2 border rounded"
+                  on:input={(e) => updateProperty(propName, e.target.value)}
+                />
+              {:else if config.type === 'richtext'}
+                <!-- Rich text editor -->
+                <div class="border rounded">
+                  <!-- This key element will prevent the div from being recreated during re-renders -->
+                  <div id="editor-container-{section.id}-{propName}" class="editor-container"></div>
+                  <div class="p-2 text-xs bg-gray-50 text-gray-500 border-t">
+                    Tip: Use the toolbar above for formatting options. Changes are saved
+                    automatically.
+                  </div>
                 </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-sm text-gray-500">Image ID: {section.properties[propName]}</span
+              {:else if config.type === 'select'}
+                <!-- Select dropdown - only show alignment and maxWidth for image sections when image is present -->
+                {#if (propName === 'alignment' || propName === 'maxWidth') && section.type === 'image' && !section.properties.imageId}
+                  <div class="text-sm text-gray-500 italic">
+                    Select an image first to adjust these settings
+                  </div>
+                {:else}
+                  <select
+                    id="editor-{section.id}-{propName}"
+                    class="w-full p-2 border rounded"
+                    value={section.properties[propName]}
+                    on:change={(e) => updateProperty(propName, e.target.value)}
+                    disabled={(propName === 'alignment' || propName === 'maxWidth') &&
+                      section.type === 'image' &&
+                      !section.properties.imageId}
                   >
-                  <button
-                    class="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
-                    on:click={() => updateProperty(propName, null)}
-                  >
-                    Remove
-                  </button>
+                    {#each config.options as option}
+                      <option value={option}>{formatFieldLabel(option)}</option>
+                    {/each}
+                  </select>
+                {/if}
+              {:else if config.type === 'image'}
+                <!-- Image selector -->
+                <div class="border rounded p-3 bg-gray-50">
+                  {#if section.properties[propName]}
+                    <div class="mb-2">
+                      <AssignedImage
+                        locationId={section.properties[propName]}
+                        className="w-full h-40 object-cover rounded"
+                      />
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-500"
+                        >Image ID: {section.properties[propName]}</span
+                      >
+                      <button
+                        class="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                        on:click={() => updateProperty(propName, null)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  {:else}
+                    <div class="text-center py-4">
+                      <p class="text-gray-500 mb-2">No image selected</p>
+                      <button
+                        class="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                        on:click={() => {
+                          currentImageField = propName;
+                          showImageSelector = true;
+                        }}
+                      >
+                        Select Image
+                      </button>
+                    </div>
+                  {/if}
                 </div>
-              {:else}
-                <div class="text-center py-4">
-                  <p class="text-gray-500 mb-2">No image selected</p>
+              {:else if config.type === 'gallery'}
+                <!-- Gallery selector -->
+                <div class="border rounded p-3 bg-gray-50">
+                  <p class="text-center py-2 text-gray-500">
+                    Gallery selector - not implemented yet
+                  </p>
                   <button
-                    class="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                    class="w-full py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
                     on:click={() => {
-                      currentImageField = propName;
-                      showImageSelector = true;
+                      alert('Gallery selector not implemented yet');
                     }}
                   >
-                    Select Image
+                    Manage Gallery Images
                   </button>
                 </div>
-              {/if}
-            </div>
-          {:else if config.type === 'gallery'}
-            <!-- Gallery selector -->
-            <div class="border rounded p-3 bg-gray-50">
-              <p class="text-center py-2 text-gray-500">Gallery selector - not implemented yet</p>
-              <button
-                class="w-full py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                on:click={() => {
-                  alert('Gallery selector not implemented yet');
-                }}
-              >
-                Manage Gallery Images
-              </button>
-            </div>
-          {:else if config.type === 'array'}
-            <!-- Array editor for columns -->
-            <div class="border rounded p-3 bg-gray-50">
-              <div class="space-y-3">
-                {#each section.properties[propName] as item, index}
-                  <div class="border p-3 rounded bg-white">
-                    <div class="flex justify-between items-center mb-2">
-                      <span class="font-medium">Column {index + 1}</span>
-                      {#if section.properties[propName].length > 1}
-                        <button
-                          class="text-red-500"
-                          on:click={() => {
+              {:else if config.type === 'array'}
+                <!-- Array editor for columns -->
+                <div class="border rounded p-3 bg-gray-50">
+                  <div class="space-y-3">
+                    {#each section.properties[propName] as item, index}
+                      <div class="border p-3 rounded bg-white">
+                        <div class="flex justify-between items-center mb-2">
+                          <span class="font-medium">Column {index + 1}</span>
+                          {#if section.properties[propName].length > 1}
+                            <button
+                              class="text-red-500"
+                              on:click={() => {
+                                const newArray = [...section.properties[propName]];
+                                newArray.splice(index, 1);
+                                updateProperty(propName, newArray);
+                              }}
+                            >
+                              Remove
+                            </button>
+                          {/if}
+                        </div>
+
+                        <textarea
+                          class="w-full p-2 border rounded"
+                          rows="4"
+                          value={item.content}
+                          on:input={(e) => {
                             const newArray = [...section.properties[propName]];
-                            newArray.splice(index, 1);
+                            newArray[index] = { ...newArray[index], content: e.target.value };
                             updateProperty(propName, newArray);
                           }}
-                        >
-                          Remove
-                        </button>
-                      {/if}
-                    </div>
+                        ></textarea>
+                      </div>
+                    {/each}
 
-                    <textarea
-                      class="w-full p-2 border rounded"
-                      rows="4"
-                      value={item.content}
-                      on:input={(e) => {
-                        const newArray = [...section.properties[propName]];
-                        newArray[index] = { ...newArray[index], content: e.target.value };
+                    <button
+                      class="w-full py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                      on:click={() => {
+                        const newArray = [
+                          ...section.properties[propName],
+                          { content: '<p>New column content</p>' }
+                        ];
                         updateProperty(propName, newArray);
                       }}
-                    ></textarea>
+                    >
+                      Add Column
+                    </button>
                   </div>
-                {/each}
+                </div>
+              {/if}
 
-                <button
-                  class="w-full py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                  on:click={() => {
-                    const newArray = [
-                      ...section.properties[propName],
-                      { content: '<p>New column content</p>' }
-                    ];
-                    updateProperty(propName, newArray);
-                  }}
-                >
-                  Add Column
-                </button>
-              </div>
+              {#if config.helpText}
+                <p class="text-xs text-gray-500 mt-1">{config.helpText}</p>
+              {/if}
             </div>
-          {/if}
-
-          {#if config.helpText}
-            <p class="text-xs text-gray-500 mt-1">{config.helpText}</p>
-          {/if}
+          {/each}
+          <SectionPreview
+            {section}
+            onRefresh={() => {
+              // Refresh rich text content if needed
+              if (
+                section.type === 'text' ||
+                section.type === 'text_image_left' ||
+                section.type === 'text_image_right'
+              ) {
+                const editor = editors['content'];
+                if (editor) {
+                  const content = editor.getContent();
+                  updateProperty('content', content);
+                }
+              }
+            }}
+          />
         </div>
-      {/each}
-      <SectionPreview
-        {section}
-        onRefresh={() => {
-          // Refresh rich text content if needed
-          if (
-            section.type === 'text' ||
-            section.type === 'text_image_left' ||
-            section.type === 'text_image_right'
-          ) {
-            const editor = editors['content'];
-            if (editor) {
-              const content = editor.getContent();
-              updateProperty('content', content);
-            }
-          }
-        }}
-      />
+
+        <!-- Debug information -->
+        <details class="mt-6 border-t pt-4">
+          <summary class="text-sm text-gray-500 cursor-pointer">Debug Information</summary>
+          <div
+            class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono whitespace-pre-wrap max-h-48 overflow-y-auto"
+          >
+            Section ID: {section.id}
+            Type: {section.type}
+            TinyMCE Loaded: {tinymceLoaded ? 'Yes' : 'No'}
+            Editor Status: {JSON.stringify(editorStatus)}
+            Editors initialized: {Object.keys(editors).join(', ') || 'None'}
+          </div>
+        </details>
+      {/if}
+
+      <!-- Image Selector Modal -->
+      {#if showImageSelector}
+        <ImageSelectorModal
+          show={true}
+          selectedImageId={section.properties[currentImageField]}
+          on:select={(e) => {
+            updateProperty(currentImageField, e.detail);
+            showImageSelector = false;
+          }}
+          on:close={() => {
+            showImageSelector = false;
+          }}
+        />
+      {/if}
     </div>
-
-    <!-- Debug information -->
-    <details class="mt-6 border-t pt-4">
-      <summary class="text-sm text-gray-500 cursor-pointer">Debug Information</summary>
-      <div
-        class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono whitespace-pre-wrap max-h-48 overflow-y-auto"
-      >
-        Section ID: {section.id}
-        Type: {section.type}
-        TinyMCE Loaded: {tinymceLoaded ? 'Yes' : 'No'}
-        Editor Status: {JSON.stringify(editorStatus)}
-        Editors initialized: {Object.keys(editors).join(', ') || 'None'}
-      </div>
-    </details>
-  {/if}
-
-  <!-- Image Selector Modal -->
-  {#if showImageSelector}
-    <ImageSelectorModal
-      show={true}
-      selectedImageId={section.properties[currentImageField]}
-      on:select={(e) => {
-        updateProperty(currentImageField, e.detail);
-        showImageSelector = false;
-      }}
-      on:close={() => {
-        showImageSelector = false;
-      }}
-    />
-  {/if}
+  </div>
 </div>
 
 <style>
+  .section-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sections-container {
+    flex: 1;
+  }
+
   /* Make sure the preview properly displays formatted content */
   :global(.preview-content h1) {
     font-size: 2rem;
