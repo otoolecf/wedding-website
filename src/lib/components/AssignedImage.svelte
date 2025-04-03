@@ -16,14 +16,27 @@
   let error = false;
 
   onMount(async () => {
+    if (!locationId) {
+      console.warn('No locationId provided to AssignedImage');
+      loading = false;
+      return;
+    }
+
     try {
+      console.log(`Fetching image for location: ${locationId}`);
       const response = await fetch(`/api/images/assigned/${locationId}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch image');
+        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      image = data.image;
+      if (!data.image) {
+        console.warn(`No image data returned for location: ${locationId}`);
+        error = true;
+      } else {
+        console.log(`Successfully loaded image for location: ${locationId}`, data.image);
+        image = data.image;
+      }
     } catch (err) {
       console.error(`Error loading image for location ${locationId}:`, err);
       error = true;

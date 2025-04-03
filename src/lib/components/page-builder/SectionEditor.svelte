@@ -295,20 +295,39 @@
 
   // Update a property in the section
   function updateProperty(propName, value) {
-    console.log(`Updating property ${propName} with value length: ${value.length}`);
+    console.log(`Updating property ${propName} with value:`, value);
 
     // Update the current selected section
     selectedSection = { ...section };
 
     // Check if the value is actually different before updating
-    if (section.properties[propName] === value) {
+    // Handle null values properly
+    if (
+      section.properties[propName] === value ||
+      (section.properties[propName] === null && value === null)
+    ) {
       console.log(`Property ${propName} unchanged, skipping update`);
       return;
     }
 
     const updates = {};
     updates[propName] = value;
+
+    // Log the full update for debugging
+    console.log(`Updating section ${section.id} with:`, updates);
+
+    // Update the store
     pageBuilderStore.updateSection(section.id, updates);
+
+    // Force a re-render of the preview
+    if (propName === 'imageId') {
+      setTimeout(() => {
+        if (editors['content']) {
+          const content = editors['content'].getContent();
+          updateProperty('content', content);
+        }
+      }, 100);
+    }
   }
 
   // Helper function to determine if a field should have an image selector
