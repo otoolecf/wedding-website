@@ -1,13 +1,15 @@
-export { storyTemplate } from './story';
-export { detailsTemplate } from './details';
-export { lodgingTemplate } from './lodging';
-export { faqTemplate } from './faq';
-export { registryTemplate } from './registry';
+import { storyTemplate } from './story';
+import { detailsTemplate } from './details';
+import { lodgingTemplate } from './lodging';
+import { faqTemplate } from './faq';
+import { registryTemplate } from './registry';
+
+export { storyTemplate, detailsTemplate, lodgingTemplate, faqTemplate, registryTemplate };
 
 export const templates = {
-  story: 'storyTemplate',
-  details: 'detailsTemplate',
-  lodging: 'lodgingTemplate',
-  faq: 'faqTemplate',
-  registry: 'registryTemplate'
+  story: storyTemplate,
+  details: detailsTemplate,
+  lodging: lodgingTemplate,
+  faq: faqTemplate,
+  registry: registryTemplate
 };
