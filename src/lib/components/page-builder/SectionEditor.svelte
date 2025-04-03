@@ -28,28 +28,123 @@
     if (!window.tinymce) {
       editorStatus.loading = true;
       console.log('Loading TinyMCE script...');
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js';
-      script.integrity =
-        'sha512-UHqGV6cerl7/zfGW/h49OdCQZwxF2CTSTcgOviBfH7VygKLLpTguKKBK1tHIf6PZ+QbB6IQ+a4SSi2m2M4g1OA==';
-      script.crossOrigin = 'anonymous';
-      script.referrerPolicy = 'no-referrer';
-      script.onload = () => {
-        console.log('TinyMCE script loaded successfully');
-        tinymceLoaded = true;
-        editorStatus.loading = false;
-        initializeAllEditors();
+
+      // Try multiple CDN sources in case one fails
+      const cdnUrls = [
+        'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js',
+        'https://cdn.jsdelivr.net/npm/tinymce@6.6.0/tinymce.min.js',
+        'https://cdn.tiny.cloud/1/no-api-key/tinymce/6.6.0/tinymce.min.js'
+      ];
+
+      // Try to load TinyMCE from one of the CDNs
+      const loadScript = (index) => {
+        if (index >= cdnUrls.length) {
+          console.error('All TinyMCE CDN attempts failed');
+          editorStatus.loading = false;
+          editorStatus.error = 'Failed to load editor. Please try refreshing the page.';
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = cdnUrls[index];
+        script.onload = () => {
+          console.log('TinyMCE script loaded successfully');
+          tinymceLoaded = true;
+          editorStatus.loading = false;
+          initializeAllEditors();
+        };
+        script.onerror = () => {
+          console.error('Error loading TinyMCE from:', cdnUrls[index]);
+          // Try the next CDN
+          loadScript(index + 1);
+        };
+        document.head.appendChild(script);
       };
-      script.onerror = (e) => {
-        console.error('Error loading TinyMCE script:', e);
-        editorStatus.loading = false;
-        editorStatus.error = 'Failed to load editor';
-      };
-      document.head.appendChild(script);
+
+      // Start with the first CDN
+      loadScript(0);
     } else {
       console.log('TinyMCE already loaded');
       tinymceLoaded = true;
       initializeAllEditors();
+    }
+  }
+
+  // Also replace the initializeEditor function to make it more robust
+  function initializeEditor(propName) {
+    const selector = `#editor-${section.id}-${propName}`;
+    const editorElement = document.querySelector(selector);
+
+    if (!editorElement) {
+      console.warn(`Editor element not found for selector: ${selector}`);
+      return;
+    }
+
+    console.log(`Initializing editor for field: ${propName}`);
+
+    try {
+      // Use a simpler configuration first to ensure it loads
+      const editorConfig = {
+        target: editorElement,
+        height: 300,
+        menubar: false,
+        plugins: 'lists link code',
+        toolbar: 'undo redo | bold italic | bullist numlist | link | code',
+        content_style:
+          'body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; }',
+        setup: (ed) => {
+          // Store the editor instance
+          editors[propName] = ed;
+
+          ed.on('init', () => {
+            console.log(`Editor initialized for ${propName}`);
+            try {
+              const content = section.properties[propName] || '';
+              ed.setContent(content);
+            } catch (err) {
+              console.error(`Error setting content for ${propName}:`, err);
+            }
+          });
+
+          // Use throttled update to avoid excessive updates
+          let updateTimeout;
+          const updateWithThrottle = () => {
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => {
+              const content = ed.getContent();
+              updateProperty(propName, content);
+            }, 300);
+          };
+
+          ed.on('change keyup blur', updateWithThrottle);
+        }
+      };
+
+      window.tinymce
+        .init(editorConfig)
+        .then(() => {
+          console.log(`TinyMCE editor successfully initialized for ${propName}`);
+        })
+        .catch((err) => {
+          console.error(`Failed to initialize TinyMCE editor for ${propName}:`, err);
+          editorStatus.error = `Editor initialization failed. Using basic textarea instead.`;
+
+          // Fallback to a basic textarea if TinyMCE fails
+          const textarea = document.createElement('textarea');
+          textarea.value = section.properties[propName] || '';
+          textarea.rows = 10;
+          textarea.className = 'w-full p-2 border rounded';
+          textarea.addEventListener('input', (e) => {
+            updateProperty(propName, e.target.value);
+          });
+
+          // Replace the editor container with the textarea
+          editorElement.innerHTML = '';
+          editorElement.appendChild(textarea);
+        });
+    } catch (error) {
+      console.error(`Error during editor initialization for ${propName}:`, error);
+      editorStatus.error = `Editor initialization error. Please try a different browser.`;
     }
   }
 
@@ -106,83 +201,83 @@
     initialized = true;
   }
 
-  // Initialize TinyMCE for a specific field
-  function initializeEditor(propName) {
-    const selector = `#editor-${section.id}-${propName}`;
-    const editorElement = document.querySelector(selector);
+  // // Initialize TinyMCE for a specific field
+  // function initializeEditor(propName) {
+  //   const selector = `#editor-${section.id}-${propName}`;
+  //   const editorElement = document.querySelector(selector);
 
-    if (!editorElement) {
-      console.warn(`Editor element not found for selector: ${selector}`);
-      return;
-    }
+  //   if (!editorElement) {
+  //     console.warn(`Editor element not found for selector: ${selector}`);
+  //     return;
+  //   }
 
-    console.log(`Initializing editor for field: ${propName}`);
+  //   console.log(`Initializing editor for field: ${propName}`);
 
-    window.tinymce
-      .init({
-        target: editorElement,
-        height: 300,
-        menubar: false,
-        plugins: [
-          'advlist',
-          'autolink',
-          'lists',
-          'link',
-          'image',
-          'charmap',
-          'preview',
-          'anchor',
-          'searchreplace',
-          'visualblocks',
-          'code',
-          'fullscreen',
-          'insertdatetime',
-          'media',
-          'table',
-          'help',
-          'wordcount'
-        ],
-        toolbar:
-          'undo redo | blocks | ' +
-          'bold italic forecolor | alignleft aligncenter ' +
-          'alignright alignjustify | bullist numlist outdent indent | ' +
-          'removeformat | help',
-        content_style:
-          'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; line-height: 1.6; }',
-        setup: (ed) => {
-          // Store the editor instance
-          editors[propName] = ed;
+  //   window.tinymce
+  //     .init({
+  //       target: editorElement,
+  //       height: 300,
+  //       menubar: false,
+  //       plugins: [
+  //         'advlist',
+  //         'autolink',
+  //         'lists',
+  //         'link',
+  //         'image',
+  //         'charmap',
+  //         'preview',
+  //         'anchor',
+  //         'searchreplace',
+  //         'visualblocks',
+  //         'code',
+  //         'fullscreen',
+  //         'insertdatetime',
+  //         'media',
+  //         'table',
+  //         'help',
+  //         'wordcount'
+  //       ],
+  //       toolbar:
+  //         'undo redo | blocks | ' +
+  //         'bold italic forecolor | alignleft aligncenter ' +
+  //         'alignright alignjustify | bullist numlist outdent indent | ' +
+  //         'removeformat | help',
+  //       content_style:
+  //         'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; line-height: 1.6; }',
+  //       setup: (ed) => {
+  //         // Store the editor instance
+  //         editors[propName] = ed;
 
-          ed.on('init', () => {
-            console.log(`Editor initialized for ${propName}`);
-            const content = section.properties[propName] || '';
-            ed.setContent(content);
+  //         ed.on('init', () => {
+  //           console.log(`Editor initialized for ${propName}`);
+  //           const content = section.properties[propName] || '';
+  //           ed.setContent(content);
 
-            // Add a visual cue that the editor is ready
-            const editorWrapper = document.querySelector(
-              `div[aria-label*="editor-${section.id}-${propName}"]`
-            );
-            if (editorWrapper) {
-              editorWrapper.style.border = '1px solid #4f46e5';
-            }
-          });
+  //           // Add a visual cue that the editor is ready
+  //           const editorWrapper = document.querySelector(
+  //             `div[aria-label*="editor-${section.id}-${propName}"]`
+  //           );
+  //           if (editorWrapper) {
+  //             editorWrapper.style.border = '1px solid #4f46e5';
+  //           }
+  //         });
 
-          // Use multiple events to ensure changes are captured
-          ed.on('change keyup blur', () => {
-            const content = ed.getContent();
-            console.log(`Content updated for ${propName}`, content.substring(0, 50) + '...');
-            updateProperty(propName, content);
-          });
-        }
-      })
-      .then((editors) => {
-        console.log(`TinyMCE editor successfully initialized for ${propName}`);
-      })
-      .catch((err) => {
-        console.error(`Failed to initialize TinyMCE editor for ${propName}:`, err);
-        editorStatus.error = `Failed to initialize editor for ${propName}`;
-      });
-  }
+  //         // Use multiple events to ensure changes are captured
+  //         ed.on('change keyup blur', () => {
+  //           const content = ed.getContent();
+  //           console.log(`Content updated for ${propName}`, content.substring(0, 50) + '...');
+  //           updateProperty(propName, content);
+  //         });
+  //       }
+  //     })
+  //     .then((editors) => {
+  //       console.log(`TinyMCE editor successfully initialized for ${propName}`);
+  //     })
+  //     .catch((err) => {
+  //       console.error(`Failed to initialize TinyMCE editor for ${propName}:`, err);
+  //       editorStatus.error = `Failed to initialize editor for ${propName}`;
+  //     });
+  // }
 
   // Update a property in the section
   function updateProperty(propName, value) {
