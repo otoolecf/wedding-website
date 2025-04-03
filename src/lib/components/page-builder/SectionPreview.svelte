@@ -26,12 +26,13 @@
       <!-- Image Section Preview -->
     {:else if section.type === 'image'}
       <div
-        class="preview-content text-center"
+        class="preview-content"
         class:text-left={section.properties.alignment === 'left'}
+        class:text-center={section.properties.alignment === 'center'}
         class:text-right={section.properties.alignment === 'right'}
       >
         {#if section.properties.imageId}
-          <figure class="inline-block">
+          <figure class="inline-block" style="max-width: {section.properties.maxWidth || '100%'};">
             <AssignedImage
               locationId={section.properties.imageId}
               className="max-w-full h-auto rounded"
@@ -56,7 +57,7 @@
         <!-- Image side -->
         <div class="{section.type === 'text_image_left' ? 'md:order-1' : 'md:order-2'} md:w-1/2">
           {#if section.properties.imageId}
-            <figure>
+            <figure class="w-full" style="max-width: {section.properties.maxWidth || '100%'};">
               <AssignedImage
                 locationId={section.properties.imageId}
                 className="w-full rounded"
