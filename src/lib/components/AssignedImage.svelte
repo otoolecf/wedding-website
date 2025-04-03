@@ -23,22 +23,48 @@
     }
 
     try {
-      console.log(`Fetching image for location: ${locationId}`);
-      const response = await fetch(`/api/images/assigned/${locationId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
-      }
+      // Check if this is a direct image ID (UUID format)
+      const isImageId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        locationId
+      );
 
-      const data = await response.json();
-      if (!data.image) {
-        console.warn(`No image data returned for location: ${locationId}`);
-        error = true;
+      if (isImageId) {
+        // If it's a direct image ID, fetch the image metadata directly
+        console.log(`Fetching direct image metadata for ID: ${locationId}`);
+        const response = await fetch(`/api/images/gallery`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch gallery: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const imageData = data.images.find((img) => img.id === locationId);
+
+        if (!imageData) {
+          console.warn(`No image found with ID: ${locationId}`);
+          error = true;
+        } else {
+          console.log(`Successfully loaded direct image:`, imageData);
+          image = imageData;
+        }
       } else {
-        console.log(`Successfully loaded image for location: ${locationId}`, data.image);
-        image = data.image;
+        // If it's a location ID, fetch the assigned image
+        console.log(`Fetching assigned image for location: ${locationId}`);
+        const response = await fetch(`/api/images/assigned/${locationId}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (!data.image) {
+          console.warn(`No image data returned for location: ${locationId}`);
+          error = true;
+        } else {
+          console.log(`Successfully loaded image for location: ${locationId}`, data.image);
+          image = data.image;
+        }
       }
     } catch (err) {
-      console.error(`Error loading image for location ${locationId}:`, err);
+      console.error(`Error loading image for ${locationId}:`, err);
       error = true;
     } finally {
       loading = false;
