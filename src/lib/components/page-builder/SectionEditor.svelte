@@ -16,6 +16,7 @@
   let showImageSelector = false;
   let currentImageField = null;
   let editorStatus = { loading: false, error: null };
+  let previousSectionId = null;
   let editorInitialized = {};
 
   // Add TinyMCE script if not already loaded
@@ -71,28 +72,95 @@
     }
   }
 
-  // Also replace the initializeEditor function to make it more robust
+  function cleanupEditors() {
+    if (window.tinymce) {
+      try {
+        Object.values(editors).forEach((editor) => {
+          if (editor) {
+            editor.remove();
+          }
+        });
+        editors = {};
+        editorInitialized = {};
+      } catch (e) {
+        console.error('Error removing editors:', e);
+      }
+    }
+  }
+
+  onDestroy(() => {
+    cleanupEditors();
+  });
+
+  // Watch for section changes to reinitialize editors when needed
+  $: if (section && tinymceLoaded && initialized) {
+    // This will run when section changes but we only want to reinitialize
+    // if the section ID changes, not on every content edit
+
+    // Check if there's a section ID change
+    if (previousSectionId !== section.id) {
+      console.log(
+        `Section changed from ${previousSectionId} to ${section.id}, reinitializing editors`
+      );
+      // Clean up existing editors
+      cleanupEditors();
+      // Initialize new editors
+      initializeAllEditors();
+      // Update previous section ID
+      previousSectionId = section.id;
+    }
+  }
+
+  // Initialize all TinyMCE editors for rich text fields
+  function initializeAllEditors() {
+    if (!tinymceLoaded || !section) return;
+    console.log('Initializing editors for section:', section.id);
+
+    const schema = SECTION_SCHEMA[section.type];
+    if (!schema) {
+      console.warn('No schema found for section type:', section.type);
+      return;
+    }
+
+    // Initialize editors for all richtext fields
+    Object.entries(schema.properties).forEach(([propName, config]) => {
+      if (config.type === 'richtext') {
+        initializeEditor(propName);
+      }
+    });
+
+    initialized = true;
+  }
+
+  // Initialize TinyMCE for a specific field
   function initializeEditor(propName) {
-    // Skip initialization if already done for this property in this session
-    if (editorInitialized[propName]) {
-      console.log(`Editor for ${propName} already initialized, skipping`);
+    // Create a unique ID for the editor
+    const editorId = `editor-${section.id}-${propName}`;
+    const containerId = `editor-container-${section.id}-${propName}`;
+    const containerElement = document.getElementById(containerId);
+
+    if (!containerElement) {
+      console.warn(`Editor container not found for selector: #${containerId}`);
       return;
     }
 
-    const selector = `#editor-${section.id}-${propName}`;
-    const editorElement = document.querySelector(selector);
-
-    if (!editorElement) {
-      console.warn(`Editor element not found for selector: ${selector}`);
+    // Check if the editor is already initialized
+    if (editors[propName]) {
+      console.log(`Editor for ${propName} already exists, skipping initialization`);
       return;
     }
 
-    console.log(`Initializing editor for field: ${propName}`);
+    console.log(`Setting up editor for field: ${propName}`);
+
+    // First, create the editor DIV that TinyMCE will use
+    const editorDiv = document.createElement('div');
+    editorDiv.id = editorId;
+    containerElement.innerHTML = ''; // Clear the container
+    containerElement.appendChild(editorDiv);
 
     try {
-      // Use a simpler configuration first to ensure it loads
       const editorConfig = {
-        target: editorElement,
+        selector: `#${editorId}`,
         height: 300,
         menubar: false,
         plugins: 'lists link code',
@@ -108,9 +176,6 @@
             try {
               const content = section.properties[propName] || '';
               ed.setContent(content);
-
-              // Mark this editor as initialized
-              editorInitialized[propName] = true;
             } catch (err) {
               console.error(`Error setting content for ${propName}:`, err);
             }
@@ -124,108 +189,55 @@
               const content = ed.getContent();
               // Only update if content has actually changed
               if (content !== section.properties[propName]) {
+                console.log(`Content changed for ${propName}, updating`);
                 updateProperty(propName, content);
               }
             }, 300);
           };
 
-          ed.on('change keyup blur', updateWithThrottle);
-        },
-        // Set this to prevent auto cleanup of the editor
-        remove_instance_if_no_instances: false,
-        setup_instance_callback: (editor) => {
-          // Store reference to be able to access it later
-          console.log(`Editor instance setup for ${propName}`);
+          ed.on('change', updateWithThrottle);
+          ed.on('keyup', updateWithThrottle);
+          ed.on('blur', updateWithThrottle);
         }
       };
 
+      console.log(`Initializing TinyMCE with config for ${propName}`);
       window.tinymce
         .init(editorConfig)
-        .then(() => {
+        .then((editorInstances) => {
           console.log(`TinyMCE editor successfully initialized for ${propName}`);
         })
         .catch((err) => {
           console.error(`Failed to initialize TinyMCE editor for ${propName}:`, err);
-          editorStatus.error = `Editor initialization failed. Using basic textarea instead.`;
-
-          // Fallback to a basic textarea if TinyMCE fails
-          const textarea = document.createElement('textarea');
-          textarea.value = section.properties[propName] || '';
-          textarea.rows = 10;
-          textarea.className = 'w-full p-2 border rounded';
-          textarea.addEventListener('input', (e) => {
-            updateProperty(propName, e.target.value);
-          });
-
-          // Replace the editor container with the textarea
-          editorElement.innerHTML = '';
-          editorElement.appendChild(textarea);
+          fallbackToTextarea(propName, containerElement);
         });
     } catch (error) {
       console.error(`Error during editor initialization for ${propName}:`, error);
-      editorStatus.error = `Editor initialization error. Please try a different browser.`;
+      fallbackToTextarea(propName, containerElement);
     }
   }
 
-  onDestroy(() => {
-    console.log('Cleaning up editors');
-    // Remove all editors when component is destroyed
-    if (window.tinymce) {
-      try {
-        Object.values(editors).forEach((editor) => {
-          if (editor) {
-            editor.remove();
-          }
-        });
-        editors = {};
-        editorInitialized = {};
-      } catch (e) {
-        console.error('Error removing editors:', e);
-      }
-    }
-  });
+  // Fallback to a simple textarea if TinyMCE fails
+  function fallbackToTextarea(propName, containerElement) {
+    editorStatus.error = `Editor initialization failed. Using basic textarea instead.`;
 
-  // Initialize all editors when section changes
-  $: if (section && tinymceLoaded) {
-    initializeAllEditors();
-  }
-
-  // Initialize all TinyMCE editors for rich text fields
-  function initializeAllEditors() {
-    if (!tinymceLoaded || !section) return;
-    console.log('Initializing editors for section:', section.id);
-
-    const schema = SECTION_SCHEMA[section.type];
-    if (!schema) {
-      console.warn('No schema found for section type:', section.type);
-      return;
-    }
-
-    // First, remove existing editors
-    Object.values(editors).forEach((editor) => {
-      if (editor) {
-        try {
-          editor.remove();
-        } catch (e) {
-          console.error('Error removing editor:', e);
-        }
-      }
-    });
-    editors = {};
-
-    // Initialize editors for all richtext fields
-    Object.entries(schema.properties).forEach(([propName, config]) => {
-      if (config.type === 'richtext') {
-        initializeEditor(propName);
-      }
+    // Fallback to a basic textarea if TinyMCE fails
+    const textarea = document.createElement('textarea');
+    textarea.value = section.properties[propName] || '';
+    textarea.rows = 10;
+    textarea.className = 'w-full p-2 border rounded';
+    textarea.addEventListener('input', (e) => {
+      updateProperty(propName, e.target.value);
     });
 
-    initialized = true;
+    // Replace the editor container with the textarea
+    containerElement.innerHTML = '';
+    containerElement.appendChild(textarea);
   }
 
   // Update a property in the section
   function updateProperty(propName, value) {
-    console.log(`Updating property ${propName} with value of length: ${value.length}`);
+    console.log(`Updating property ${propName} with value length: ${value.length}`);
 
     // Check if the value is actually different before updating
     if (section.properties[propName] === value) {
@@ -299,7 +311,8 @@
           {:else if config.type === 'richtext'}
             <!-- Rich text editor -->
             <div class="border rounded">
-              <div id="editor-{section.id}-{propName}" class="min-h-[100px]"></div>
+              <!-- This key element will prevent the div from being recreated during re-renders -->
+              <div id="editor-container-{section.id}-{propName}" class="editor-container"></div>
               <div class="p-2 text-xs bg-gray-50 text-gray-500 border-t">
                 Tip: Use the toolbar above for formatting options. Changes are saved automatically.
               </div>
