@@ -7,6 +7,14 @@
   let showTemplateSelector = false;
   let selectedTemplate = null;
 
+  const templateNames = {
+    story: 'Our Story',
+    details: 'Wedding Details',
+    lodging: 'Accommodations',
+    faq: 'FAQ',
+    registry: 'Registry'
+  };
+
   function applyTemplate(templateName) {
     const template = templates[templateName];
     if (!template) return;
@@ -41,13 +49,13 @@
 
   {#if showTemplateSelector}
     <div class="template-grid">
-      {#each Object.entries(templates) as [key, templateName]}
+      {#each Object.entries(templates) as [key, template]}
         <div class="template-card">
-          <h3>{templateName}</h3>
+          <h3>{templateNames[key]}</h3>
           <div class="template-preview">
-            {#each templates[key].sections as section}
+            {#each template.sections as section}
               <div class="template-section">
-                <span class="section-type">{section.type}</span>
+                <span class="section-type">{section.type.replace(/([A-Z])/g, ' $1').trim()}</span>
               </div>
             {/each}
           </div>
@@ -83,6 +91,7 @@
   .template-card h3 {
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
+    color: #1f2937;
   }
 
   .template-preview {
@@ -102,5 +111,33 @@
 
   .section-type {
     font-weight: 500;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .btn-primary {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background-color: #2563eb;
+  }
+
+  .btn-secondary {
+    background-color: #e5e7eb;
+    color: #1f2937;
+    border: none;
+  }
+
+  .btn-secondary:hover {
+    background-color: #d1d5db;
   }
 </style>
