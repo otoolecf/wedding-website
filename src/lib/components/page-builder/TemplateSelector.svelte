@@ -44,6 +44,13 @@
       {#each Object.entries(templates) as [key, templateName]}
         <div class="template-card">
           <h3>{templateName}</h3>
+          <div class="template-preview">
+            {#each templates[key].sections as section}
+              <div class="template-section">
+                <span class="section-type">{section.type}</span>
+              </div>
+            {/each}
+          </div>
           <button class="btn btn-secondary" on:click={() => applyTemplate(key)}>
             Apply Template
           </button>
@@ -60,7 +67,7 @@
 
   .template-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1rem;
     margin-top: 1rem;
   }
@@ -76,5 +83,24 @@
   .template-card h3 {
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
+  }
+
+  .template-preview {
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .template-section {
+    background: #f3f4f6;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+  }
+
+  .section-type {
+    font-weight: 500;
   }
 </style>
