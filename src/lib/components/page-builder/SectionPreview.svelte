@@ -32,10 +32,10 @@
         class:text-right={section.properties.alignment === 'right'}
       >
         {#if section.properties.imageId}
-          <figure class="inline-block" style="max-width: {section.properties.maxWidth || '100%'};">
+          <figure class="inline-block" style="width: {section.properties.maxWidth || '100%'};">
             <AssignedImage
               locationId={section.properties.imageId}
-              className="max-w-full h-auto rounded"
+              className="w-full h-auto rounded"
               alt={section.properties.caption || 'Image'}
             />
             {#if section.properties.caption}
@@ -57,7 +57,7 @@
         <!-- Image side -->
         <div class="{section.type === 'text_image_left' ? 'md:order-1' : 'md:order-2'} md:w-1/2">
           {#if section.properties.imageId}
-            <figure class="w-full" style="max-width: {section.properties.maxWidth || '100%'};">
+            <figure class="w-full" style="width: {section.properties.maxWidth || '100%'};">
               <AssignedImage
                 locationId={section.properties.imageId}
                 className="w-full rounded"
