@@ -13,6 +13,13 @@
     large: 'max-w-4xl',
     full: 'max-w-none'
   };
+
+  // Map alignment to CSS classes
+  const alignmentClasses = {
+    left: 'mr-auto',
+    center: 'mx-auto',
+    right: 'ml-auto'
+  };
 </script>
 
 <!-- Section preview based on type -->
@@ -33,15 +40,12 @@
 
       <!-- Image Section Preview -->
     {:else if section.type === 'image'}
-      <div
-        class="preview-content min-w-[1024px]"
-        class:text-left={section.properties.alignment === 'left'}
-        class:text-center={section.properties.alignment === 'center'}
-        class:text-right={section.properties.alignment === 'right'}
-      >
+      <div class="preview-content min-w-[1024px]">
         {#if section.properties.imageId}
           <figure
-            class="inline-block {widthClasses[section.properties.maxWidth] || widthClasses.medium}"
+            class="inline-block {widthClasses[section.properties.maxWidth] ||
+              widthClasses.medium} {alignmentClasses[section.properties.alignment] ||
+              alignmentClasses.center}"
           >
             <AssignedImage
               locationId={section.properties.imageId}
@@ -68,7 +72,9 @@
         <div class="{section.type === 'text_image_left' ? 'md:order-1' : 'md:order-2'} md:w-1/2">
           {#if section.properties.imageId}
             <figure
-              class="w-full {widthClasses[section.properties.maxWidth] || widthClasses.medium}"
+              class="w-full {widthClasses[section.properties.maxWidth] ||
+                widthClasses.medium} {alignmentClasses[section.properties.alignment] ||
+                alignmentClasses.center}"
             >
               <AssignedImage
                 locationId={section.properties.imageId}
