@@ -15,6 +15,7 @@
   let tinymceLoaded = false;
   let showImageSelector = false;
   let currentImageField = null;
+  let selectedSection = null;
   let editorStatus = { loading: false, error: null };
   let previousSectionId = null;
   let editorInitialized = {};
@@ -22,6 +23,28 @@
   // Add TinyMCE script if not already loaded
   onMount(() => {
     loadTinyMCE();
+
+    // Keep track of the currently selected section
+    previousSectionId = section?.id;
+
+    // Handle refresh/navigation back to an already initialized page
+    window.addEventListener('pageshow', (event) => {
+      // If the page is being restored from the bfcache
+      if (event.persisted) {
+        console.log('Page restored from back/forward cache, reinitializing editors');
+        // Reset initialized flag to allow reinitialization
+        initialized = false;
+        // Clean up any existing editors
+        cleanupEditors();
+        // Try to reload TinyMCE and reinitialize
+        if (window.tinymce) {
+          tinymceLoaded = true;
+          initializeAllEditors();
+        } else {
+          loadTinyMCE();
+        }
+      }
+    });
   });
 
   function loadTinyMCE() {
@@ -111,6 +134,16 @@
     }
   }
 
+  $: if (section && selectedSection && section.id !== selectedSection.id) {
+    console.log(`Switching from section ${selectedSection?.id} to ${section.id}`);
+    // We need to schedule this to run after the DOM updates
+    setTimeout(() => {
+      if (tinymceLoaded) {
+        initializeAllEditors();
+      }
+    }, 0);
+  }
+
   // Initialize all TinyMCE editors for rich text fields
   function initializeAllEditors() {
     if (!tinymceLoaded || !section) return;
@@ -122,6 +155,9 @@
       return;
     }
 
+    // Force cleanup of old editors
+    cleanupEditors();
+
     // Initialize editors for all richtext fields
     Object.entries(schema.properties).forEach(([propName, config]) => {
       if (config.type === 'richtext') {
@@ -130,6 +166,7 @@
     });
 
     initialized = true;
+    previousSectionId = section.id;
   }
 
   // Initialize TinyMCE for a specific field
@@ -163,10 +200,30 @@
         selector: `#${editorId}`,
         height: 300,
         menubar: false,
-        plugins: 'lists link code',
-        toolbar: 'undo redo | bold italic | bullist numlist | link | code',
-        content_style:
-          'body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; }',
+        plugins: 'lists link code table',
+        toolbar: [
+          'undo redo | blocks | bold italic underline | forecolor backcolor | removeformat',
+          'alignleft aligncenter alignright | bullist numlist | link | code'
+        ],
+        block_formats:
+          'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Quote=blockquote',
+        content_style: `
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; }
+    .mce-content-body p { margin: 0; }
+    h1 { font-size: 2rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.5rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+    h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+    h4 { font-size: 1rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+    blockquote { border-left: 4px solid #ccc; padding-left: 1rem; font-style: italic; }
+  `,
+        formats: {
+          alignleft: { selector: 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li', classes: 'text-left' },
+          aligncenter: {
+            selector: 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li',
+            classes: 'text-center'
+          },
+          alignright: { selector: 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li', classes: 'text-right' }
+        },
         setup: (ed) => {
           // Store the editor instance
           editors[propName] = ed;
@@ -238,6 +295,9 @@
   // Update a property in the section
   function updateProperty(propName, value) {
     console.log(`Updating property ${propName} with value length: ${value.length}`);
+
+    // Update the current selected section
+    selectedSection = { ...section };
 
     // Check if the value is actually different before updating
     if (section.properties[propName] === value) {
@@ -315,6 +375,29 @@
               <div id="editor-container-{section.id}-{propName}" class="editor-container"></div>
               <div class="p-2 text-xs bg-gray-50 text-gray-500 border-t">
                 Tip: Use the toolbar above for formatting options. Changes are saved automatically.
+              </div>
+            </div>
+            <!-- Preview section -->
+            <div class="mt-2 p-2 border-t border-gray-200">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-500">Preview</span>
+                <button
+                  class="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+                  on:click={() => {
+                    // Force refresh of the preview
+                    const editor = editors[propName];
+                    if (editor) {
+                      const content = editor.getContent();
+                      // Just updating this will trigger the reactive preview
+                      updateProperty(propName, content);
+                    }
+                  }}
+                >
+                  Refresh Preview
+                </button>
+              </div>
+              <div class="p-2 bg-white border rounded">
+                {@html section.properties[propName] || ''}
               </div>
             </div>
           {:else if config.type === 'select'}
