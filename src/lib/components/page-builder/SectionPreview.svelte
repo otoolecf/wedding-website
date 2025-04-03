@@ -5,6 +5,14 @@
   // Props
   export let section;
   export let onRefresh = () => {}; // Callback function to refresh the preview
+
+  // Map maxWidth to actual CSS classes
+  const widthClasses = {
+    small: 'max-w-lg',
+    medium: 'max-w-2xl',
+    large: 'max-w-4xl',
+    full: 'max-w-none'
+  };
 </script>
 
 <!-- Section preview based on type -->
@@ -32,7 +40,9 @@
         class:text-right={section.properties.alignment === 'right'}
       >
         {#if section.properties.imageId}
-          <figure class="inline-block" style="width: {section.properties.maxWidth || '100%'};">
+          <figure
+            class="inline-block {widthClasses[section.properties.maxWidth] || widthClasses.medium}"
+          >
             <AssignedImage
               locationId={section.properties.imageId}
               className="w-full h-auto rounded"
@@ -57,7 +67,9 @@
         <!-- Image side -->
         <div class="{section.type === 'text_image_left' ? 'md:order-1' : 'md:order-2'} md:w-1/2">
           {#if section.properties.imageId}
-            <figure class="w-full" style="width: {section.properties.maxWidth || '100%'};">
+            <figure
+              class="w-full {widthClasses[section.properties.maxWidth] || widthClasses.medium}"
+            >
               <AssignedImage
                 locationId={section.properties.imageId}
                 className="w-full rounded"
