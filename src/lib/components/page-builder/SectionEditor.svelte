@@ -1,5 +1,6 @@
 <!-- src/lib/components/page-builder/SectionEditor.svelte -->
 <script>
+  import SectionPreview from './SectionPreview.svelte';
   import { onMount, onDestroy, afterUpdate } from 'svelte';
   import { pageBuilderStore } from '$lib/page-builder/store';
   import { SECTION_SCHEMA } from '$lib/page-builder/schema';
@@ -377,29 +378,6 @@
                 Tip: Use the toolbar above for formatting options. Changes are saved automatically.
               </div>
             </div>
-            <!-- Preview section -->
-            <div class="mt-2 p-2 border-t border-gray-200">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-gray-500">Preview</span>
-                <button
-                  class="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
-                  on:click={() => {
-                    // Force refresh of the preview
-                    const editor = editors[propName];
-                    if (editor) {
-                      const content = editor.getContent();
-                      // Just updating this will trigger the reactive preview
-                      updateProperty(propName, content);
-                    }
-                  }}
-                >
-                  Refresh Preview
-                </button>
-              </div>
-              <div class="p-2 bg-white border rounded preview-content">
-                {@html section.properties[propName] || ''}
-              </div>
-            </div>
           {:else if config.type === 'select'}
             <!-- Select dropdown -->
             <select
@@ -516,6 +494,23 @@
           {/if}
         </div>
       {/each}
+      <SectionPreview
+        {section}
+        onRefresh={() => {
+          // Refresh rich text content if needed
+          if (
+            section.type === 'text' ||
+            section.type === 'text_image_left' ||
+            section.type === 'text_image_right'
+          ) {
+            const editor = editors['content'];
+            if (editor) {
+              const content = editor.getContent();
+              updateProperty('content', content);
+            }
+          }
+        }}
+      />
     </div>
 
     <!-- Debug information -->
