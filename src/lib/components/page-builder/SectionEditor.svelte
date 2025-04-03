@@ -396,7 +396,7 @@
                   Refresh Preview
                 </button>
               </div>
-              <div class="p-2 bg-white border rounded">
+              <div class="p-2 bg-white border rounded preview-content">
                 {@html section.properties[propName] || ''}
               </div>
             </div>
@@ -548,3 +548,88 @@
     />
   {/if}
 </div>
+
+<style>
+  /* Make sure the preview properly displays formatted content */
+  :global(.preview-content h1) {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  :global(.preview-content h2) {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  :global(.preview-content h3) {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  :global(.preview-content h4) {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  :global(.preview-content blockquote) {
+    border-left: 4px solid #ccc;
+    padding-left: 1rem;
+    font-style: italic;
+    margin: 1rem 0;
+  }
+
+  :global(.preview-content ul),
+  :global(.preview-content ol) {
+    padding-left: 2rem;
+    margin: 1rem 0;
+  }
+
+  :global(.preview-content ul) {
+    list-style-type: disc;
+  }
+
+  :global(.preview-content ol) {
+    list-style-type: decimal;
+  }
+
+  :global(.preview-content strong, .preview-content b) {
+    font-weight: bold;
+  }
+
+  :global(.preview-content em, .preview-content i) {
+    font-style: italic;
+  }
+
+  :global(.preview-content u) {
+    text-decoration: underline;
+  }
+
+  :global(.preview-content .text-left) {
+    text-align: left;
+  }
+
+  :global(.preview-content .text-center) {
+    text-align: center;
+  }
+
+  :global(.preview-content .text-right) {
+    text-align: right;
+  }
+
+  :global(.preview-content a) {
+    color: #0000ee;
+    text-decoration: underline;
+  }
+
+  :global(.preview-content p) {
+    margin-bottom: 0.5rem;
+  }
+</style>
