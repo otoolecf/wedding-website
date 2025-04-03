@@ -19,6 +19,8 @@ This is a custom wedding website using SvelteKit and Cloudflare.
 
 ## Testing Locally
 
+Testing locally is kind of hard when using the cloud stuff! Honestly, I prefer having a dev branch deploying in cloud infrastructure, so that it is behaving the same as it will on Prod. The biggest downside is that cloud deploys can take a bit longer than an `npm run dev` command.
+
 To test locally, you will need 2 terminal windows, one for frontend and one for backend.
 
 ### Frontend
