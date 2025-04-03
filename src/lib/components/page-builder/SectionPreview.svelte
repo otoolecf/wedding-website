@@ -24,7 +24,7 @@
     </button>
   </div>
 
-  <div class="p-3 bg-white border rounded">
+  <div class="p-3 bg-white border rounded w-full overflow-x-auto">
     <!-- Text Section Preview -->
     {#if section.type === 'text'}
       <div class="preview-content">
@@ -34,7 +34,7 @@
       <!-- Image Section Preview -->
     {:else if section.type === 'image'}
       <div
-        class="preview-content"
+        class="preview-content min-w-[1024px]"
         class:text-left={section.properties.alignment === 'left'}
         class:text-center={section.properties.alignment === 'center'}
         class:text-right={section.properties.alignment === 'right'}
@@ -63,7 +63,7 @@
 
       <!-- Text+Image Preview -->
     {:else if section.type === 'text_image_left' || section.type === 'text_image_right'}
-      <div class="flex flex-col md:flex-row gap-4 preview-content">
+      <div class="flex flex-col md:flex-row gap-4 preview-content min-w-[1024px]">
         <!-- Image side -->
         <div class="{section.type === 'text_image_left' ? 'md:order-1' : 'md:order-2'} md:w-1/2">
           {#if section.properties.imageId}
