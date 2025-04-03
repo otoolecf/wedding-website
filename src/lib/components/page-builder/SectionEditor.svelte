@@ -379,17 +379,26 @@
               </div>
             </div>
           {:else if config.type === 'select'}
-            <!-- Select dropdown -->
-            <select
-              id="editor-{section.id}-{propName}"
-              class="w-full p-2 border rounded"
-              value={section.properties[propName]}
-              on:change={(e) => updateProperty(propName, e.target.value)}
-            >
-              {#each config.options as option}
-                <option value={option}>{formatFieldLabel(option)}</option>
-              {/each}
-            </select>
+            <!-- Select dropdown - only show alignment and maxWidth for image sections when image is present -->
+            {#if (propName === 'alignment' || propName === 'maxWidth') && section.type === 'image' && !section.properties.imageId}
+              <div class="text-sm text-gray-500 italic">
+                Select an image first to adjust these settings
+              </div>
+            {:else}
+              <select
+                id="editor-{section.id}-{propName}"
+                class="w-full p-2 border rounded"
+                value={section.properties[propName]}
+                on:change={(e) => updateProperty(propName, e.target.value)}
+                disabled={(propName === 'alignment' || propName === 'maxWidth') &&
+                  section.type === 'image' &&
+                  !section.properties.imageId}
+              >
+                {#each config.options as option}
+                  <option value={option}>{formatFieldLabel(option)}</option>
+                {/each}
+              </select>
+            {/if}
           {:else if config.type === 'image'}
             <!-- Image selector -->
             <div class="border rounded p-3 bg-gray-50">

@@ -32,9 +32,9 @@
   ].join(' ');
 </script>
 
-<div class="image-section {containerClasses}">
+<div class="image-section">
   {#if properties.imageId}
-    <figure>
+    <figure class={containerClasses}>
       <AssignedImage
         locationId={properties.imageId}
         className="w-full rounded shadow-sm"

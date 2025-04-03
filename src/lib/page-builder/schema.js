@@ -29,16 +29,6 @@ export const SECTION_SCHEMA = {
       content: {
         type: 'richtext',
         default: '<p>Enter your text here...</p>'
-      },
-      alignment: {
-        type: 'select',
-        options: ['left', 'center', 'right'],
-        default: 'left'
-      },
-      maxWidth: {
-        type: 'select',
-        options: ['narrow', 'medium', 'wide', 'full'],
-        default: 'medium'
       }
     }
   },
