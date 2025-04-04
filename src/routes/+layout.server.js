@@ -41,9 +41,52 @@ export async function load({ url, platform, fetch }) {
     // If there's an error, we'll use the default theme
   }
 
-  return {
-    isPreview,
-    pathname: url.pathname,
-    theme
-  };
+  try {
+    // Try to get settings from KV
+    const settings = await platform.env.IMAGES_KV.get('wedding_settings', 'json');
+
+    // If no settings exist, return defaults
+    if (!settings) {
+      return {
+        settings: {
+          weddingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          weddingTime: '16:00',
+          venueName: 'Wedding Venue',
+          venueAddress: '123 Wedding Street, City, State ZIP',
+          groomName: "Groom's Name",
+          brideName: "Bride's Name",
+          showCountdown: true,
+          nameOrder: 'groom-first',
+          rsvpButtonText: 'RSVP Now',
+          rsvpButtonLink: '/rsvp'
+        }
+      };
+    }
+
+    return {
+      isPreview,
+      pathname: url.pathname,
+      theme,
+      settings
+    };
+  } catch (err) {
+    console.error('Error loading settings:', err);
+    return {
+      isPreview,
+      pathname: url.pathname,
+      theme,
+      settings: {
+        weddingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        weddingTime: '16:00',
+        venueName: 'Wedding Venue',
+        venueAddress: '123 Wedding Street, City, State ZIP',
+        groomName: "Groom's Name",
+        brideName: "Bride's Name",
+        showCountdown: true,
+        nameOrder: 'groom-first',
+        rsvpButtonText: 'RSVP Now',
+        rsvpButtonLink: '/rsvp'
+      }
+    };
+  }
 }

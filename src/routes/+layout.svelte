@@ -93,6 +93,12 @@
     const encodedFonts = fontList.map((font) => encodeURIComponent(font).replace(/%20/g, '+'));
     return `https://fonts.googleapis.com/css2?${encodedFonts.map((font) => `family=${font}`).join('&')}&display=swap`;
   }
+
+  // Compute couple names based on order preference
+  $: coupleNames =
+    data.settings.nameOrder === 'groom-first'
+      ? `${data.settings.groomName} & ${data.settings.brideName}`
+      : `${data.settings.brideName} & ${data.settings.groomName}`;
 </script>
 
 <svelte:head>

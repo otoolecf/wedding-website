@@ -1,92 +1,81 @@
 <!-- src/routes/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
 
   export let data;
 
-  let daysUntil = 0;
-  let formattedDate = '';
-  let weddingSettings = null;
-  let coupleNames = '';
+  let daysUntil;
+  let formattedDate;
 
-  onMount(async () => {
-    try {
-      const response = await fetch('/api/admin/settings');
-      if (!response.ok) throw new Error('Failed to load settings');
-      const data = await response.json();
-      weddingSettings = data.settings;
+  // Compute couple names based on order preference
+  $: coupleNames =
+    data.settings.nameOrder === 'groom-first'
+      ? `${data.settings.groomName} & ${data.settings.brideName}`
+      : `${data.settings.brideName} & ${data.settings.groomName}`;
 
-      // Set couple names based on order preference
-      coupleNames =
-        weddingSettings.nameOrder === 'groom-first'
-          ? `${weddingSettings.groomName} & ${weddingSettings.brideName}`
-          : `${weddingSettings.brideName} & ${weddingSettings.groomName}`;
+  // Calculate days until wedding
+  $: {
+    const weddingDate = new Date(data.settings.weddingDate);
+    const today = new Date();
+    const diffTime = weddingDate - today;
+    daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
 
-      // Calculate days until wedding
-      const weddingDateTime = new Date(
-        `${weddingSettings.weddingDate}T${weddingSettings.weddingTime}`
-      );
-      const today = new Date();
-      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const weddingStart = new Date(
-        weddingDateTime.getFullYear(),
-        weddingDateTime.getMonth(),
-        weddingDateTime.getDate()
-      );
-      daysUntil = Math.ceil((weddingStart - todayStart) / (1000 * 60 * 60 * 24));
-
-      // Format the date string
-      formattedDate = weddingDateTime.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        timeZone: 'America/Chicago'
-      });
-    } catch (error) {
-      console.error('Error loading wedding settings:', error);
-    }
-  });
+  // Format wedding date
+  $: {
+    const date = new Date(data.settings.weddingDate);
+    formattedDate = date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
 </script>
 
 <svelte:head>
-  <title>{data.isPreview ? 'Home' : 'Coming Soon'} | {coupleNames}'s Wedding</title>
+  <title>{coupleNames}'s Wedding</title>
 </svelte:head>
 
-{#if !data.isPreview}
-  <!-- Coming Soon Page -->
-  <div class="min-h-screen flex flex-col items-center justify-center px-4">
-    <div class="text-center max-w-2xl mx-auto">
-      <h1 class="text-5xl font-light mb-6">{coupleNames}</h1>
-      {#if weddingSettings?.showCountdown}
-        <p class="text-2xl mb-2">Are getting married in {daysUntil} days</p>
-      {/if}
-      <p class="text-xl mb-8">{formattedDate}</p>
-      <div class="w-16 h-px mx-auto mb-8" style="background-color: var(--color-secondary)"></div>
-      <p>Website coming soon</p>
+{#if data.isPreview}
+  <div class="min-h-screen flex flex-col items-center justify-center p-4">
+    <h1 class="text-4xl font-bold mb-8">{coupleNames}</h1>
+
+    {#if data.settings.showCountdown}
+      <div class="text-2xl mb-8">
+        {daysUntil} days until our wedding
+      </div>
+    {/if}
+
+    <div class="text-xl mb-8">
+      {formattedDate}
     </div>
+
+    <div class="text-lg mb-8">
+      {data.settings.venueName}
+    </div>
+
+    <div class="text-lg mb-8">
+      {data.settings.venueAddress}
+    </div>
+
+    <a
+      href="/rsvp"
+      class="bg-primary text-white px-8 py-3 rounded-full text-lg hover:bg-primary/90 transition-colors"
+    >
+      RSVP
+    </a>
   </div>
 {:else}
-  <!-- Full Home Page for Preview -->
-  <div class="min-h-screen flex flex-col items-center justify-center px-4">
-    <div class="text-center max-w-2xl mx-auto">
-      <h1 class="text-5xl font-light mb-6">{coupleNames}</h1>
-      <p class="text-2xl mb-2">Are getting married!</p>
-      {#if weddingSettings?.showCountdown}
-        <p class="text-xl mb-8">{formattedDate}</p>
-      {/if}
-      <div class="w-16 h-px mx-auto mb-8" style="background-color: var(--color-secondary)"></div>
-      <div class="space-y-4">
-        <p>Join us for our special day</p>
-        <div class="flex justify-center">
-          <a
-            href={weddingSettings?.rsvpButtonLink}
-            class="px-6 py-2 border rounded-full hover:bg-gray-50 transition-colors btn-outline"
-          >
-            {weddingSettings?.rsvpButtonText}
-          </a>
-        </div>
-      </div>
-    </div>
+  <div class="min-h-screen flex flex-col items-center justify-center p-4">
+    <h1 class="text-4xl font-bold mb-8">Welcome to Our Wedding Website</h1>
+    <p class="text-lg mb-8">Please log in to view the wedding details.</p>
+    <a
+      href="/admin"
+      class="bg-primary text-white px-8 py-3 rounded-full text-lg hover:bg-primary/90 transition-colors"
+    >
+      Admin Login
+    </a>
   </div>
 {/if}
