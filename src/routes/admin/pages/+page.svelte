@@ -68,12 +68,20 @@
     if (!newPage.name || !newPage.slug) return;
 
     try {
+      // Get current pages to determine the next order value
+      const pagesResponse = await fetch('/api/admin/pages');
+      const pagesData = await pagesResponse.json();
+      const maxOrder = Math.max(0, ...pagesData.pages.map((p) => p.order || 0));
+
       const response = await fetch('/api/admin/pages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(newPage)
+        body: JSON.stringify({
+          ...newPage,
+          order: maxOrder + 1 // Place new page at the end
+        })
       });
 
       if (!response.ok) {

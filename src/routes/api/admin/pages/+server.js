@@ -32,6 +32,7 @@ export async function GET({ request, platform }) {
       id: page.id,
       name: page.name,
       slug: page.slug,
+      order: page.order,
       lastModified: page.lastModified || null
     }));
 
@@ -87,6 +88,7 @@ export async function POST({ request, platform }) {
       id: pageId,
       name: data.name,
       slug,
+      order: data.order,
       sections: data.sections || [],
       created: new Date().toISOString(),
       lastModified: new Date().toISOString()
@@ -107,6 +109,7 @@ export async function POST({ request, platform }) {
       id: page.id,
       name: page.name,
       slug: page.slug,
+      order: page.order,
       lastModified: page.lastModified
     });
 

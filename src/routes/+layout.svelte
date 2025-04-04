@@ -47,9 +47,12 @@
       const response = await fetch('/api/admin/pages');
       if (!response.ok) throw new Error('Failed to load pages');
       const data = await response.json();
-      customPages = data.pages
-        .filter((page) => page.order !== undefined)
-        .sort((a, b) => a.order - b.order);
+      // Split pages into ordered and unordered
+      const orderedPages = data.pages.filter((page) => page.order !== undefined);
+      const unorderedPages = data.pages.filter((page) => page.order === undefined);
+
+      // Sort ordered pages by order, then combine with unordered pages
+      customPages = [...orderedPages.sort((a, b) => a.order - b.order), ...unorderedPages];
     } catch (error) {
       console.error('Error loading custom pages:', error);
     }
@@ -113,6 +116,11 @@
         <li><a href="/rsvp" class:active={data.pathname === '/rsvp'}>RSVP</a></li>
         <li><a href="/lodging" class:active={data.pathname === '/lodging'}>Lodging</a></li>
         <li><a href="/faq" class:active={data.pathname === '/faq'}>FAQ</a></li>
+        <li>
+          <a href="/admin/pages" class:active={data.pathname.startsWith('/admin/pages')}
+            >Page Builder</a
+          >
+        </li>
         <li><a href="/registry" class:active={data.pathname === '/registry'}>Registry</a></li>
         {#each customPages as page}
           <li>

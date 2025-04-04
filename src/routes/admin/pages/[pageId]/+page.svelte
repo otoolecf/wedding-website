@@ -126,7 +126,7 @@
         {/if}
       </div>
 
-      <div class="space-x-2 flex items-center">
+      <div class="flex items-center gap-2">
         <TemplateSelector />
         <button
           class="px-3 py-1 border rounded bg-white hover:bg-gray-50 text-sm transition-colors"
