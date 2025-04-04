@@ -47,9 +47,18 @@
         if (!settingsResponse.ok) throw new Error('Failed to load settings');
         const settingsData = await settingsResponse.json();
 
-        const updatedDefaultPages = settingsData.settings.defaultPages.map((page) =>
-          page.id === pageId ? { ...page, order: newOrder } : page
-        );
+        // Create a new array with updated order while preserving all other properties
+        const updatedDefaultPages = settingsData.settings.defaultPages.map((page) => {
+          if (page.id === pageId) {
+            return {
+              id: page.id,
+              name: page.name,
+              slug: page.slug,
+              order: newOrder
+            };
+          }
+          return page;
+        });
 
         // Create the updated settings object with all required fields
         const updatedSettings = {
