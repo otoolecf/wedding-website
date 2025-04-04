@@ -72,18 +72,6 @@ export async function POST({ request, platform }) {
       return json({ error: 'defaultPages must be an array' }, { status: 400 });
     }
 
-    // Check for duplicate order numbers
-    const orders = new Set();
-    for (const page of newSettings.defaultPages) {
-      if (orders.has(page.order)) {
-        return json(
-          { error: `Duplicate order number ${page.order} found in pages` },
-          { status: 400 }
-        );
-      }
-      orders.add(page.order);
-    }
-
     // Validate each default page
     for (const page of newSettings.defaultPages) {
       if (!page.id || !page.name || !page.slug || typeof page.order !== 'number') {
