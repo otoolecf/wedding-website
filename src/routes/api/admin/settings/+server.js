@@ -12,6 +12,31 @@ const defaultSettings = {
   nameOrder: 'groom-first', // 'groom-first' or 'bride-first'
   rsvpButtonText: 'RSVP Now',
   rsvpButtonLink: '/rsvp',
+  registries: {
+    externalRegistries: [
+      {
+        name: 'Target',
+        url: 'https://www.target.com/gift-registry/',
+        image: 'https://picsum.photos/seed/target/400/200',
+        description: 'Home essentials and decor'
+      },
+      {
+        name: 'Amazon',
+        url: 'https://www.amazon.com/wedding',
+        image: 'https://picsum.photos/seed/amazon/400/200',
+        description: 'Everything under the sun'
+      }
+    ],
+    honeymoonFund: {
+      enabled: true,
+      title: 'Honeymoon Fund',
+      description:
+        "If you'd prefer to contribute to our honeymoon adventures, we've set up a honeymoon fund.",
+      buttonText: 'Contribute to Our Honeymoon',
+      venmoUsername: '', // Will be hidden from crawlers
+      showVenmo: false // Controls whether Venmo info is visible
+    }
+  },
   defaultPages: [
     { id: 'home', name: 'Home', slug: '', order: 0 },
     { id: 'gallery', name: 'Gallery', slug: 'gallery', order: 1 },

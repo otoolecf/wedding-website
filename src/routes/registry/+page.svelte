@@ -1,25 +1,12 @@
 <!-- src/routes/registry/+page.svelte -->
 <script>
-  const registries = [
-    {
-      name: 'Target',
-      url: 'https://www.target.com/gift-registry/',
-      image: 'https://picsum.photos/seed/target/400/200',
-      description: 'Home essentials and decor'
-    },
-    {
-      name: 'Amazon',
-      url: 'https://www.amazon.com/wedding',
-      image: 'https://picsum.photos/seed/amazon/400/200',
-      description: 'Everything under the sun'
-    },
-    {
-      name: 'Crate & Barrel',
-      url: 'https://www.crateandbarrel.com/gift-registry',
-      image: 'https://picsum.photos/seed/crate/400/200',
-      description: 'Kitchen and entertaining must-haves'
-    }
-  ];
+  import { page } from '$app/stores';
+
+  export const load = async ({ fetch }) => {
+    const response = await fetch('/api/admin/settings');
+    const { settings } = await response.json();
+    return { settings };
+  };
 </script>
 
 <svelte:head>
@@ -35,7 +22,7 @@
   </p>
 
   <div class="grid md:grid-cols-3 gap-8">
-    {#each registries as registry}
+    {#each $page.data.settings.registries.externalRegistries as registry}
       <a href={registry.url} target="_blank" rel="noopener noreferrer" class="block group">
         <div
           class="bg-white p-6 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"
@@ -54,17 +41,25 @@
     {/each}
   </div>
 
-  <div class="mt-12 text-center">
-    <h2 class="text-2xl font-light mb-4">Honeymoon Fund</h2>
-    <p class="max-w-2xl mx-auto">
-      If you'd prefer to contribute to our honeymoon adventures, we've set up a honeymoon fund that
-      you can find here:
-    </p>
-    <a
-      href="#"
-      class="inline-block mt-6 btn-primary px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
-    >
-      Contribute to Our Honeymoon
-    </a>
-  </div>
+  {#if $page.data.settings.registries.honeymoonFund.enabled}
+    <div class="mt-12 text-center">
+      <h2 class="text-2xl font-light mb-4">{$page.data.settings.registries.honeymoonFund.title}</h2>
+      <p class="max-w-2xl mx-auto">
+        {$page.data.settings.registries.honeymoonFund.description}
+      </p>
+      {#if $page.data.settings.registries.honeymoonFund.showVenmo}
+        <div class="mt-4">
+          <p class="text-lg font-medium">
+            Venmo: @{$page.data.settings.registries.honeymoonFund.venmoUsername}
+          </p>
+        </div>
+      {/if}
+      <a
+        href="#"
+        class="inline-block mt-6 btn-primary px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
+      >
+        {$page.data.settings.registries.honeymoonFund.buttonText}
+      </a>
+    </div>
+  {/if}
 </div>
