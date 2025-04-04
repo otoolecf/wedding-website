@@ -28,24 +28,27 @@
 
     // Create new sections from template
     const newSections = template.sections.map((sectionData, index) => {
-      const section = createSection(sectionData.type, index);
+      const section = createSection(sectionData.type);
       // Update section data with template data
       Object.assign(section.properties, sectionData.data);
       return section;
     });
 
-    if (mode === 'replace') {
-      // Replace all sections
-      $pageBuilderStore.sections = newSections;
-    } else {
-      // Append new sections
-      $pageBuilderStore.sections = [...$pageBuilderStore.sections, ...newSections];
-    }
+    pageBuilderStore.update((state) => {
+      // Update sections based on mode
+      const updatedSections =
+        mode === 'replace' ? newSections : [...state.sections, ...newSections];
 
-    // Update page name if it's empty
-    if (!$pageBuilderStore.pageName) {
-      $pageBuilderStore.pageName = template.name;
-    }
+      // Update page name if it's empty
+      const updatedName = !state.pageName ? template.name : state.pageName;
+
+      return {
+        ...state,
+        sections: updatedSections,
+        pageName: updatedName,
+        isDirty: true
+      };
+    });
 
     showTemplateSelector = false;
     showConfirmDialog = false;
@@ -129,27 +132,46 @@
 <style>
   .template-selector {
     margin-bottom: 1rem;
+    position: relative;
   }
 
   .template-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
     margin-top: 1rem;
     padding: 1rem;
     background: #f9fafb;
     border-radius: 0.5rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (max-width: 1024px) {
+    .template-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .template-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .template-card {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    padding: 1.5rem;
+    padding: 1.25rem;
     text-align: center;
     transition:
       transform 0.2s,
       box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   .template-card:hover {
@@ -170,7 +192,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    min-height: 120px;
+    flex: 1;
   }
 
   .template-section {
@@ -191,6 +213,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
+    width: 100%;
   }
 
   .btn-primary {
@@ -207,6 +230,7 @@
     background-color: #e5e7eb;
     color: #1f2937;
     border: none;
+    margin-top: auto;
   }
 
   .btn-secondary:hover {
