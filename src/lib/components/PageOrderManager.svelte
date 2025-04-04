@@ -57,14 +57,16 @@
               order: newOrder
             };
           }
-          return page;
+          return {
+            id: page.id,
+            name: page.name,
+            slug: page.slug,
+            order: page.order
+          };
         });
 
         // Create the updated settings object with all required fields
         const updatedSettings = {
-          ...settingsData.settings,
-          defaultPages: updatedDefaultPages,
-          // Ensure all required fields are included
           weddingDate: settingsData.settings.weddingDate,
           weddingTime: settingsData.settings.weddingTime,
           venueName: settingsData.settings.venueName,
@@ -74,7 +76,8 @@
           showCountdown: settingsData.settings.showCountdown,
           nameOrder: settingsData.settings.nameOrder,
           rsvpButtonText: settingsData.settings.rsvpButtonText,
-          rsvpButtonLink: settingsData.settings.rsvpButtonLink
+          rsvpButtonLink: settingsData.settings.rsvpButtonLink,
+          defaultPages: updatedDefaultPages
         };
 
         const updateResponse = await fetch('/api/admin/settings', {
