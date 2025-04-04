@@ -19,6 +19,13 @@
       <h2 class="text-xl font-medium">Manage Settings</h2>
       <p class="text-gray-600">Configure wedding details, names, dates, and display options.</p>
     </a>
+    <a
+      href="/admin/registry"
+      class="block p-4 bg-white rounded shadow hover:bg-gray-100 transition"
+    >
+      <h2 class="text-xl font-medium">Manage Registry</h2>
+      <p class="text-gray-600">Add and manage gift registries and honeymoon fund settings.</p>
+    </a>
     <a href="/admin/rsvp" class="block p-4 bg-white rounded shadow hover:bg-gray-100 transition">
       <h2 class="text-xl font-medium">Manage RSVPs</h2>
       <p class="text-gray-600">View and manage RSVPs for the wedding.</p>
