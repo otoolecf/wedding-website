@@ -116,11 +116,6 @@
         <li><a href="/rsvp" class:active={data.pathname === '/rsvp'}>RSVP</a></li>
         <li><a href="/lodging" class:active={data.pathname === '/lodging'}>Lodging</a></li>
         <li><a href="/faq" class:active={data.pathname === '/faq'}>FAQ</a></li>
-        <li>
-          <a href="/admin/pages" class:active={data.pathname.startsWith('/admin/pages')}
-            >Page Builder</a
-          >
-        </li>
         <li><a href="/registry" class:active={data.pathname === '/registry'}>Registry</a></li>
         {#each customPages as page}
           <li>
