@@ -3,53 +3,53 @@
   import { page } from '$app/stores';
 </script>
 
-<div class="bg-secondary text-primary mb-6">
+<div class="bg-text text-background mb-6">
   <div class="max-w-7xl mx-auto">
     <nav class="flex items-center py-3 px-4">
       <div class="text-lg font-semibold mr-6">Wedding Admin</div>
       <div class="flex space-x-4">
         <a
           href="/admin"
-          class="px-3 py-2 rounded hover:bg-accent transition-colors {$page.url.pathname ===
+          class="px-3 py-2 rounded hover:bg-primary transition-colors {$page.url.pathname ===
           '/admin'
-            ? 'bg-accent'
+            ? 'bg-primary'
             : ''}"
         >
           Dashboard
         </a>
         <a
           href="/admin/gallery"
-          class="px-3 py-2 rounded hover:bg-accent transition-colors {$page.url.pathname ===
+          class="px-3 py-2 rounded hover:bg-primary transition-colors {$page.url.pathname ===
           '/admin/gallery'
-            ? 'bg-accent'
+            ? 'bg-primary'
             : ''}"
         >
           Gallery
         </a>
         <a
           href="/admin/pages"
-          class="px-3 py-2 rounded hover:bg-accent transition-colors {$page.url.pathname.startsWith(
+          class="px-3 py-2 rounded hover:bg-primary transition-colors {$page.url.pathname.startsWith(
             '/admin/pages'
           )
-            ? 'bg-accent'
+            ? 'bg-primary'
             : ''}"
         >
           Pages
         </a>
         <a
           href="/admin/rsvp"
-          class="px-3 py-2 rounded hover:bg-accent transition-colors {$page.url.pathname ===
+          class="px-3 py-2 rounded hover:bg-primary transition-colors {$page.url.pathname ===
           '/admin/rsvp'
-            ? 'bg-accent'
+            ? 'bg-primary'
             : ''}"
         >
           RSVPs
         </a>
         <a
           href="/admin/theme"
-          class="px-3 py-2 rounded hover:bg-accent transition-colors {$page.url.pathname ===
+          class="px-3 py-2 rounded hover:bg-primary transition-colors {$page.url.pathname ===
           '/admin/theme'
-            ? 'bg-accent'
+            ? 'bg-primary'
             : ''}"
         >
           Theme
@@ -58,7 +58,7 @@
       <div class="ml-auto">
         <a
           href="/"
-          class="px-3 py-2 rounded hover:bg-accent transition-colors text-primary/90"
+          class="px-3 py-2 rounded hover:bg-primary transition-colors text-accent"
           target="_blank"
           rel="noopener noreferrer"
         >
