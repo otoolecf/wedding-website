@@ -69,21 +69,41 @@ export async function POST({ request, platform }) {
 
     // Validate defaultPages
     if (!Array.isArray(newSettings.defaultPages)) {
+      console.error('defaultPages is not an array:', newSettings.defaultPages);
       return json({ error: 'defaultPages must be an array' }, { status: 400 });
     }
 
+    console.log('Validating pages:', JSON.stringify(newSettings.defaultPages, null, 2));
+
     // Validate each default page
     for (const page of newSettings.defaultPages) {
-      if (!page.id || !page.name || !page.slug || typeof page.order !== 'number') {
+      console.log('Validating page:', JSON.stringify(page, null, 2));
+
+      // Check if all required fields exist and are of correct type
+      const missingFields = [];
+      if (!page.id) missingFields.push('id');
+      if (!page.name) missingFields.push('name');
+      if (page.slug === undefined) missingFields.push('slug');
+      if (typeof page.order !== 'number') missingFields.push('order');
+
+      if (missingFields.length > 0) {
+        console.error('Page validation failed:', {
+          page,
+          missingFields,
+          orderType: typeof page.order
+        });
         return json(
           {
             error: 'Invalid default page format',
-            details: `Page ${page.id || 'unknown'} is missing required fields or has invalid order type`
+            details: `Page ${page.id || 'unknown'} is missing or has invalid fields: ${missingFields.join(', ')}`
           },
           { status: 400 }
         );
       }
     }
+
+    // If we get here, all pages are valid
+    console.log('All pages validated successfully');
 
     // Save to KV
     await platform.env.IMAGES_KV.put('wedding_settings', JSON.stringify(newSettings));
