@@ -51,18 +51,35 @@
           page.id === pageId ? { ...page, order: newOrder } : page
         );
 
+        // Create the updated settings object with all required fields
+        const updatedSettings = {
+          ...settingsData.settings,
+          defaultPages: updatedDefaultPages,
+          // Ensure all required fields are included
+          weddingDate: settingsData.settings.weddingDate,
+          weddingTime: settingsData.settings.weddingTime,
+          venueName: settingsData.settings.venueName,
+          venueAddress: settingsData.settings.venueAddress,
+          groomName: settingsData.settings.groomName,
+          brideName: settingsData.settings.brideName,
+          showCountdown: settingsData.settings.showCountdown,
+          nameOrder: settingsData.settings.nameOrder,
+          rsvpButtonText: settingsData.settings.rsvpButtonText,
+          rsvpButtonLink: settingsData.settings.rsvpButtonLink
+        };
+
         const updateResponse = await fetch('/api/admin/settings', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            ...settingsData.settings,
-            defaultPages: updatedDefaultPages
-          })
+          body: JSON.stringify(updatedSettings)
         });
 
-        if (!updateResponse.ok) throw new Error('Failed to update default page order');
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json();
+          throw new Error(errorData.error || 'Failed to update default page order');
+        }
       } else {
         // Update custom page order
         const response = await fetch(`/api/admin/pages/${pageId}/order`, {
