@@ -11,7 +11,13 @@ const defaultSettings = {
   showCountdown: true,
   nameOrder: 'groom-first', // 'groom-first' or 'bride-first'
   rsvpButtonText: 'RSVP Now',
-  rsvpButtonLink: '/rsvp'
+  rsvpButtonLink: '/rsvp',
+  defaultPages: [
+    { id: 'home', name: 'Home', slug: '', order: 0 },
+    { id: 'gallery', name: 'Gallery', slug: 'gallery', order: 1 },
+    { id: 'rsvp', name: 'RSVP', slug: 'rsvp', order: 2 },
+    { id: 'registry', name: 'Registry', slug: 'registry', order: 3 }
+  ]
 };
 
 export async function GET({ platform }) {
@@ -46,7 +52,8 @@ export async function POST({ request, platform }) {
       'showCountdown',
       'nameOrder',
       'rsvpButtonText',
-      'rsvpButtonLink'
+      'rsvpButtonLink',
+      'defaultPages'
     ];
 
     for (const field of requiredFields) {
@@ -58,6 +65,18 @@ export async function POST({ request, platform }) {
     // Validate nameOrder
     if (!['groom-first', 'bride-first'].includes(newSettings.nameOrder)) {
       return json({ error: 'Invalid name order value' }, { status: 400 });
+    }
+
+    // Validate defaultPages
+    if (!Array.isArray(newSettings.defaultPages)) {
+      return json({ error: 'defaultPages must be an array' }, { status: 400 });
+    }
+
+    // Validate each default page
+    for (const page of newSettings.defaultPages) {
+      if (!page.id || !page.name || !page.slug || typeof page.order !== 'number') {
+        return json({ error: 'Invalid default page format' }, { status: 400 });
+      }
     }
 
     // Save to KV

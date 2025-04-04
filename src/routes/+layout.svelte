@@ -9,7 +9,7 @@
 
   // Extract custom fonts from theme for loading
   let customFontsToLoad = [];
-  let customPages = [];
+  let allPages = [];
 
   // Process theme fonts to determine which custom fonts need to be loaded
   function processThemeFonts(theme) {
@@ -44,17 +44,22 @@
   // Load custom pages
   async function loadCustomPages() {
     try {
-      const response = await fetch('/api/admin/pages');
-      if (!response.ok) throw new Error('Failed to load pages');
-      const data = await response.json();
-      // Split pages into ordered and unordered
-      const orderedPages = data.pages.filter((page) => page.order !== undefined);
-      const unorderedPages = data.pages.filter((page) => page.order === undefined);
+      // Load custom pages
+      const pagesResponse = await fetch('/api/admin/pages');
+      if (!pagesResponse.ok) throw new Error('Failed to load custom pages');
+      const pagesData = await pagesResponse.json();
+      const customPages = pagesData.pages.sort((a, b) => a.order - b.order);
 
-      // Sort ordered pages by order, then combine with unordered pages
-      customPages = [...orderedPages.sort((a, b) => a.order - b.order), ...unorderedPages];
+      // Load default pages from settings
+      const settingsResponse = await fetch('/api/admin/settings');
+      if (!settingsResponse.ok) throw new Error('Failed to load settings');
+      const settingsData = await settingsResponse.json();
+      const defaultPages = settingsData.settings.defaultPages.sort((a, b) => a.order - b.order);
+
+      // Combine and sort all pages
+      allPages = [...defaultPages, ...customPages].sort((a, b) => a.order - b.order);
     } catch (error) {
-      console.error('Error loading custom pages:', error);
+      console.error('Error loading pages:', error);
     }
   }
 
@@ -115,13 +120,12 @@
   <header class="fixed w-full top-0 bg-white/90 backdrop-blur-sm shadow-sm z-50">
     <nav class="max-w-4xl mx-auto px-4 py-4">
       <ul class="flex gap-6 justify-center">
-        <li><a href="/" class:active={data.pathname === '/'}>Home</a></li>
-        <li><a href="/gallery" class:active={data.pathname === '/gallery'}>Gallery</a></li>
-        <li><a href="/rsvp" class:active={data.pathname === '/rsvp'}>RSVP</a></li>
-        <li><a href="/registry" class:active={data.pathname === '/registry'}>Registry</a></li>
-        {#each customPages as page}
+        {#each allPages as page}
           <li>
-            <a href="/pages/{page.slug}" class:active={data.pathname === `/pages/${page.slug}`}>
+            <a
+              href={page.slug ? `/${page.slug}` : '/'}
+              class:active={data.pathname === (page.slug ? `/${page.slug}` : '/')}
+            >
               {page.name}
             </a>
           </li>
