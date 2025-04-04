@@ -105,6 +105,14 @@ export async function POST({ request, platform }) {
     // If we get here, all pages are valid
     console.log('All pages validated successfully');
 
+    // Reassign sequential order numbers
+    newSettings.defaultPages = newSettings.defaultPages
+      .sort((a, b) => a.order - b.order) // First sort by current order
+      .map((page, index) => ({
+        ...page,
+        order: index // Assign new sequential order numbers
+      }));
+
     // Save to KV
     await platform.env.IMAGES_KV.put('wedding_settings', JSON.stringify(newSettings));
 
