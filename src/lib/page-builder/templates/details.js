@@ -5,7 +5,7 @@ export const detailsTemplate = {
       type: 'hero',
       data: {
         heading: 'Wedding Details',
-        subheading: 'Everything you need to know',
+        subheading: '',
         imageId: null,
         textColor: 'light',
         height: 'medium',
@@ -13,20 +13,10 @@ export const detailsTemplate = {
       }
     },
     {
-      type: 'columns',
-      data: {
-        columns: [
-          { content: '<p>Date and time details...</p>' },
-          { content: '<p>Date and time details...</p>' }
-        ],
-        count: '2',
-        spacing: 'medium'
-      }
-    },
-    {
       type: 'text_image_right',
       data: {
-        content: 'Venue details and address...',
+        content:
+          '<h2 class="text-2xl mb-6 text-center md:text-left">Wedding</h2><div class="space-y-4 text-center md:text-left"><p class="text-xl">4:00 PM</p><p>April 18, 2026</p><p class="font-medium">Windemere Farms</p><p class="text-gray-600">200 Windermere Rd, San Marcos, TX 78666</p></div>',
         imageId: null,
         caption: '',
         imageWidth: '1/2',
@@ -34,19 +24,20 @@ export const detailsTemplate = {
       }
     },
     {
-      type: 'text',
+      type: 'spacer',
       data: {
-        content: 'Detailed timeline of events...'
+        height: 'large'
       }
     },
     {
-      type: 'button',
+      type: 'text_image_left',
       data: {
-        text: 'Add to Calendar',
-        link: '#',
-        style: 'primary',
-        alignment: 'center',
-        size: 'medium'
+        content:
+          '<h2 class="text-2xl mb-6 text-center md:text-left">Accommodation</h2><div class="space-y-4 text-center md:text-left"><p class="font-medium">Melrose River Club</p><p class="text-gray-600">70 Riverbend Dr, San Marcos, TX 78666</p><p>Booking Code: <span class="font-mono text-primary">WEDDING2026</span></p><p class="text-gray-600">Reserve your room!</p></div>',
+        imageId: null,
+        caption: '',
+        imageWidth: '1/2',
+        verticalAlignment: 'center'
       }
     }
   ]

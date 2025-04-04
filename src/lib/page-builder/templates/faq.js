@@ -4,8 +4,8 @@ export const faqTemplate = {
     {
       type: 'hero',
       data: {
-        heading: 'Frequently Asked Questions',
-        subheading: 'Everything you need to know',
+        heading: 'FAQ',
+        subheading: '',
         imageId: null,
         textColor: 'light',
         height: 'medium',
@@ -13,31 +13,10 @@ export const faqTemplate = {
       }
     },
     {
-      type: 'columns',
-      data: {
-        columns: [
-          { content: '<p>Dress code information...</p>' },
-          { content: '<p>Guest policy information...</p>' }
-        ],
-        count: '2',
-        spacing: 'medium'
-      }
-    },
-    {
-      type: 'columns',
-      data: {
-        columns: [
-          { content: '<p>Timing information...</p>' },
-          { content: '<p>Parking information...</p>' }
-        ],
-        count: '2',
-        spacing: 'medium'
-      }
-    },
-    {
       type: 'text',
       data: {
-        content: 'Feel free to reach out to us directly...'
+        content:
+          '<div class="w-16 h-px bg-secondary mx-auto mb-8"></div><div class="space-y-4"><ul class="flex flex-col text-left gap-6"><li><p><strong class="text-primary">Where To Stay?</strong> Stay wherever you want!</p></li><li><p><strong class="text-primary">Kids?</strong> Nope.</p></li></ul></div>'
       }
     }
   ]

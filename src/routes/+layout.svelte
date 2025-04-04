@@ -110,12 +110,8 @@
     <nav class="max-w-4xl mx-auto px-4 py-4">
       <ul class="flex gap-6 justify-center">
         <li><a href="/" class:active={data.pathname === '/'}>Home</a></li>
-        <li><a href="/story" class:active={data.pathname === '/story'}>Our Story</a></li>
-        <li><a href="/details" class:active={data.pathname === '/details'}>Details</a></li>
         <li><a href="/gallery" class:active={data.pathname === '/gallery'}>Gallery</a></li>
         <li><a href="/rsvp" class:active={data.pathname === '/rsvp'}>RSVP</a></li>
-        <li><a href="/lodging" class:active={data.pathname === '/lodging'}>Lodging</a></li>
-        <li><a href="/faq" class:active={data.pathname === '/faq'}>FAQ</a></li>
         <li><a href="/registry" class:active={data.pathname === '/registry'}>Registry</a></li>
         {#each customPages as page}
           <li>

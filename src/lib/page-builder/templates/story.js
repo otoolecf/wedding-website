@@ -5,7 +5,7 @@ export const storyTemplate = {
       type: 'hero',
       data: {
         heading: 'Our Story',
-        subheading: 'How we met and fell in love',
+        subheading: '',
         imageId: null,
         textColor: 'light',
         height: 'medium',
@@ -15,7 +15,8 @@ export const storyTemplate = {
     {
       type: 'text_image_right',
       data: {
-        content: 'Share your story of how you first met...',
+        content:
+          '<div class="text-secondary mb-2">Fall 2015</div><h2 class="text-2xl mb-4 text-primary">How We Met</h2><p class="leading-relaxed">An awkward waiting around aggregiously early to an 8 AM friday physics class</p>',
         imageId: null,
         caption: '',
         imageWidth: '1/2',
@@ -23,35 +24,20 @@ export const storyTemplate = {
       }
     },
     {
-      type: 'divider',
+      type: 'spacer',
       data: {
-        style: 'dashed',
-        width: 'wide',
-        color: 'medium'
+        height: 'large'
       }
     },
     {
       type: 'text_image_left',
       data: {
-        content: 'Tell the story of your proposal...',
+        content:
+          '<div class="text-secondary mb-2">August 26, 2024</div><h2 class="text-2xl mb-4 text-primary">The Proposal</h2><p class="leading-relaxed">After hours of driving with no food and a dissapointing stop at a closed Anderson\'s Pea Soup, a grumpy Colette went on a hike where Connor was walking too fast.</p>',
         imageId: null,
         caption: '',
         imageWidth: '1/2',
         verticalAlignment: 'center'
-      }
-    },
-    {
-      type: 'gallery',
-      data: {
-        images: [],
-        columns: '3',
-        spacing: 'medium'
-      }
-    },
-    {
-      type: 'text',
-      data: {
-        content: 'Share your excitement for the future...'
       }
     }
   ]

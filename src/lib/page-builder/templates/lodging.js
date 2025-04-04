@@ -4,8 +4,8 @@ export const lodgingTemplate = {
     {
       type: 'hero',
       data: {
-        heading: 'Accommodations',
-        subheading: 'Where to stay during the celebration',
+        heading: 'Lodging Options',
+        subheading: '',
         imageId: null,
         textColor: 'light',
         height: 'medium',
@@ -15,7 +15,8 @@ export const lodgingTemplate = {
     {
       type: 'text_image_right',
       data: {
-        content: 'Information about the hotel block and booking...',
+        content:
+          '<h2 class="text-2xl mb-6 text-center md:text-left text-primary">Melrose River Club</h2><div class="space-y-4 text-center md:text-left"><p class="text-xl">Boutique on the San Marcos River!</p><p class="font-medium">Don\'t be full by the sourroundings, the location is prime!</p></div>',
         imageId: null,
         caption: '',
         imageWidth: '1/2',
@@ -23,30 +24,20 @@ export const lodgingTemplate = {
       }
     },
     {
-      type: 'columns',
+      type: 'spacer',
       data: {
-        columns: [
-          { content: '<p>Details about standard room options...</p>' },
-          { content: '<p>Details about suite options...</p>' }
-        ],
-        count: '2',
-        spacing: 'medium'
+        height: 'large'
       }
     },
     {
-      type: 'text',
+      type: 'text_image_left',
       data: {
-        content: 'Information about getting to and from the venue...'
-      }
-    },
-    {
-      type: 'button',
-      data: {
-        text: 'Book Your Room',
-        link: '#',
-        style: 'primary',
-        alignment: 'center',
-        size: 'medium'
+        content:
+          '<h2 class="text-2xl mb-6 text-center md:text-left text-primary">Crystal River Inn</h2><div class="space-y-4 text-center md:text-left"><p>The crystal river inn is a small B&B in San Marcos!</p><p class="text-secondary">Not associated with the wedding.</p></div>',
+        imageId: null,
+        caption: '',
+        imageWidth: '1/2',
+        verticalAlignment: 'center'
       }
     }
   ]
