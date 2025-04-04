@@ -1,7 +1,6 @@
 <!-- src/lib/components/page-builder/SectionEditor.svelte -->
 <script>
   import SectionPreview from './SectionPreview.svelte';
-  import TemplateSelector from './TemplateSelector.svelte';
   import { onMount, onDestroy, afterUpdate } from 'svelte';
   import { pageBuilderStore } from '$lib/page-builder/store';
   import { SECTION_SCHEMA } from '$lib/page-builder/schema';
@@ -350,9 +349,6 @@
 </script>
 
 <div class="section-editor">
-  <div class="template-section">
-    <TemplateSelector />
-  </div>
   <div class="sections-container">
     <div class="bg-white p-6 rounded shadow-sm">
       {#if !section}
@@ -589,13 +585,6 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-  }
-
-  .template-section {
-    background: white;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   .sections-container {

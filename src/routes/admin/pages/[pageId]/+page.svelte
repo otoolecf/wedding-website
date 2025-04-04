@@ -11,6 +11,7 @@
   import AdminNav from '$lib/components/AdminNav.svelte';
   import SectionEditor from '$lib/components/page-builder/SectionEditor.svelte';
   import PagePreview from '$lib/components/page-builder/PagePreview.svelte';
+  import TemplateSelector from '$lib/components/page-builder/TemplateSelector.svelte';
 
   export let data;
 
@@ -126,6 +127,7 @@
       </div>
 
       <div class="space-x-2 flex items-center">
+        <TemplateSelector />
         <button
           class="px-3 py-1 border rounded bg-white hover:bg-gray-50 text-sm transition-colors"
           on:click={togglePreview}

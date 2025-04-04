@@ -6,6 +6,8 @@
 
   let showTemplateSelector = false;
   let selectedTemplate = null;
+  let showConfirmDialog = false;
+  let templateToApply = null;
 
   const templateNames = {
     story: 'Our Story',
@@ -15,20 +17,30 @@
     registry: 'Registry'
   };
 
-  function applyTemplate(templateName) {
+  function openTemplateConfirmation(templateName) {
+    templateToApply = templateName;
+    showConfirmDialog = true;
+  }
+
+  function applyTemplate(templateName, mode = 'replace') {
     const template = templates[templateName];
     if (!template) return;
 
-    // Clear existing sections
-    $pageBuilderStore.sections = [];
-
-    // Add sections from template
-    template.sections.forEach((sectionData, index) => {
+    // Create new sections from template
+    const newSections = template.sections.map((sectionData, index) => {
       const section = createSection(sectionData.type, index);
       // Update section data with template data
-      Object.assign(section.data, sectionData.data);
-      $pageBuilderStore.sections.push(section);
+      Object.assign(section.properties, sectionData.data);
+      return section;
     });
+
+    if (mode === 'replace') {
+      // Replace all sections
+      $pageBuilderStore.sections = newSections;
+    } else {
+      // Append new sections
+      $pageBuilderStore.sections = [...$pageBuilderStore.sections, ...newSections];
+    }
 
     // Update page name if it's empty
     if (!$pageBuilderStore.pageName) {
@@ -36,6 +48,13 @@
     }
 
     showTemplateSelector = false;
+    showConfirmDialog = false;
+    templateToApply = null;
+  }
+
+  function cancelTemplateApplication() {
+    showConfirmDialog = false;
+    templateToApply = null;
   }
 </script>
 
@@ -59,11 +78,50 @@
               </div>
             {/each}
           </div>
-          <button class="btn btn-secondary" on:click={() => applyTemplate(key)}>
+          <button class="btn btn-secondary" on:click={() => openTemplateConfirmation(key)}>
             Apply Template
           </button>
         </div>
       {/each}
+    </div>
+  {/if}
+
+  {#if showConfirmDialog && templateToApply}
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h3 class="text-lg font-semibold mb-4">Apply Template</h3>
+        <p class="mb-4">
+          How would you like to apply the {templateNames[templateToApply]} template?
+        </p>
+        <div class="space-y-2">
+          <button
+            class="w-full p-3 border rounded text-left hover:bg-gray-50"
+            on:click={() => applyTemplate(templateToApply, 'append')}
+          >
+            <div class="font-medium">Add to existing content</div>
+            <div class="text-sm text-gray-500">
+              Template sections will be added after your current content
+            </div>
+          </button>
+          <button
+            class="w-full p-3 border rounded text-left hover:bg-gray-50"
+            on:click={() => applyTemplate(templateToApply, 'replace')}
+          >
+            <div class="font-medium">Replace existing content</div>
+            <div class="text-sm text-gray-500">
+              This will remove all current sections and replace them with the template
+            </div>
+          </button>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button
+            class="px-4 py-2 text-gray-600 hover:text-gray-800"
+            on:click={cancelTemplateApplication}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   {/if}
 </div>
