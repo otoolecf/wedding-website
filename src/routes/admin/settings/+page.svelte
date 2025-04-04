@@ -10,6 +10,8 @@
     venueAddress: '',
     groomName: '',
     brideName: '',
+    showCountdown: true,
+    nameOrder: 'groom-first',
     rsvpButtonText: 'RSVP Now',
     rsvpButtonLink: '/rsvp'
   };
@@ -95,6 +97,16 @@
       </div>
 
       <div>
+        <label for="nameOrder" class="block text-sm font-medium text-gray-700 mb-1">
+          Name Order
+        </label>
+        <select id="nameOrder" bind:value={settings.nameOrder} class="w-full p-2 border rounded">
+          <option value="groom-first">Groom's Name First</option>
+          <option value="bride-first">Bride's Name First</option>
+        </select>
+      </div>
+
+      <div>
         <label for="weddingDate" class="block text-sm font-medium text-gray-700 mb-1">
           Wedding Date
         </label>
@@ -118,6 +130,17 @@
           class="w-full p-2 border rounded"
           required
         />
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            bind:checked={settings.showCountdown}
+            class="form-checkbox h-4 w-4 text-primary"
+          />
+          <span class="text-sm font-medium text-gray-700">Show Countdown on Home Page</span>
+        </label>
       </div>
 
       <div class="md:col-span-2">

@@ -132,7 +132,7 @@
 {#if data.isPreview}
   <footer class="bg-accent mt-16">
     <div class="max-w-4xl mx-auto px-4 py-8 text-center">
-      <p>© {new Date().getFullYear()} Connor & Colette's Wedding</p>
+      <p>© {new Date().getFullYear()} {coupleNames}'s Wedding</p>
       <div class="mt-2 text-xs text-gray-500 flex justify-center gap-4">
         <a href="/admin" class="hover:text-gray-700">Admin</a>
         <a

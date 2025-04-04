@@ -8,6 +8,8 @@ const defaultSettings = {
   venueAddress: '123 Wedding Street, City, State ZIP',
   groomName: "Groom's Name",
   brideName: "Bride's Name",
+  showCountdown: true,
+  nameOrder: 'groom-first', // 'groom-first' or 'bride-first'
   rsvpButtonText: 'RSVP Now',
   rsvpButtonLink: '/rsvp'
 };
@@ -41,6 +43,8 @@ export async function POST({ request, platform }) {
       'venueAddress',
       'groomName',
       'brideName',
+      'showCountdown',
+      'nameOrder',
       'rsvpButtonText',
       'rsvpButtonLink'
     ];
@@ -49,6 +53,11 @@ export async function POST({ request, platform }) {
       if (!newSettings[field]) {
         return json({ error: `Missing required field: ${field}` }, { status: 400 });
       }
+    }
+
+    // Validate nameOrder
+    if (!['groom-first', 'bride-first'].includes(newSettings.nameOrder)) {
+      return json({ error: 'Invalid name order value' }, { status: 400 });
     }
 
     // Save to KV
