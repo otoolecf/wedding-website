@@ -55,6 +55,16 @@
       saving = false;
     }
   }
+
+  function swapNameOrder() {
+    settings.nameOrder = settings.nameOrder === 'groom-first' ? 'bride-first' : 'groom-first';
+  }
+
+  // Compute preview of names based on current order
+  $: namePreview =
+    settings.nameOrder === 'groom-first'
+      ? `${settings.groomName} & ${settings.brideName}`
+      : `${settings.brideName} & ${settings.groomName}`;
 </script>
 
 <AdminNav />
@@ -96,14 +106,20 @@
         />
       </div>
 
-      <div>
-        <label for="nameOrder" class="block text-sm font-medium text-gray-700 mb-1">
-          Name Order
-        </label>
-        <select id="nameOrder" bind:value={settings.nameOrder} class="w-full p-2 border rounded">
-          <option value="groom-first">Groom's Name First</option>
-          <option value="bride-first">Bride's Name First</option>
-        </select>
+      <div class="md:col-span-2">
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-sm font-medium text-gray-700">Name Order</label>
+          <button
+            type="button"
+            on:click={swapNameOrder}
+            class="text-sm text-primary hover:text-primary/80 transition-colors"
+          >
+            Swap Order
+          </button>
+        </div>
+        <div class="p-4 bg-gray-50 rounded border">
+          <p class="text-center text-lg font-medium">{namePreview}</p>
+        </div>
       </div>
 
       <div>

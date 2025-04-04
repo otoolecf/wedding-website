@@ -16,15 +16,20 @@
 
   // Calculate days until wedding
   $: {
-    const weddingDate = new Date(data.settings.weddingDate);
+    const weddingDateTime = new Date(`${data.settings.weddingDate}T${data.settings.weddingTime}`);
     const today = new Date();
-    const diffTime = weddingDate - today;
-    daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const weddingStart = new Date(
+      weddingDateTime.getFullYear(),
+      weddingDateTime.getMonth(),
+      weddingDateTime.getDate()
+    );
+    daysUntil = Math.ceil((weddingStart - todayStart) / (1000 * 60 * 60 * 24));
   }
 
   // Format wedding date
   $: {
-    const date = new Date(data.settings.weddingDate);
+    const date = new Date(`${data.settings.weddingDate}T${data.settings.weddingTime}`);
     formattedDate = date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',

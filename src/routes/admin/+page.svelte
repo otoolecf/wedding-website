@@ -12,6 +12,13 @@
   </div>
 
   <div class="space-y-4">
+    <a
+      href="/admin/settings"
+      class="block p-4 bg-white rounded shadow hover:bg-gray-100 transition"
+    >
+      <h2 class="text-xl font-medium">Manage Settings</h2>
+      <p class="text-gray-600">Configure wedding details, names, dates, and display options.</p>
+    </a>
     <a href="/admin/rsvp" class="block p-4 bg-white rounded shadow hover:bg-gray-100 transition">
       <h2 class="text-xl font-medium">Manage RSVPs</h2>
       <p class="text-gray-600">View and manage RSVPs for the wedding.</p>
