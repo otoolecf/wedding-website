@@ -50,16 +50,15 @@
       const pagesData = await pagesResponse.json();
       const customPages = pagesData.pages.sort((a, b) => a.order - b.order);
 
-      // Load default pages from settings
-      const settingsResponse = await fetch('/api/admin/settings');
-      if (!settingsResponse.ok) throw new Error('Failed to load settings');
-      const settingsData = await settingsResponse.json();
-      const defaultPages = settingsData.settings.defaultPages.sort((a, b) => a.order - b.order);
+      // Get default pages from settings
+      const defaultPages = data.settings.defaultPages.sort((a, b) => a.order - b.order);
 
       // Combine and sort all pages
       allPages = [...defaultPages, ...customPages].sort((a, b) => a.order - b.order);
     } catch (error) {
       console.error('Error loading pages:', error);
+      // If there's an error, use the default pages from settings
+      allPages = data.settings.defaultPages.sort((a, b) => a.order - b.order);
     }
   }
 
@@ -116,26 +115,24 @@
   {/if}
 </svelte:head>
 
-{#if data.isPreview}
-  <header class="fixed w-full top-0 bg-white/90 backdrop-blur-sm shadow-sm z-50">
-    <nav class="max-w-4xl mx-auto px-4 py-4">
-      <ul class="flex gap-6 justify-center">
-        {#each allPages as page}
-          <li>
-            <a
-              href={page.slug ? `/${page.slug}` : '/'}
-              class:active={data.pathname === (page.slug ? `/${page.slug}` : '/')}
-            >
-              {page.name}
-            </a>
-          </li>
-        {/each}
-      </ul>
-    </nav>
-  </header>
-{/if}
+<header class="fixed w-full top-0 bg-white/90 backdrop-blur-sm shadow-sm z-50">
+  <nav class="max-w-4xl mx-auto px-4 py-4">
+    <ul class="flex gap-6 justify-center">
+      {#each allPages as page}
+        <li>
+          <a
+            href={page.slug ? `/${page.slug}` : '/'}
+            class:active={data.pathname === (page.slug ? `/${page.slug}` : '/')}
+          >
+            {page.name}
+          </a>
+        </li>
+      {/each}
+    </ul>
+  </nav>
+</header>
 
-<main class="{data.isPreview ? 'mt-16' : ''} min-h-screen">
+<main class="mt-16 min-h-screen">
   <slot />
 </main>
 
