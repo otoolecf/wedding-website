@@ -47,8 +47,8 @@
   }
 
   function handleNameInput() {
-    // Generate slug from name if slug is empty
-    if (!newPage.slug) {
+    // Only update slug if it hasn't been manually edited
+    if (!slugManuallyEdited) {
       newPage.slug = newPage.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -57,6 +57,8 @@
   }
 
   function handleSlugInput() {
+    // Mark that the slug has been manually edited
+    slugManuallyEdited = true;
     // Clean up slug
     newPage.slug = newPage.slug
       .toLowerCase()
@@ -91,6 +93,7 @@
 
       showNewPageModal = false;
       newPage = { name: '', slug: '' };
+      slugManuallyEdited = false;
       await loadPages();
     } catch (err) {
       console.error('Error creating page:', err);
@@ -308,7 +311,11 @@
       <div class="mt-6 flex justify-end gap-2">
         <button
           class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors"
-          on:click={() => (showNewPageModal = false)}
+          on:click={() => {
+            showNewPageModal = false;
+            newPage = { name: '', slug: '' };
+            slugManuallyEdited = false;
+          }}
         >
           Cancel
         </button>
