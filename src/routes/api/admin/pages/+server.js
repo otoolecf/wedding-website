@@ -113,20 +113,14 @@ export async function POST({ request, platform }) {
       lastModified: page.lastModified
     });
 
-    // Save the page data
-    await platform.env.IMAGES_KV.put(`page_builder_page:${pageId}`, JSON.stringify(page));
-
-    // Update the pages list
+    // Save the updated list of pages
     await platform.env.IMAGES_KV.put('page_builder_pages_list', JSON.stringify(pagesData));
 
-    console.log(`[${requestId}] Created new page: ${page.name} (${page.id})`);
-    return jsonResponse(
-      {
-        message: 'Page created successfully',
-        page
-      },
-      201
-    );
+    // Save the full page data
+    await platform.env.IMAGES_KV.put(`page_builder_page:${page.id}`, JSON.stringify(page));
+
+    console.log(`[${requestId}] Created new page: ${page.name} (${page.slug})`);
+    return jsonResponse({ page });
   } catch (error) {
     console.error(`[${requestId}] Error creating page:`, error);
     return jsonResponse({ error: 'Failed to create page' }, 500);
