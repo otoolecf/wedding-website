@@ -121,8 +121,17 @@
       {#each allPages as page}
         <li>
           <a
-            href={page.slug ? `/${page.slug}` : '/'}
-            class:active={data.pathname === (page.slug ? `/${page.slug}` : '/')}
+            href={page.slug
+              ? page.id.startsWith('page_')
+                ? `/pages/${page.slug}`
+                : `/${page.slug}`
+              : '/'}
+            class:active={data.pathname ===
+              (page.slug
+                ? page.id.startsWith('page_')
+                  ? `/pages/${page.slug}`
+                  : `/${page.slug}`
+                : '/')}
           >
             {page.name}
           </a>
