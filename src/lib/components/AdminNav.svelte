@@ -27,6 +27,15 @@
           Settings
         </a>
         <a
+          href="/admin/registry"
+          class="px-3 py-2 rounded hover:bg-primary hover:text-white transition-colors {$page.url
+            .pathname === '/admin/registry'
+            ? 'bg-primary text-white'
+            : ''}"
+        >
+          Registry
+        </a>
+        <a
           href="/admin/gallery"
           class="px-3 py-2 rounded hover:bg-primary hover:text-white transition-colors {$page.url
             .pathname === '/admin/gallery'
