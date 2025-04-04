@@ -1,6 +1,9 @@
 <script>
   import ThemeStatus from '$lib/components/ThemeStatus.svelte';
+  import AdminNav from '$lib/components/AdminNav.svelte';
 </script>
+
+<AdminNav />
 
 <div class="max-w-7xl mx-auto px-4 py-12">
   <div class="flex justify-between items-center mb-8">

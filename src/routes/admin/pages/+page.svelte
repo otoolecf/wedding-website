@@ -12,6 +12,7 @@
     name: '',
     slug: ''
   };
+  let slugManuallyEdited = false;
 
   onMount(async () => {
     await fetchPages();
@@ -45,10 +46,15 @@
   }
 
   function handleNameInput() {
-    // Auto-generate slug when name changes
-    if (!newPage.slug || newPage.slug === generateSlug(newPage.name.replace(/^.*$/, ''))) {
+    // Only auto-generate slug if it hasn't been manually edited
+    if (!slugManuallyEdited) {
       newPage.slug = generateSlug(newPage.name);
     }
+  }
+
+  function handleSlugInput() {
+    // Mark the slug as manually edited when the user changes it
+    slugManuallyEdited = true;
   }
 
   async function createNewPage() {
@@ -271,6 +277,7 @@
               id="page-slug"
               type="text"
               bind:value={newPage.slug}
+              on:input={handleSlugInput}
               class="flex-1 p-2 border rounded-r"
               placeholder="about-us"
             />

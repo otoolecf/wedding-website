@@ -4,6 +4,7 @@
   import { themePresets, presetList, getPreset } from '$lib/theme/presets';
   import { allFonts, fontOptions } from '$lib/theme/fonts';
   import CustomFontInput from '$lib/components/CustomFontInput.svelte';
+  import AdminNav from '$lib/components/AdminNav.svelte';
 
   // Theme state
   let theme = {
@@ -161,6 +162,8 @@
     />
   {/if}
 </svelte:head>
+
+<AdminNav />
 
 <div class="max-w-4xl mx-auto px-4 py-12">
   <div class="flex justify-between items-center mb-8">
