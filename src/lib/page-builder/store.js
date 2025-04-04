@@ -221,7 +221,8 @@ export const createPageBuilderStore = () => {
         body: JSON.stringify({
           name,
           slug,
-          sections: []
+          sections: [],
+          order: 999 // Default to end of list
         })
       });
 

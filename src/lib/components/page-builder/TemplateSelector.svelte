@@ -63,7 +63,7 @@
 
 <div class="template-selector">
   <button
-    class="btn btn-primary mb-4"
+    class="px-3 py-1 border rounded bg-white hover:bg-gray-50 text-sm transition-colors"
     on:click={() => (showTemplateSelector = !showTemplateSelector)}
   >
     {showTemplateSelector ? 'Cancel' : 'Apply Template'}

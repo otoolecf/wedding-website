@@ -9,6 +9,7 @@
 
   // Extract custom fonts from theme for loading
   let customFontsToLoad = [];
+  let customPages = [];
 
   // Process theme fonts to determine which custom fonts need to be loaded
   function processThemeFonts(theme) {
@@ -40,12 +41,27 @@
     return customFonts;
   }
 
+  // Load custom pages
+  async function loadCustomPages() {
+    try {
+      const response = await fetch('/api/admin/pages');
+      if (!response.ok) throw new Error('Failed to load pages');
+      const data = await response.json();
+      customPages = data.pages
+        .filter((page) => page.order !== undefined)
+        .sort((a, b) => a.order - b.order);
+    } catch (error) {
+      console.error('Error loading custom pages:', error);
+    }
+  }
+
   // Apply theme when component mounts
-  onMount(() => {
+  onMount(async () => {
     if (data.theme) {
       applyTheme(data.theme);
       customFontsToLoad = processThemeFonts(data.theme);
     }
+    await loadCustomPages();
   });
 
   // Function to apply theme to CSS variables
@@ -98,6 +114,13 @@
         <li><a href="/lodging" class:active={data.pathname === '/lodging'}>Lodging</a></li>
         <li><a href="/faq" class:active={data.pathname === '/faq'}>FAQ</a></li>
         <li><a href="/registry" class:active={data.pathname === '/registry'}>Registry</a></li>
+        {#each customPages as page}
+          <li>
+            <a href="/pages/{page.slug}" class:active={data.pathname === `/pages/${page.slug}`}>
+              {page.name}
+            </a>
+          </li>
+        {/each}
       </ul>
     </nav>
   </header>

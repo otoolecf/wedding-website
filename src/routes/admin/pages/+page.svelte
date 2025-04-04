@@ -2,6 +2,7 @@
 <script>
   import { onMount } from 'svelte';
   import AdminNav from '$lib/components/AdminNav.svelte';
+  import PageOrderManager from '$lib/components/PageOrderManager.svelte';
 
   // State
   let pages = [];
@@ -15,21 +16,21 @@
   let slugManuallyEdited = false;
 
   onMount(async () => {
-    await fetchPages();
+    await loadPages();
   });
 
-  async function fetchPages() {
+  async function loadPages() {
     loading = true;
     error = null;
 
     try {
       const response = await fetch('/api/admin/pages');
       if (!response.ok) {
-        throw new Error('Failed to fetch pages');
+        throw new Error('Failed to load pages');
       }
 
       const data = await response.json();
-      pages = data.pages || [];
+      pages = data.pages.sort((a, b) => a.order - b.order);
     } catch (err) {
       console.error('Error fetching pages:', err);
       error = 'Failed to load pages. Please try again.';
@@ -46,19 +47,25 @@
   }
 
   function handleNameInput() {
-    // Only auto-generate slug if it hasn't been manually edited
-    if (!slugManuallyEdited) {
-      newPage.slug = generateSlug(newPage.name);
+    // Generate slug from name if slug is empty
+    if (!newPage.slug) {
+      newPage.slug = newPage.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
     }
   }
 
   function handleSlugInput() {
-    // Mark the slug as manually edited when the user changes it
-    slugManuallyEdited = true;
+    // Clean up slug
+    newPage.slug = newPage.slug
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/(^-|-$)/g, '');
   }
 
   async function createNewPage() {
-    if (!newPage.name) return;
+    if (!newPage.name || !newPage.slug) return;
 
     try {
       const response = await fetch('/api/admin/pages', {
@@ -74,9 +81,9 @@
         throw new Error(errorData.error || 'Failed to create page');
       }
 
-      const data = await response.json();
-      // Redirect to the page editor for the new page
-      window.location.href = `/admin/pages/${data.page.id}`;
+      showNewPageModal = false;
+      newPage = { name: '', slug: '' };
+      await loadPages();
     } catch (err) {
       console.error('Error creating page:', err);
       error = err.message;
@@ -98,7 +105,7 @@
       }
 
       // Refresh the list of pages
-      await fetchPages();
+      await loadPages();
     } catch (err) {
       console.error('Error deleting page:', err);
       error = err.message;
@@ -125,7 +132,7 @@
 
 <div class="max-w-7xl mx-auto px-4 py-12">
   <div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-light">Page Manager</h1>
+    <h1 class="text-3xl font-light">Manage Pages</h1>
     <button
       class="px-4 py-2 bg-primary text-white rounded hover:opacity-90 transition-colors"
       on:click={() => (showNewPageModal = true)}
@@ -140,106 +147,110 @@
     </div>
   {/if}
 
-  {#if loading}
-    <div class="text-center p-12">
-      <div class="inline-block animate-spin mr-2">
-        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-          ></circle>
-          <path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
-      </div>
-      <span>Loading pages...</span>
-    </div>
-  {:else}
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-      {#if pages.length === 0}
-        <div class="text-center py-12">
-          <p class="text-gray-500 mb-4">No pages found. Create your first page to get started.</p>
-          <button
-            class="px-4 py-2 bg-primary text-white rounded hover:opacity-90 transition-colors"
-            on:click={() => (showNewPageModal = true)}
-          >
-            Create New Page
-          </button>
+  <div class="space-y-8">
+    <PageOrderManager />
+
+    {#if loading}
+      <div class="text-center p-12">
+        <div class="inline-block animate-spin mr-2">
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
         </div>
-      {:else}
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Page Name
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                URL Path
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Last Modified
-              </th>
-              <th
-                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {#each pages as page (page.id)}
-              <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{page.name}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">
-                    <span class="font-mono">/pages/{page.slug}</span>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">
-                    {formatDate(page.lastModified)}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div class="flex justify-end space-x-2">
-                    <a
-                      href={`/admin/pages/${page.id}`}
-                      class="text-indigo-600 hover:text-indigo-900 px-2 py-1 rounded hover:bg-gray-100"
-                    >
-                      Edit
-                    </a>
-                    <a
-                      href={`/pages/${page.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-gray-100"
-                    >
-                      View
-                    </a>
-                    <button
-                      class="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-gray-100"
-                      on:click={() => deletePage(page.id, page.name)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
+        <span>Loading pages...</span>
+      </div>
+    {:else}
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        {#if pages.length === 0}
+          <div class="text-center py-12">
+            <p class="text-gray-500 mb-4">No pages found. Create your first page to get started.</p>
+            <button
+              class="px-4 py-2 bg-primary text-white rounded hover:opacity-90 transition-colors"
+              on:click={() => (showNewPageModal = true)}
+            >
+              Create New Page
+            </button>
+          </div>
+        {:else}
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Page Name
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  URL Path
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Last Modified
+                </th>
+                <th
+                  class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
               </tr>
-            {/each}
-          </tbody>
-        </table>
-      {/if}
-    </div>
-  {/if}
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {#each pages as page (page.id)}
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">{page.name}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">
+                      <span class="font-mono">/pages/{page.slug}</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">
+                      {formatDate(page.lastModified)}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex justify-end space-x-2">
+                      <a
+                        href={`/admin/pages/${page.id}`}
+                        class="text-indigo-600 hover:text-indigo-900 px-2 py-1 rounded hover:bg-gray-100"
+                      >
+                        Edit
+                      </a>
+                      <a
+                        href={`/pages/${page.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-gray-100"
+                      >
+                        View
+                      </a>
+                      <button
+                        class="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-gray-100"
+                        on:click={() => deletePage(page.id, page.name)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        {/if}
+      </div>
+    {/if}
+  </div>
 </div>
 
 <!-- New Page Modal -->
