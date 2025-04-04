@@ -2,59 +2,47 @@ export const registryTemplate = {
   name: 'Registry',
   sections: [
     {
-      type: 'HeroSection',
+      type: 'hero',
       data: {
-        title: 'Registry',
-        subtitle: 'Help us start our new life together',
-        backgroundImage: null,
-        overlayColor: 'rgba(0, 0, 0, 0.4)',
-        textColor: '#ffffff'
+        heading: 'Registry',
+        subheading: 'Help us start our new life together',
+        imageId: null,
+        textColor: 'light',
+        height: 'medium',
+        textAlignment: 'center'
       }
     },
     {
-      type: 'TextSection',
+      type: 'text',
       data: {
-        title: 'Our Registry',
-        content: 'We are registered at the following stores...',
-        alignment: 'center',
-        backgroundColor: '#ffffff'
+        content: 'We are registered at the following stores...'
       }
     },
     {
-      type: 'ColumnsSection',
+      type: 'columns',
       data: {
-        title: 'Registry Links',
         columns: [
-          {
-            title: 'Store 1',
-            content: 'Description of registry items...',
-            icon: 'gift'
-          },
-          {
-            title: 'Store 2',
-            content: 'Description of registry items...',
-            icon: 'gift'
-          }
+          { content: '<p>Description of registry items...</p>' },
+          { content: '<p>Description of registry items...</p>' }
         ],
-        backgroundColor: '#f9fafb'
+        count: '2',
+        spacing: 'medium'
       }
     },
     {
-      type: 'ButtonSection',
+      type: 'button',
       data: {
         text: 'View Registry',
         link: '#',
         style: 'primary',
-        alignment: 'center'
+        alignment: 'center',
+        size: 'medium'
       }
     },
     {
-      type: 'TextSection',
+      type: 'text',
       data: {
-        title: 'Alternative Gifts',
-        content: 'Information about alternative gift options...',
-        alignment: 'center',
-        backgroundColor: '#ffffff'
+        content: 'Information about alternative gift options...'
       }
     }
   ]

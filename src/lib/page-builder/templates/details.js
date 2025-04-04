@@ -2,60 +2,51 @@ export const detailsTemplate = {
   name: 'Wedding Details',
   sections: [
     {
-      type: 'HeroSection',
+      type: 'hero',
       data: {
-        title: 'Wedding Details',
-        subtitle: 'Everything you need to know',
-        backgroundImage: null,
-        overlayColor: 'rgba(0, 0, 0, 0.4)',
-        textColor: '#ffffff'
+        heading: 'Wedding Details',
+        subheading: 'Everything you need to know',
+        imageId: null,
+        textColor: 'light',
+        height: 'medium',
+        textAlignment: 'center'
       }
     },
     {
-      type: 'ColumnsSection',
+      type: 'columns',
       data: {
-        title: 'Date & Time',
         columns: [
-          {
-            title: 'Ceremony',
-            content: 'Date and time details...',
-            icon: 'calendar'
-          },
-          {
-            title: 'Reception',
-            content: 'Date and time details...',
-            icon: 'clock'
-          }
+          { content: '<p>Date and time details...</p>' },
+          { content: '<p>Date and time details...</p>' }
         ],
-        backgroundColor: '#ffffff'
+        count: '2',
+        spacing: 'medium'
       }
     },
     {
-      type: 'TextImageSection',
+      type: 'text_image_right',
       data: {
-        title: 'Location',
         content: 'Venue details and address...',
-        image: null,
-        imagePosition: 'right',
-        backgroundColor: '#f9fafb'
+        imageId: null,
+        caption: '',
+        imageWidth: '1/2',
+        verticalAlignment: 'center'
       }
     },
     {
-      type: 'TextSection',
+      type: 'text',
       data: {
-        title: 'Schedule',
-        content: 'Detailed timeline of events...',
-        alignment: 'center',
-        backgroundColor: '#ffffff'
+        content: 'Detailed timeline of events...'
       }
     },
     {
-      type: 'ButtonSection',
+      type: 'button',
       data: {
         text: 'Add to Calendar',
         link: '#',
         style: 'primary',
-        alignment: 'center'
+        alignment: 'center',
+        size: 'medium'
       }
     }
   ]

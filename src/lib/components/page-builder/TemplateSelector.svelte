@@ -133,17 +133,30 @@
 
   .template-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
     margin-top: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
   }
 
   .template-card {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    padding: 1rem;
+    padding: 1.5rem;
     text-align: center;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+
+  .template-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
   .template-card h3 {
@@ -157,6 +170,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-height: 120px;
   }
 
   .template-section {

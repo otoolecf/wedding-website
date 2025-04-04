@@ -2,60 +2,42 @@ export const faqTemplate = {
   name: 'FAQ',
   sections: [
     {
-      type: 'HeroSection',
+      type: 'hero',
       data: {
-        title: 'Frequently Asked Questions',
-        subtitle: 'Everything you need to know',
-        backgroundImage: null,
-        overlayColor: 'rgba(0, 0, 0, 0.4)',
-        textColor: '#ffffff'
+        heading: 'Frequently Asked Questions',
+        subheading: 'Everything you need to know',
+        imageId: null,
+        textColor: 'light',
+        height: 'medium',
+        textAlignment: 'center'
       }
     },
     {
-      type: 'ColumnsSection',
+      type: 'columns',
       data: {
-        title: 'Common Questions',
         columns: [
-          {
-            title: 'What should I wear?',
-            content: 'Dress code information...',
-            icon: 'clothes'
-          },
-          {
-            title: 'Can I bring a plus one?',
-            content: 'Guest policy information...',
-            icon: 'people'
-          }
+          { content: '<p>Dress code information...</p>' },
+          { content: '<p>Guest policy information...</p>' }
         ],
-        backgroundColor: '#ffffff'
+        count: '2',
+        spacing: 'medium'
       }
     },
     {
-      type: 'ColumnsSection',
+      type: 'columns',
       data: {
-        title: 'More Questions',
         columns: [
-          {
-            title: 'What time should I arrive?',
-            content: 'Timing information...',
-            icon: 'clock'
-          },
-          {
-            title: 'Where should I park?',
-            content: 'Parking information...',
-            icon: 'car'
-          }
+          { content: '<p>Timing information...</p>' },
+          { content: '<p>Parking information...</p>' }
         ],
-        backgroundColor: '#f9fafb'
+        count: '2',
+        spacing: 'medium'
       }
     },
     {
-      type: 'TextSection',
+      type: 'text',
       data: {
-        title: 'Still have questions?',
-        content: 'Feel free to reach out to us directly...',
-        alignment: 'center',
-        backgroundColor: '#ffffff'
+        content: 'Feel free to reach out to us directly...'
       }
     }
   ]

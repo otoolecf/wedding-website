@@ -2,60 +2,51 @@ export const lodgingTemplate = {
   name: 'Lodging',
   sections: [
     {
-      type: 'HeroSection',
+      type: 'hero',
       data: {
-        title: 'Accommodations',
-        subtitle: 'Where to stay during the celebration',
-        backgroundImage: null,
-        overlayColor: 'rgba(0, 0, 0, 0.4)',
-        textColor: '#ffffff'
+        heading: 'Accommodations',
+        subheading: 'Where to stay during the celebration',
+        imageId: null,
+        textColor: 'light',
+        height: 'medium',
+        textAlignment: 'center'
       }
     },
     {
-      type: 'TextImageSection',
+      type: 'text_image_right',
       data: {
-        title: 'Hotel Block',
         content: 'Information about the hotel block and booking...',
-        image: null,
-        imagePosition: 'right',
-        backgroundColor: '#ffffff'
+        imageId: null,
+        caption: '',
+        imageWidth: '1/2',
+        verticalAlignment: 'center'
       }
     },
     {
-      type: 'ColumnsSection',
+      type: 'columns',
       data: {
-        title: 'Room Options',
         columns: [
-          {
-            title: 'Standard Room',
-            content: 'Details about standard room options...',
-            icon: 'bed'
-          },
-          {
-            title: 'Suite',
-            content: 'Details about suite options...',
-            icon: 'home'
-          }
+          { content: '<p>Details about standard room options...</p>' },
+          { content: '<p>Details about suite options...</p>' }
         ],
-        backgroundColor: '#f9fafb'
+        count: '2',
+        spacing: 'medium'
       }
     },
     {
-      type: 'TextSection',
+      type: 'text',
       data: {
-        title: 'Transportation',
-        content: 'Information about getting to and from the venue...',
-        alignment: 'center',
-        backgroundColor: '#ffffff'
+        content: 'Information about getting to and from the venue...'
       }
     },
     {
-      type: 'ButtonSection',
+      type: 'button',
       data: {
         text: 'Book Your Room',
         link: '#',
         style: 'primary',
-        alignment: 'center'
+        alignment: 'center',
+        size: 'medium'
       }
     }
   ]
