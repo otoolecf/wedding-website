@@ -103,7 +103,10 @@
       <!-- Hero Section Preview -->
     {:else if section.type === 'hero'}
       <div class="preview-content">
-        <div class="relative w-full h-48 overflow-hidden rounded bg-gray-800">
+        <div
+          class="relative w-full h-48 overflow-hidden rounded"
+          style="background-color: var(--color-primary);"
+        >
           {#if section.properties.imageId}
             <AssignedImage
               locationId={section.properties.imageId}
@@ -113,15 +116,20 @@
           {/if}
 
           <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
-            <h2 class="text-xl font-bold text-white mb-2">
+            <h2 class="text-xl font-bold mb-2" style="color: var(--color-background);">
               {section.properties.heading || 'Hero Heading'}
             </h2>
             {#if section.properties.subheading}
-              <p class="text-white text-sm">{section.properties.subheading}</p>
+              <p style="color: var(--color-background);" class="text-sm">
+                {section.properties.subheading}
+              </p>
             {/if}
 
             {#if section.properties.buttonText}
-              <button class="mt-2 px-4 py-1 text-sm bg-primary text-white rounded">
+              <button
+                class="mt-2 px-4 py-1 text-sm rounded"
+                style="background-color: var(--color-background); color: var(--color-primary);"
+              >
                 {section.properties.buttonText}
               </button>
             {/if}
