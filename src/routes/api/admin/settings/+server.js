@@ -105,13 +105,26 @@ export async function POST({ request, platform }) {
     // If we get here, all pages are valid
     console.log('All pages validated successfully');
 
-    // Reassign sequential order numbers
-    newSettings.defaultPages = newSettings.defaultPages
-      .sort((a, b) => a.order - b.order) // First sort by current order
+    // Reassign sequential order numbers to all pages
+    const allPages = [
+      ...newSettings.defaultPages,
+      ...(newSettings.pages || []) // Include non-default pages if they exist
+    ]
+      .sort((a, b) => a.order - b.order) // Sort by current order
       .map((page, index) => ({
         ...page,
         order: index // Assign new sequential order numbers
       }));
+
+    // Split back into default and non-default pages
+    newSettings.defaultPages = allPages.filter((page) =>
+      newSettings.defaultPages.some((defaultPage) => defaultPage.id === page.id)
+    );
+    if (newSettings.pages) {
+      newSettings.pages = allPages.filter(
+        (page) => !newSettings.defaultPages.some((defaultPage) => defaultPage.id === page.id)
+      );
+    }
 
     // Save to KV
     await platform.env.IMAGES_KV.put('wedding_settings', JSON.stringify(newSettings));
