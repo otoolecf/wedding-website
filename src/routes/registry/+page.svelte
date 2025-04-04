@@ -2,11 +2,17 @@
 <script>
   import { page } from '$app/stores';
 
+  let showVenmo = false;
+
   export const load = async ({ fetch }) => {
     const response = await fetch('/api/admin/settings');
     const { settings } = await response.json();
     return { settings };
   };
+
+  function toggleVenmo() {
+    showVenmo = !showVenmo;
+  }
 </script>
 
 <svelte:head>
@@ -47,19 +53,23 @@
       <p class="max-w-2xl mx-auto">
         {$page.data.settings.registries.honeymoonFund.description}
       </p>
-      {#if $page.data.settings.registries.honeymoonFund.showVenmo}
+      {#if showVenmo}
         <div class="mt-4">
           <p class="text-lg font-medium">
             Venmo: @{$page.data.settings.registries.honeymoonFund.venmoUsername}
           </p>
         </div>
       {/if}
-      <a
-        href="#"
+      <button
+        on:click={toggleVenmo}
         class="inline-block mt-6 btn-primary px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
       >
-        {$page.data.settings.registries.honeymoonFund.buttonText}
-      </a>
+        {#if showVenmo}
+          Hide Venmo
+        {:else}
+          {$page.data.settings.registries.honeymoonFund.buttonText}
+        {/if}
+      </button>
     </div>
   {/if}
 </div>
