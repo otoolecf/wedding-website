@@ -18,7 +18,6 @@
   let editingRsvp = null;
   let editedRsvp = null;
   let guestList = [];
-  let activeTab = 'dashboard';
   let settings = {};
 
   // Subscribe to form settings
@@ -241,37 +240,11 @@
     </div>
   </div>
 
-  <!-- Add tabs navigation -->
-  <div class="border-b border-gray-200 mb-8">
-    <nav class="-mb-px flex space-x-8">
-      <button
-        class={`${
-          activeTab === 'dashboard'
-            ? 'border-primary text-primary'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-        on:click={() => setActiveTab('dashboard')}
-      >
-        Dashboard
-      </button>
-      <button
-        class={`${
-          activeTab === 'settings'
-            ? 'border-primary text-primary'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-        on:click={() => setActiveTab('settings')}
-      >
-        Form Settings
-      </button>
-    </nav>
-  </div>
-
   {#if error}
     <div class="bg-red-50 text-red-600 p-4 rounded">
       {error}
     </div>
-  {:else if activeTab === 'dashboard'}
+  {:else}
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
       <div class="bg-white p-6 rounded-lg shadow-sm">
@@ -304,9 +277,6 @@
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                >Partner</th
-              >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th
               >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
@@ -356,9 +326,6 @@
                       bind:value={editedRsvp.email}
                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
-                  </td>
-                  <td class="px-6 py-4">
-                    {getPartnerName(rsvp)}
                   </td>
                   <td class="px-6 py-4">
                     <select
@@ -443,7 +410,6 @@
                     <div class="font-medium">{rsvp.name}</div>
                   </td>
                   <td class="px-6 py-4">{rsvp.email}</td>
-                  <td class="px-6 py-4">{getPartnerName(rsvp)}</td>
                   <td class="px-6 py-4">
                     <span
                       class={`px-2 py-1 rounded-full text-xs ${
@@ -536,110 +502,6 @@
             {/each}
           </tbody>
         </table>
-      </div>
-    </div>
-  {:else if activeTab === 'settings'}
-    <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-medium mb-6">Form Settings</h2>
-      <div class="space-y-6">
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Name Field Label</label>
-          <input
-            type="text"
-            bind:value={settings.nameLabel}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Full Name"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Email Field Label</label>
-          <input
-            type="text"
-            bind:value={settings.emailLabel}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Email"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Attendance Question</label>
-          <input
-            type="text"
-            bind:value={settings.attendanceQuestion}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Will you be attending?"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Additional Guests Label</label>
-          <input
-            type="text"
-            bind:value={settings.additionalGuestsLabel}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Number of Additional Guests"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Vegetarian Question</label>
-          <input
-            type="text"
-            bind:value={settings.vegetarianQuestion}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Are you vegetarian?"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Food Allergies Label</label>
-          <input
-            type="text"
-            bind:value={settings.foodAllergiesLabel}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Any food allergies?"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Lodging Question</label>
-          <input
-            type="text"
-            bind:value={settings.lodgingQuestion}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Are you planning on staying at the lodging?"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Transport Question</label>
-          <input
-            type="text"
-            bind:value={settings.transportQuestion}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Are you planning on joining the transport to and from our lodging?"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Song Request Label</label>
-          <input
-            type="text"
-            bind:value={settings.songRequestLabel}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="What song will get you on the dance floor?"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Special Notes Label</label>
-          <input
-            type="text"
-            bind:value={settings.specialNotesLabel}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Any special note for the couple?"
-          />
-        </div>
-        <div class="flex justify-end">
-          <button
-            on:click={handleSaveSettings}
-            class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
-          >
-            Save Settings
-          </button>
-        </div>
       </div>
     </div>
   {/if}
