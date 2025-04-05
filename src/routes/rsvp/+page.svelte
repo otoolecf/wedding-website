@@ -55,9 +55,12 @@
       if (response.ok) {
         const data = await response.json();
         formSettings.set(data);
+      } else {
+        // If the API call fails, use default settings
+        console.warn('Failed to load form settings, using defaults');
       }
     } catch (error) {
-      console.error('Failed to load form settings:', error);
+      console.warn('Failed to load form settings, using defaults:', error);
     }
   });
 
@@ -310,24 +313,6 @@
             </div>
 
             {#if formData.attending === 'yes'}
-              {#if guestInfo.plus_one_allowed}
-                <div class="space-y-2">
-                  <label for="guests" class="block"
-                    >{settings.additionalGuestsLabel || 'Number of Additional Guests'}</label
-                  >
-                  <input
-                    type="number"
-                    id="guests"
-                    bind:value={formData.guests}
-                    min="0"
-                    max="4"
-                    autocomplete="off"
-                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                    style="focus-ring-color: var(--color-primary)"
-                  />
-                </div>
-              {/if}
-
               <div class="space-y-2">
                 <label class="block">{settings.vegetarianQuestion || 'Are you vegetarian?'}</label>
                 <div class="space-x-4">
