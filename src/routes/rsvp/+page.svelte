@@ -5,16 +5,24 @@
     email: '',
     attending: 'yes',
     guests: 0,
-    dietaryRequirements: '',
-    song: ''
+    is_vegetarian: 'no',
+    food_allergies: '',
+    lodging: 'no',
+    using_transport: 'no',
+    song: '',
+    special_notes: ''
   };
 
   let partnerFormData = {
     name: '',
     email: '',
     attending: 'yes',
-    dietaryRequirements: '',
-    song: ''
+    is_vegetarian: 'no',
+    food_allergies: '',
+    lodging: 'no',
+    using_transport: 'no',
+    song: '',
+    special_notes: ''
   };
 
   let submitting = false;
@@ -65,8 +73,12 @@
         name: '',
         email: '',
         attending: 'yes',
-        dietaryRequirements: '',
-        song: ''
+        is_vegetarian: 'no',
+        food_allergies: '',
+        lodging: 'no',
+        using_transport: 'no',
+        song: '',
+        special_notes: ''
       };
     }
   }
@@ -288,10 +300,34 @@
               {/if}
 
               <div class="space-y-2">
-                <label for="dietary" class="block">Dietary Requirements</label>
+                <label class="block">Are you vegetarian?</label>
+                <div class="space-x-4">
+                  <label class="inline-flex items-center">
+                    <input
+                      type="radio"
+                      bind:group={formData.is_vegetarian}
+                      value="yes"
+                      class="mr-2"
+                    />
+                    Yes
+                  </label>
+                  <label class="inline-flex items-center">
+                    <input
+                      type="radio"
+                      bind:group={formData.is_vegetarian}
+                      value="no"
+                      class="mr-2"
+                    />
+                    No
+                  </label>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label for="food_allergies" class="block">Any food allergies?</label>
                 <textarea
-                  id="dietary"
-                  bind:value={formData.dietaryRequirements}
+                  id="food_allergies"
+                  bind:value={formData.food_allergies}
                   rows="3"
                   autocomplete="off"
                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
@@ -300,7 +336,47 @@
               </div>
 
               <div class="space-y-2">
-                <label for="song" class="block">Song Request</label>
+                <label class="block">Are you planning on staying at the lodging?</label>
+                <div class="space-x-4">
+                  <label class="inline-flex items-center">
+                    <input type="radio" bind:group={formData.lodging} value="yes" class="mr-2" />
+                    Yes
+                  </label>
+                  <label class="inline-flex items-center">
+                    <input type="radio" bind:group={formData.lodging} value="no" class="mr-2" />
+                    No
+                  </label>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label class="block"
+                  >Are you planning on joining the transport to and from our lodging?</label
+                >
+                <div class="space-x-4">
+                  <label class="inline-flex items-center">
+                    <input
+                      type="radio"
+                      bind:group={formData.using_transport}
+                      value="yes"
+                      class="mr-2"
+                    />
+                    Yes
+                  </label>
+                  <label class="inline-flex items-center">
+                    <input
+                      type="radio"
+                      bind:group={formData.using_transport}
+                      value="no"
+                      class="mr-2"
+                    />
+                    No
+                  </label>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label for="song" class="block">Song requests?</label>
                 <input
                   type="text"
                   id="song"
@@ -310,6 +386,18 @@
                   style="focus-ring-color: var(--color-primary)"
                   placeholder="What song will get you on the dance floor?"
                 />
+              </div>
+
+              <div class="space-y-2">
+                <label for="special_notes" class="block">Any special note for the couple?</label>
+                <textarea
+                  id="special_notes"
+                  bind:value={formData.special_notes}
+                  rows="3"
+                  autocomplete="off"
+                  class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                  style="focus-ring-color: var(--color-primary)"
+                ></textarea>
               </div>
             {/if}
           </div>
@@ -360,10 +448,34 @@
 
               {#if partnerFormData.attending === 'yes'}
                 <div class="space-y-2">
-                  <label for="partner_dietary" class="block">Dietary Requirements</label>
+                  <label class="block">Are they vegetarian?</label>
+                  <div class="space-x-4">
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        bind:group={partnerFormData.is_vegetarian}
+                        value="yes"
+                        class="mr-2"
+                      />
+                      Yes
+                    </label>
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        bind:group={partnerFormData.is_vegetarian}
+                        value="no"
+                        class="mr-2"
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="partner_food_allergies" class="block">Any food allergies?</label>
                   <textarea
-                    id="partner_dietary"
-                    bind:value={partnerFormData.dietaryRequirements}
+                    id="partner_food_allergies"
+                    bind:value={partnerFormData.food_allergies}
                     rows="3"
                     autocomplete="off"
                     class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
@@ -372,7 +484,57 @@
                 </div>
 
                 <div class="space-y-2">
-                  <label for="partner_song" class="block">Song Request</label>
+                  <label class="block">Are they planning on staying at the lodging?</label>
+                  <div class="space-x-4">
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        bind:group={partnerFormData.lodging}
+                        value="yes"
+                        class="mr-2"
+                      />
+                      Yes
+                    </label>
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        bind:group={partnerFormData.lodging}
+                        value="no"
+                        class="mr-2"
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label class="block"
+                    >Are they planning on joining the transport to and from our lodging?</label
+                  >
+                  <div class="space-x-4">
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        bind:group={partnerFormData.using_transport}
+                        value="yes"
+                        class="mr-2"
+                      />
+                      Yes
+                    </label>
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        bind:group={partnerFormData.using_transport}
+                        value="no"
+                        class="mr-2"
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="partner_song" class="block">Song requests?</label>
                   <input
                     type="text"
                     id="partner_song"
@@ -382,6 +544,20 @@
                     style="focus-ring-color: var(--color-primary)"
                     placeholder="What song will get them on the dance floor?"
                   />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="partner_special_notes" class="block"
+                    >Any special note for the couple?</label
+                  >
+                  <textarea
+                    id="partner_special_notes"
+                    bind:value={partnerFormData.special_notes}
+                    rows="3"
+                    autocomplete="off"
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style="focus-ring-color: var(--color-primary)"
+                  ></textarea>
                 </div>
               {/if}
             </div>

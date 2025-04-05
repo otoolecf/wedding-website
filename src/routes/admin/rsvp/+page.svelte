@@ -16,6 +16,7 @@
   let editingRsvp = null;
   let editedRsvp = null;
   let guestList = [];
+  let activeTab = 'dashboard';
 
   // Fetch data on component mount
   onMount(async () => {
@@ -68,8 +69,12 @@
       'Email',
       'Partner',
       'Attending',
-      'Dietary Requirements',
+      'Vegetarian',
+      'Food Allergies',
+      'Staying at Melrose',
+      'Using Transport',
       'Song Request',
+      'Special Notes',
       'Submitted At'
     ];
     const csvContent = [
@@ -80,8 +85,12 @@
           rsvp.email,
           getPartnerName(rsvp),
           rsvp.attending,
-          `"${(rsvp.dietary_requirements || '').replace(/"/g, '""')}"`,
+          rsvp.is_vegetarian,
+          `"${(rsvp.food_allergies || '').replace(/"/g, '""')}"`,
+          rsvp.staying_at_melrose,
+          rsvp.using_transport,
           `"${(rsvp.song || '').replace(/"/g, '""')}"`,
+          `"${(rsvp.special_notes || '').replace(/"/g, '""')}"`,
           new Date(rsvp.created_at).toLocaleString()
         ].join(',')
       )
@@ -185,6 +194,10 @@
       console.error('Error updating RSVP:', err);
     }
   }
+
+  function setActiveTab(tab) {
+    activeTab = tab;
+  }
 </script>
 
 <AdminNav />
@@ -192,19 +205,47 @@
 <div class="max-w-7xl mx-auto px-4 py-12">
   <div class="flex justify-between items-center mb-8">
     <h1 class="text-3xl font-light">RSVP Dashboard</h1>
-    <button
-      on:click={downloadCsv}
-      class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors"
-    >
-      Download CSV
-    </button>
+    <div class="flex space-x-4">
+      <button
+        on:click={downloadCsv}
+        class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors"
+      >
+        Download CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Add tabs navigation -->
+  <div class="border-b border-gray-200 mb-8">
+    <nav class="-mb-px flex space-x-8">
+      <button
+        class={`${
+          activeTab === 'dashboard'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+        on:click={() => setActiveTab('dashboard')}
+      >
+        Dashboard
+      </button>
+      <button
+        class={`${
+          activeTab === 'settings'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+        on:click={() => setActiveTab('settings')}
+      >
+        Form Settings
+      </button>
+    </nav>
   </div>
 
   {#if error}
     <div class="bg-red-50 text-red-600 p-4 rounded">
       {error}
     </div>
-  {:else}
+  {:else if activeTab === 'dashboard'}
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
       <div class="bg-white p-6 rounded-lg shadow-sm">
@@ -243,10 +284,25 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th
               >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                >Dietary Requirements</th
+                >Vegetarian</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Food Allergies</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Staying at Melrose</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Using Transport</th
               >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                 >Song Request</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Special Notes</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Lodging</th
               >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                 >Submitted</th
@@ -288,11 +344,38 @@
                     </select>
                   </td>
                   <td class="px-6 py-4">
+                    <select
+                      bind:value={editedRsvp.is_vegetarian}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </td>
+                  <td class="px-6 py-4">
                     <input
                       type="text"
-                      bind:value={editedRsvp.dietary_requirements}
+                      bind:value={editedRsvp.food_allergies}
                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
+                  </td>
+                  <td class="px-6 py-4">
+                    <select
+                      bind:value={editedRsvp.staying_at_melrose}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </td>
+                  <td class="px-6 py-4">
+                    <select
+                      bind:value={editedRsvp.using_transport}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
                   </td>
                   <td class="px-6 py-4">
                     <input
@@ -300,6 +383,22 @@
                       bind:value={editedRsvp.song}
                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
+                  </td>
+                  <td class="px-6 py-4">
+                    <input
+                      type="text"
+                      bind:value={editedRsvp.special_notes}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </td>
+                  <td class="px-6 py-4">
+                    <select
+                      bind:value={editedRsvp.lodging}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     {new Date(rsvp.created_at).toLocaleString()}
@@ -331,14 +430,63 @@
                     </span>
                   </td>
                   <td class="px-6 py-4">
+                    <span
+                      class={`px-2 py-1 rounded-full text-xs ${
+                        rsvp.is_vegetarian === 'yes'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {rsvp.is_vegetarian === 'yes' ? 'Yes' : 'No'}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
                     <div class="max-w-xs truncate">
-                      {rsvp.dietary_requirements || '-'}
+                      {rsvp.food_allergies || '-'}
                     </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span
+                      class={`px-2 py-1 rounded-full text-xs ${
+                        rsvp.staying_at_melrose === 'yes'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {rsvp.staying_at_melrose === 'yes' ? 'Yes' : 'No'}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span
+                      class={`px-2 py-1 rounded-full text-xs ${
+                        rsvp.using_transport === 'yes'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {rsvp.using_transport === 'yes' ? 'Yes' : 'No'}
+                    </span>
                   </td>
                   <td class="px-6 py-4">
                     <div class="max-w-xs truncate">
                       {rsvp.song || '-'}
                     </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="max-w-xs truncate">
+                      {rsvp.special_notes || '-'}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span
+                      class={`px-2 py-1 rounded-full text-xs ${
+                        rsvp.lodging === 'yes'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {rsvp.lodging === 'yes' ? 'Yes' : 'No'}
+                    </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     {new Date(rsvp.created_at).toLocaleString()}
@@ -362,6 +510,51 @@
             {/each}
           </tbody>
         </table>
+      </div>
+    </div>
+  {:else if activeTab === 'settings'}
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-medium mb-6">Form Settings</h2>
+      <div class="space-y-6">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Lodging Question Text</label>
+          <input
+            type="text"
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Are you planning on staying at the lodging?"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Transport Question Text</label>
+          <input
+            type="text"
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Are you planning on joining the transport to and from our lodging?"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Song Request Question Text</label>
+          <input
+            type="text"
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="What song will get you on the dance floor?"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Special Notes Question Text</label>
+          <input
+            type="text"
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Any special note for the couple?"
+          />
+        </div>
+        <div class="flex justify-end">
+          <button
+            class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+          >
+            Save Settings
+          </button>
+        </div>
       </div>
     </div>
   {/if}

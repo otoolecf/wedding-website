@@ -53,8 +53,12 @@ export async function PUT({ request, params, platform }) {
           email = ?,
           attending = ?,
           guests = ?,
-          dietary_requirements = ?,
-          song = ?
+          is_vegetarian = ?,
+          food_allergies = ?,
+          lodging = ?,
+          using_transport = ?,
+          song = ?,
+          special_notes = ?
       WHERE id = ?
     `
     )
@@ -63,8 +67,12 @@ export async function PUT({ request, params, platform }) {
         rsvp.email,
         rsvp.attending,
         rsvp.guests,
-        rsvp.dietary_requirements,
+        rsvp.is_vegetarian,
+        rsvp.food_allergies,
+        rsvp.lodging,
+        rsvp.using_transport,
         rsvp.song,
+        rsvp.special_notes,
         id
       )
       .run();

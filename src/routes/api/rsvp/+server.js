@@ -72,10 +72,14 @@ export async function POST({ request, platform }) {
         email, 
         attending, 
         guests,
-        dietary_requirements, 
-        song
+        is_vegetarian,
+        food_allergies,
+        lodging,
+        using_transport,
+        song,
+        special_notes
       )
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = await stmt
@@ -84,8 +88,12 @@ export async function POST({ request, platform }) {
         data.email,
         data.attending,
         data.guests || 0,
-        data.dietaryRequirements || '',
-        data.song || ''
+        data.is_vegetarian || 'no',
+        data.food_allergies || '',
+        data.lodging || 'no',
+        data.using_transport || 'no',
+        data.song || '',
+        data.special_notes || ''
       )
       .run();
 
