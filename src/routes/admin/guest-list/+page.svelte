@@ -239,11 +239,7 @@
         <thead class="bg-gray-50">
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Partner</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-              >Partner Email</th
-            >
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
               >Plus One Allowed</th
             >
@@ -254,9 +250,7 @@
           {#each guests as guest}
             <tr class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">{guest.name}</td>
-              <td class="px-6 py-4 whitespace-nowrap">{guest.email || '-'}</td>
               <td class="px-6 py-4 whitespace-nowrap">{guest.partner_name || '-'}</td>
-              <td class="px-6 py-4 whitespace-nowrap">{guest.partner_email || '-'}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
                   class={`px-2 py-1 rounded-full text-xs ${
@@ -291,25 +285,23 @@
         <thead>
           <tr>
             <th class="px-4 py-2 border">name</th>
-            <th class="px-4 py-2 border">email</th>
             <th class="px-4 py-2 border">partner_name</th>
-            <th class="px-4 py-2 border">partner_email</th>
             <th class="px-4 py-2 border">plus_one_allowed</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td class="px-4 py-2 border">John Smith</td>
-            <td class="px-4 py-2 border">john@example.com</td>
             <td class="px-4 py-2 border">Jane Smith</td>
-            <td class="px-4 py-2 border">jane@example.com</td>
             <td class="px-4 py-2 border">true</td>
           </tr>
         </tbody>
       </table>
     </div>
     <p class="text-gray-600 mt-4">
-      Note: All columns except 'name' are optional. 'plus_one_allowed' should be 'true' or 'false'.
+      Note: Only the 'name' column is required. 'partner_name' is optional for guests with a
+      partner/spouse. 'plus_one_allowed' should be 'true' or 'false' (defaults to false if not
+      specified).
     </p>
   </div>
 </div>

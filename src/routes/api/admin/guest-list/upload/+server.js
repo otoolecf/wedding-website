@@ -40,20 +40,12 @@ export async function POST({ request, platform }) {
         `
         INSERT OR REPLACE INTO guest_list (
           name,
-          email,
           partner_name,
-          partner_email,
           plus_one_allowed
-        ) VALUES (?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?)
         `
       )
-        .bind(
-          record.name,
-          record.email || null,
-          record.partner_name || null,
-          record.partner_email || null,
-          plus_one_allowed
-        )
+        .bind(record.name, record.partner_name || null, plus_one_allowed)
         .run();
     }
 

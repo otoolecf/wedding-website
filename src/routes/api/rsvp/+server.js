@@ -9,7 +9,6 @@ export async function POST({ request, platform }) {
       name: data.name,
       email: data.email,
       attending: data.attending,
-      guests: data.guests || 0,
       hasDietaryRequirements: !!data.dietaryRequirements,
       hasSongRequest: !!data.song,
       timestamp: new Date().toISOString()
@@ -36,8 +35,14 @@ export async function POST({ request, platform }) {
     }
 
     // Check if the guest exists in the guest list
-    const guestCheck = await platform.env.RSVPS.prepare('SELECT * FROM guest_list WHERE name = ?')
-      .bind(data.name)
+    const guestCheck = await platform.env.RSVPS.prepare(
+      `
+      SELECT * FROM guest_list 
+      WHERE LOWER(name) = LOWER(?) 
+      OR LOWER(partner_name) = LOWER(?)
+    `
+    )
+      .bind(data.name, data.name)
       .first();
 
     if (!guestCheck) {
@@ -55,25 +60,16 @@ export async function POST({ request, platform }) {
       );
     }
 
-    // Check if plus one is allowed
-    if (guestCheck.plus_one_allowed === false && data.guests > 0) {
-      console.error(`[${requestId}] Plus one not allowed for guest:`, data.name);
-      return new Response(
-        JSON.stringify({
-          error: 'Additional guests not allowed',
-          details:
-            'You are not allowed to bring additional guests. Please contact the couple if you believe this is an error.'
-        }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
     console.log(`[${requestId}] Preparing SQL insert`);
     const stmt = platform.env.RSVPS.prepare(`
-      INSERT OR REPLACE INTO rsvps (name, email, attending, guests, dietary_requirements, song)
+      INSERT OR REPLACE INTO rsvps (
+        name, 
+        email, 
+        attending, 
+        dietary_requirements, 
+        song,
+        guest_id
+      )
       VALUES (?, ?, ?, ?, ?, ?)
     `);
 
@@ -87,9 +83,9 @@ export async function POST({ request, platform }) {
         data.name,
         data.email,
         data.attending,
-        data.guests || 0,
         data.dietaryRequirements || '',
-        data.song || ''
+        data.song || '',
+        guestCheck.id
       )
       .run();
 
@@ -99,7 +95,6 @@ export async function POST({ request, platform }) {
       meta: {
         email: data.email,
         attending: data.attending,
-        guests: data.guests || 0,
         timestamp: new Date().toISOString(),
         isUpdate: !!existingRsvp
       }
@@ -121,7 +116,7 @@ export async function POST({ request, platform }) {
       JSON.stringify({
         success: true,
         isUpdate: !!existingRsvp,
-        requestId // Include requestId in response for tracking
+        requestId
       }),
       {
         headers: { 'Content-Type': 'application/json' }
@@ -137,7 +132,7 @@ export async function POST({ request, platform }) {
     return new Response(
       JSON.stringify({
         error: 'Failed to save RSVP',
-        requestId // Include requestId in error response too
+        requestId
       }),
       {
         status: 500,

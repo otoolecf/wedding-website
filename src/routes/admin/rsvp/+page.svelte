@@ -8,13 +8,14 @@
     totalResponses: 0,
     totalAttending: 0,
     totalNotAttending: 0,
-    totalGuests: 0, // Including partners and +1s
+    totalGuests: 0,
     pendingResponses: 0
   };
   let showDeleteConfirm = false;
   let rsvpToDelete = null;
   let editingRsvp = null;
   let editedRsvp = null;
+  let guestList = [];
 
   // Fetch data on component mount
   onMount(async () => {
@@ -33,17 +34,15 @@
         throw new Error(`Failed to fetch guest list: ${guestResponse.statusText}`);
       }
       const guestData = await guestResponse.json();
-      const guestList = guestData.guests;
+      guestList = guestData.guests;
 
       // Calculate stats
       stats.totalResponses = rsvps.length;
       stats.totalAttending = rsvps.filter((r) => r.attending === 'yes').length;
       stats.totalNotAttending = rsvps.filter((r) => r.attending === 'no').length;
 
-      // Calculate total guests (including partners and +1s)
-      stats.totalGuests = rsvps
-        .filter((r) => r.attending === 'yes')
-        .reduce((sum, r) => sum + 1 + (r.guests || 0), 0);
+      // Calculate total guests (including partners)
+      stats.totalGuests = rsvps.filter((r) => r.attending === 'yes').length;
 
       // Calculate pending responses
       const respondedNames = new Set(rsvps.map((r) => r.name));
@@ -58,12 +57,17 @@
     }
   });
 
+  function getPartnerName(rsvp) {
+    const guest = guestList.find((g) => g.id === rsvp.guest_id);
+    return guest?.partner_name || '-';
+  }
+
   function downloadCsv() {
     const headers = [
       'Name',
       'Email',
+      'Partner',
       'Attending',
-      'Additional Guests',
       'Dietary Requirements',
       'Song Request',
       'Submitted At'
@@ -74,8 +78,8 @@
         [
           rsvp.name,
           rsvp.email,
+          getPartnerName(rsvp),
           rsvp.attending,
-          rsvp.guests,
           `"${(rsvp.dietary_requirements || '').replace(/"/g, '""')}"`,
           `"${(rsvp.song || '').replace(/"/g, '""')}"`,
           new Date(rsvp.created_at).toLocaleString()
@@ -128,9 +132,7 @@
       stats.totalResponses = rsvps.length;
       stats.totalAttending = rsvps.filter((r) => r.attending === 'yes').length;
       stats.totalNotAttending = rsvps.filter((r) => r.attending === 'no').length;
-      stats.totalGuests = rsvps
-        .filter((r) => r.attending === 'yes')
-        .reduce((sum, r) => sum + 1 + (r.guests || 0), 0);
+      stats.totalGuests = rsvps.filter((r) => r.attending === 'yes').length;
 
       // Fetch guest list to calculate pending responses
       const guestResponse = await fetch('/api/admin/guest-list');
@@ -235,10 +237,10 @@
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th
-              >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                >Additional Guests</th
+                >Partner</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th
               >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                 >Dietary Requirements</th
@@ -274,6 +276,9 @@
                     />
                   </td>
                   <td class="px-6 py-4">
+                    {getPartnerName(rsvp)}
+                  </td>
+                  <td class="px-6 py-4">
                     <select
                       bind:value={editedRsvp.attending}
                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
@@ -281,14 +286,6 @@
                       <option value="yes">Attending</option>
                       <option value="no">Not Attending</option>
                     </select>
-                  </td>
-                  <td class="px-6 py-4">
-                    <input
-                      type="number"
-                      bind:value={editedRsvp.guests}
-                      min="0"
-                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
                   </td>
                   <td class="px-6 py-4">
                     <input
@@ -321,6 +318,7 @@
                     <div class="font-medium">{rsvp.name}</div>
                   </td>
                   <td class="px-6 py-4">{rsvp.email}</td>
+                  <td class="px-6 py-4">{getPartnerName(rsvp)}</td>
                   <td class="px-6 py-4">
                     <span
                       class={`px-2 py-1 rounded-full text-xs ${
@@ -331,15 +329,6 @@
                     >
                       {rsvp.attending === 'yes' ? 'Attending' : 'Not Attending'}
                     </span>
-                  </td>
-                  <td class="px-6 py-4">
-                    {#if rsvp.attending === 'yes' && rsvp.guests > 0}
-                      <span class="px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
-                        +{rsvp.guests}
-                      </span>
-                    {:else}
-                      -
-                    {/if}
                   </td>
                   <td class="px-6 py-4">
                     <div class="max-w-xs truncate">
