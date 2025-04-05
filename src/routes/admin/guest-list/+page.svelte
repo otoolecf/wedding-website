@@ -254,22 +254,19 @@
           <tr>
             <th class="px-4 py-2 border">name</th>
             <th class="px-4 py-2 border">partner_name</th>
-            <th class="px-4 py-2 border">plus_one_allowed</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td class="px-4 py-2 border">John Smith</td>
             <td class="px-4 py-2 border">Jane Smith</td>
-            <td class="px-4 py-2 border">true</td>
           </tr>
         </tbody>
       </table>
     </div>
     <p class="text-gray-600 mt-4">
       Note: Only the 'name' column is required. 'partner_name' is optional for guests with a
-      partner/spouse. 'plus_one_allowed' should be 'true' or 'false' (defaults to false if not
-      specified).
+      partner/spouse.
     </p>
   </div>
 </div>
