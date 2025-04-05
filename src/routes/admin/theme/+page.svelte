@@ -161,7 +161,7 @@
   }
 
   async function handleFaviconUpload(event) {
-    const form = event.target.form;
+    const form = event.target;
     const formData = new FormData(form);
 
     try {
@@ -174,6 +174,9 @@
         const data = await response.json();
         theme.favicon = data.favicon;
         status = 'Favicon updated successfully!';
+
+        // Clear the file input
+        form.reset();
       } else {
         const error = await response.json();
         throw new Error(error.error || 'Failed to upload favicon');
@@ -321,6 +324,14 @@
                 file:bg-primary file:text-white
                 hover:file:bg-primary/90"
             />
+            <div class="flex justify-end">
+              <button
+                type="submit"
+                class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+              >
+                Upload Favicon
+              </button>
+            </div>
             <p class="text-xs text-gray-500">
               Upload a square image (PNG, JPEG, or GIF). Recommended size: 32x32 or 64x64 pixels.
             </p>
