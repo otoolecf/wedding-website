@@ -11,9 +11,7 @@
   let addingGuest = false;
   let newGuest = {
     name: '',
-    email: '',
     partner_name: '',
-    partner_email: '',
     plus_one_allowed: false
   };
 
@@ -94,9 +92,7 @@
       await loadGuests();
       newGuest = {
         name: '',
-        email: '',
         partner_name: '',
-        partner_email: '',
         plus_one_allowed: false
       };
       addingGuest = false;
@@ -175,7 +171,7 @@
       <h2 class="text-xl font-light mb-4">Add New Guest</h2>
       <form on:submit|preventDefault={addGuest} class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div class="md:col-span-2">
             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
             <input
               type="text"
@@ -186,17 +182,7 @@
               style="focus-ring-color: var(--color-primary)"
             />
           </div>
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              id="email"
-              bind:value={newGuest.email}
-              class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-              style="focus-ring-color: var(--color-primary)"
-            />
-          </div>
-          <div>
+          <div class="md:col-span-2">
             <label for="partner_name" class="block text-sm font-medium text-gray-700 mb-1"
               >Partner/Spouse Name (if applicable)</label
             >
@@ -204,18 +190,6 @@
               type="text"
               id="partner_name"
               bind:value={newGuest.partner_name}
-              class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-              style="focus-ring-color: var(--color-primary)"
-            />
-          </div>
-          <div>
-            <label for="partner_email" class="block text-sm font-medium text-gray-700 mb-1"
-              >Partner/Spouse Email (if applicable)</label
-            >
-            <input
-              type="email"
-              id="partner_email"
-              bind:value={newGuest.partner_email}
               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
               style="focus-ring-color: var(--color-primary)"
             />
