@@ -144,12 +144,9 @@
     const preset = getPreset(presetId);
     if (preset) {
       selectedPresetId = presetId;
-      // Preserve the existing favicon settings
-      const currentFavicon = theme.favicon || { url: '/favicon.png', uploaded: false };
       theme = {
-        colors: { ...preset.colors },
-        fonts: { ...preset.fonts },
-        favicon: currentFavicon
+        ...preset,
+        favicon: theme.favicon || preset.favicon
       };
 
       if (preview) {

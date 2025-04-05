@@ -134,5 +134,12 @@ export const presetList = Object.keys(themePresets).map((key) => ({
 
 // Function to get a preset by ID
 export function getPreset(presetId) {
-  return themePresets[presetId] || themePresets.classic;
+  const preset = themePresets[presetId] || themePresets.classic;
+  return {
+    ...preset,
+    favicon: {
+      url: '/favicon.png',
+      uploaded: false
+    }
+  };
 }
