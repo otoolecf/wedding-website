@@ -20,6 +20,9 @@
   let guestList = [];
   let activeTab = 'dashboard';
   let settings = {};
+  let emailTemplate = '';
+  let editorInitialized = false;
+  let editorStatus = { loading: false, error: null };
 
   // Subscribe to form settings
   const unsubscribe = formSettings.subscribe((value) => {
@@ -68,11 +71,46 @@
         if (guest.partner_name && !respondedNames.has(guest.partner_name)) count++;
         return count;
       }, 0);
+
+      await loadEmailTemplate();
     } catch (err) {
       error = 'Failed to load RSVPs';
       console.error(err);
     }
   });
+
+  async function loadEmailTemplate() {
+    try {
+      const response = await fetch('/api/admin/email-template');
+      if (response.ok) {
+        const data = await response.json();
+        emailTemplate = data.template;
+      }
+    } catch (err) {
+      console.error('Error loading email template:', err);
+    }
+  }
+
+  async function saveEmailTemplate() {
+    try {
+      const response = await fetch('/api/admin/email-template', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ template: emailTemplate })
+      });
+
+      if (response.ok) {
+        alert('Email template saved successfully!');
+      } else {
+        throw new Error('Failed to save email template');
+      }
+    } catch (err) {
+      error = err.message;
+      console.error('Error saving email template:', err);
+    }
+  }
 
   function getPartnerName(rsvp) {
     const guest = guestList.find((g) => g.name === rsvp.name);
@@ -225,6 +263,109 @@
       error = 'Failed to save settings';
     }
   }
+
+  function loadTinyMCE() {
+    if (typeof window === 'undefined') return;
+
+    if (!window.tinymce) {
+      editorStatus.loading = true;
+      console.log('Loading TinyMCE script...');
+
+      // Try multiple CDN sources in case one fails
+      const cdnUrls = [
+        'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js',
+        'https://cdn.jsdelivr.net/npm/tinymce@6.6.0/tinymce.min.js',
+        'https://cdn.tiny.cloud/1/no-api-key/tinymce/6.6.0/tinymce.min.js'
+      ];
+
+      // Try to load TinyMCE from one of the CDNs
+      const loadScript = (index) => {
+        if (index >= cdnUrls.length) {
+          console.error('All TinyMCE CDN attempts failed');
+          editorStatus.loading = false;
+          editorStatus.error = 'Failed to load editor. Please try refreshing the page.';
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = cdnUrls[index];
+        script.onload = () => {
+          console.log('TinyMCE script loaded successfully');
+          editorStatus.loading = false;
+          initializeEditor();
+        };
+        script.onerror = () => {
+          console.error('Error loading TinyMCE from:', cdnUrls[index]);
+          // Try the next CDN
+          loadScript(index + 1);
+        };
+        document.head.appendChild(script);
+      };
+
+      // Start with the first CDN
+      loadScript(0);
+    } else {
+      console.log('TinyMCE already loaded');
+      initializeEditor();
+    }
+  }
+
+  function initializeEditor() {
+    if (!window.tinymce || editorInitialized) return;
+
+    const editorConfig = {
+      selector: '#email-template-editor',
+      height: 400,
+      menubar: false,
+      plugins: 'lists link code table',
+      toolbar: [
+        'undo redo | blocks | bold italic underline | forecolor backcolor | removeformat',
+        'alignleft aligncenter alignright | bullist numlist | link | code'
+      ],
+      block_formats:
+        'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Quote=blockquote',
+      content_style: `
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; }
+        .mce-content-body p { margin: 0; }
+        h1 { font-size: 2rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+        h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+        h4 { font-size: 1rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+        blockquote { border-left: 4px solid #ccc; padding-left: 1rem; font-style: italic; }
+      `,
+      setup: (ed) => {
+        ed.on('init', () => {
+          console.log('Editor initialized');
+          ed.setContent(emailTemplate);
+          editorInitialized = true;
+        });
+
+        ed.on('change', () => {
+          emailTemplate = ed.getContent();
+        });
+      }
+    };
+
+    window.tinymce
+      .init(editorConfig)
+      .then(() => {
+        console.log('TinyMCE editor successfully initialized');
+      })
+      .catch((err) => {
+        console.error('Failed to initialize TinyMCE editor:', err);
+        editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
+      });
+  }
+
+  onMount(() => {
+    loadTinyMCE();
+  });
+
+  onDestroy(() => {
+    if (window.tinymce) {
+      window.tinymce.remove('#email-template-editor');
+    }
+  });
 </script>
 
 <AdminNav />
@@ -264,6 +405,16 @@
         on:click={() => setActiveTab('settings')}
       >
         Form Settings
+      </button>
+      <button
+        class={`${
+          activeTab === 'email'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+        on:click={() => setActiveTab('email')}
+      >
+        Email Template
       </button>
     </nav>
   </div>
@@ -632,6 +783,54 @@
             class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
           >
             Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  {:else if activeTab === 'email'}
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-medium mb-6">Email Template</h2>
+      <div class="space-y-6">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Template Content</label>
+          <div class="border rounded">
+            <div id="email-template-editor" class="editor-container"></div>
+            <div class="p-4 text-sm bg-gray-50 text-gray-600 border-t">
+              <h4 class="font-medium mb-2">How to use this editor:</h4>
+              <p class="mb-4">
+                This editor allows you to customize the text that appears before and after the RSVP
+                form data in the confirmation email. The form data section will be automatically
+                inserted where you place the <code>${form_data}</code> placeholder.
+              </p>
+
+              <h4 class="font-medium mb-2">Example Structure:</h4>
+              <pre class="bg-white p-3 rounded border mb-4 text-xs">
+&lt;h2&gt;Thank you for your RSVP!&lt;/h2&gt;
+&lt;p&gt;Here's a summary of your response:&lt;/p&gt;
+
+${form_data}
+
+&lt;p&gt;If you need to make any changes to your RSVP, please contact us directly.&lt;/p&gt;
+&lt;p&gt;We look forward to celebrating with you!&lt;/p&gt;</pre>
+
+              <h4 class="font-medium mb-2">Available Placeholder:</h4>
+              <p class="mb-2">Use this placeholder in your template:</p>
+              <ul class="list-disc list-inside space-y-1">
+                <li>
+                  <code>${form_data}</code> - This will be replaced with the guest's form responses,
+                  including partner information if applicable
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button
+            on:click={saveEmailTemplate}
+            class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+          >
+            Save Template
           </button>
         </div>
       </div>
