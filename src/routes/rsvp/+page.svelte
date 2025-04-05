@@ -103,7 +103,9 @@
         throw new Error(`Server returned invalid JSON: ${responseText}`);
       }
 
-      if (!response.ok) throw new Error(result.error || 'Failed to submit RSVP');
+      if (!response.ok) {
+        throw new Error(result.details || result.error || 'Failed to submit RSVP');
+      }
 
       isUpdate = result.isUpdate;
 
@@ -124,7 +126,9 @@
           throw new Error(`Server returned invalid JSON: ${partnerResponseText}`);
         }
 
-        if (!partnerResponse.ok) throw new Error(result.error || 'Failed to submit partner RSVP');
+        if (!partnerResponse.ok) {
+          throw new Error(result.details || result.error || 'Failed to submit partner RSVP');
+        }
       }
 
       submitted = true;
@@ -396,6 +400,12 @@
       {:else}
         <div class="text-center py-8 text-gray-500">
           <p>Please search and select your name to continue with your RSVP.</p>
+        </div>
+      {/if}
+
+      {#if error}
+        <div class="bg-red-50 text-red-600 p-4 rounded mb-6">
+          {error}
         </div>
       {/if}
     </form>

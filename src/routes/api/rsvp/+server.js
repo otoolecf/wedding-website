@@ -60,29 +60,31 @@ export async function POST({ request, platform }) {
       );
     }
 
-    console.log(`[${requestId}] Preparing SQL insert`);
+    // Check if this is an update
+    const existingRsvp = await platform.env.RSVPS.prepare('SELECT * FROM rsvps WHERE name = ?')
+      .bind(data.name)
+      .first();
+
+    // Insert or update the RSVP
     const stmt = platform.env.RSVPS.prepare(`
       INSERT OR REPLACE INTO rsvps (
         name, 
         email, 
         attending, 
+        guests,
         dietary_requirements, 
         song,
         guest_id
       )
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-
-    // Check if this is an update
-    const existingRsvp = await platform.env.RSVPS.prepare('SELECT * FROM rsvps WHERE name = ?')
-      .bind(data.name)
-      .first();
 
     const result = await stmt
       .bind(
         data.name,
         data.email,
         data.attending,
+        data.guests || 0,
         data.dietaryRequirements || '',
         data.song || '',
         guestCheck.id
@@ -132,6 +134,7 @@ export async function POST({ request, platform }) {
     return new Response(
       JSON.stringify({
         error: 'Failed to save RSVP',
+        details: error.message,
         requestId
       }),
       {
