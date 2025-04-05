@@ -33,6 +33,8 @@
   let activeTab = 'presets'; // 'presets' or 'custom'
   let fontCategory = 'all'; // 'all', 'serifs', 'sanSerifs', 'display', 'other'
   let useCustomFontInput = { heading: false, body: false };
+  let selectedFile = null;
+  let previewUrl = null;
 
   // Filtered fonts based on selected category
   $: filteredFonts = fontCategory === 'all' ? allFonts : fontOptions[fontCategory] || allFonts;
@@ -48,6 +50,15 @@
     if (preview) updateColorPreview();
   }
 
+  function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+      selectedFile = file;
+      // Create a preview URL for the selected file
+      previewUrl = URL.createObjectURL(file);
+    }
+  }
+
   onMount(async () => {
     try {
       const response = await fetch('/api/admin/theme');
@@ -59,6 +70,15 @@
       error = "Couldn't load theme settings";
       console.error(err);
     }
+  });
+
+  onMount(() => {
+    return () => {
+      // Cleanup preview URL when component unmounts
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
   });
 
   async function saveTheme() {
@@ -175,8 +195,13 @@
         theme.favicon = data.favicon;
         status = 'Favicon updated successfully!';
 
-        // Clear the file input
+        // Clear the file input and preview
         form.reset();
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          previewUrl = null;
+        }
+        selectedFile = null;
       } else {
         const error = await response.json();
         throw new Error(error.error || 'Failed to upload favicon');
@@ -310,8 +335,8 @@
       <div class="flex items-center gap-4">
         <div class="w-16 h-16 border rounded-lg overflow-hidden">
           <img
-            src={theme.favicon?.url || '/favicon.png'}
-            alt="Current favicon"
+            src={previewUrl || theme.favicon?.url || '/favicon.png'}
+            alt={previewUrl ? 'Selected favicon preview' : 'Current favicon'}
             class="w-full h-full object-contain"
           />
         </div>
@@ -321,6 +346,7 @@
               type="file"
               name="favicon"
               accept="image/png,image/jpeg,image/gif"
+              on:change={handleFileSelect}
               class="block w-full text-sm text-gray-500
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-full file:border-0
@@ -332,6 +358,7 @@
               <button
                 type="submit"
                 class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+                disabled={!selectedFile}
               >
                 Upload Favicon
               </button>
