@@ -207,93 +207,14 @@
         {/if}
       </div>
 
-      <div class="space-y-2">
-        <label for="email" class="block">Email</label>
-        <input
-          type="email"
-          id="email"
-          bind:value={formData.email}
-          required
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-          style="focus-ring-color: var(--color-primary)"
-        />
-      </div>
-
-      <div class="space-y-2">
-        <label class="block">Will you be attending?</label>
-        <div class="space-x-4">
-          <label class="inline-flex items-center">
-            <input type="radio" bind:group={formData.attending} value="yes" class="mr-2" />
-            Yes
-          </label>
-          <label class="inline-flex items-center">
-            <input type="radio" bind:group={formData.attending} value="no" class="mr-2" />
-            No
-          </label>
-        </div>
-      </div>
-
-      {#if formData.attending === 'yes'}
-        <div class="space-y-2">
-          <label for="guests" class="block">Number of Additional Guests</label>
-          <input
-            type="number"
-            id="guests"
-            bind:value={formData.guests}
-            min="0"
-            max={guestInfo?.plus_one_allowed ? '4' : '0'}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-            style="focus-ring-color: var(--color-primary)"
-          />
-        </div>
-
-        <div class="space-y-2">
-          <label for="dietary" class="block">Dietary Requirements</label>
-          <textarea
-            id="dietary"
-            bind:value={formData.dietaryRequirements}
-            rows="3"
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-            style="focus-ring-color: var(--color-primary)"
-          ></textarea>
-        </div>
-
-        <div class="space-y-2">
-          <label for="song" class="block">Song Request</label>
-          <input
-            type="text"
-            id="song"
-            bind:value={formData.song}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-            style="focus-ring-color: var(--color-primary)"
-            placeholder="What song will get you on the dance floor?"
-          />
-        </div>
-      {/if}
-
-      {#if showPartnerForm}
-        <div class="border-t pt-8 mt-8">
-          <h2 class="text-2xl font-light mb-6">Partner's Information</h2>
-
+      {#if guestInfo}
+        <div class="space-y-6">
           <div class="space-y-2">
-            <label for="partner-name" class="block">Full Name</label>
-            <input
-              type="text"
-              id="partner-name"
-              bind:value={partnerFormData.name}
-              required
-              class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-              style="focus-ring-color: var(--color-primary)"
-              readonly
-            />
-          </div>
-
-          <div class="space-y-2">
-            <label for="partner-email" class="block">Email</label>
+            <label for="email" class="block">Email</label>
             <input
               type="email"
-              id="partner-email"
-              bind:value={partnerFormData.email}
+              id="email"
+              bind:value={formData.email}
               required
               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
               style="focus-ring-color: var(--color-primary)"
@@ -301,35 +222,40 @@
           </div>
 
           <div class="space-y-2">
-            <label class="block">Will your partner be attending?</label>
+            <label class="block">Will you be attending?</label>
             <div class="space-x-4">
               <label class="inline-flex items-center">
-                <input
-                  type="radio"
-                  bind:group={partnerFormData.attending}
-                  value="yes"
-                  class="mr-2"
-                />
+                <input type="radio" bind:group={formData.attending} value="yes" class="mr-2" />
                 Yes
               </label>
               <label class="inline-flex items-center">
-                <input
-                  type="radio"
-                  bind:group={partnerFormData.attending}
-                  value="no"
-                  class="mr-2"
-                />
+                <input type="radio" bind:group={formData.attending} value="no" class="mr-2" />
                 No
               </label>
             </div>
           </div>
 
-          {#if partnerFormData.attending === 'yes'}
+          {#if formData.attending === 'yes'}
+            {#if guestInfo.plus_one_allowed}
+              <div class="space-y-2">
+                <label for="guests" class="block">Number of Additional Guests</label>
+                <input
+                  type="number"
+                  id="guests"
+                  bind:value={formData.guests}
+                  min="0"
+                  max="4"
+                  class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                  style="focus-ring-color: var(--color-primary)"
+                />
+              </div>
+            {/if}
+
             <div class="space-y-2">
-              <label for="partner-dietary" class="block">Partner's Dietary Requirements</label>
+              <label for="dietary" class="block">Dietary Requirements</label>
               <textarea
-                id="partner-dietary"
-                bind:value={partnerFormData.dietaryRequirements}
+                id="dietary"
+                bind:value={formData.dietaryRequirements}
                 rows="3"
                 class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                 style="focus-ring-color: var(--color-primary)"
@@ -337,33 +263,101 @@
             </div>
 
             <div class="space-y-2">
-              <label for="partner-song" class="block">Partner's Song Request</label>
+              <label for="song" class="block">Song Request</label>
               <input
                 type="text"
-                id="partner-song"
-                bind:value={partnerFormData.song}
+                id="song"
+                bind:value={formData.song}
                 class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                 style="focus-ring-color: var(--color-primary)"
-                placeholder="What song should we play for your partner?"
+                placeholder="What song will get you on the dance floor?"
               />
             </div>
           {/if}
+
+          {#if showPartnerForm}
+            <div class="border-t pt-6 mt-6">
+              <h3 class="text-lg font-medium mb-4">Partner/Spouse Information</h3>
+              <div class="space-y-4">
+                <div class="space-y-2">
+                  <label for="partner_email" class="block">Email</label>
+                  <input
+                    type="email"
+                    id="partner_email"
+                    bind:value={partnerFormData.email}
+                    required
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style="focus-ring-color: var(--color-primary)"
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label class="block">Will they be attending?</label>
+                  <div class="space-x-4">
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        bind:group={partnerFormData.attending}
+                        value="yes"
+                        class="mr-2"
+                      />
+                      Yes
+                    </label>
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        bind:group={partnerFormData.attending}
+                        value="no"
+                        class="mr-2"
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                {#if partnerFormData.attending === 'yes'}
+                  <div class="space-y-2">
+                    <label for="partner_dietary" class="block">Dietary Requirements</label>
+                    <textarea
+                      id="partner_dietary"
+                      bind:value={partnerFormData.dietaryRequirements}
+                      rows="3"
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                      style="focus-ring-color: var(--color-primary)"
+                    ></textarea>
+                  </div>
+
+                  <div class="space-y-2">
+                    <label for="partner_song" class="block">Song Request</label>
+                    <input
+                      type="text"
+                      id="partner_song"
+                      bind:value={partnerFormData.song}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                      style="focus-ring-color: var(--color-primary)"
+                      placeholder="What song will get them on the dance floor?"
+                    />
+                  </div>
+                {/if}
+              </div>
+            </div>
+          {/if}
+
+          <div class="pt-6">
+            <button
+              type="submit"
+              disabled={submitting}
+              class="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {submitting ? 'Submitting...' : 'Submit RSVP'}
+            </button>
+          </div>
+        </div>
+      {:else}
+        <div class="text-center py-8 text-gray-500">
+          <p>Please search and select your name to continue with your RSVP.</p>
         </div>
       {/if}
-
-      {#if error}
-        <div class="p-4 bg-red-50 text-red-700 rounded">
-          {error}
-        </div>
-      {/if}
-
-      <button
-        type="submit"
-        class="w-full py-3 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50 btn-primary"
-        disabled={submitting || !guestInfo}
-      >
-        {submitting ? 'Submitting...' : 'Submit RSVP'}
-      </button>
     </form>
   {/if}
 </div>

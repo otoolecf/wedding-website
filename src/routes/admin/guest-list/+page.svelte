@@ -198,7 +198,7 @@
           </div>
           <div>
             <label for="partner_name" class="block text-sm font-medium text-gray-700 mb-1"
-              >Partner Name</label
+              >Partner/Spouse Name (if applicable)</label
             >
             <input
               type="text"
@@ -210,7 +210,7 @@
           </div>
           <div>
             <label for="partner_email" class="block text-sm font-medium text-gray-700 mb-1"
-              >Partner Email</label
+              >Partner/Spouse Email (if applicable)</label
             >
             <input
               type="email"
@@ -229,9 +229,14 @@
             class="h-4 w-4 text-primary"
           />
           <label for="plus_one_allowed" class="text-sm font-medium text-gray-700"
-            >Allow additional guests</label
+            >Allow additional guests (for family members, etc.)</label
           >
         </div>
+        <p class="text-sm text-gray-500 mt-1">
+          Note: Check this box if this guest should be allowed to bring additional family members
+          (e.g., children). Most guests will not have this option. If they have a partner/spouse,
+          add them in the fields above instead.
+        </p>
         <div class="flex justify-end">
           <button
             type="submit"

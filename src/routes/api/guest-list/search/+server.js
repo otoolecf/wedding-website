@@ -9,6 +9,21 @@ export async function GET({ url, platform }) {
   }
 
   try {
+    // Check if table exists and create if it doesn't
+    await platform.env.RSVPS.prepare(
+      `
+      CREATE TABLE IF NOT EXISTS guest_list (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT,
+        partner_name TEXT,
+        partner_email TEXT,
+        plus_one_allowed BOOLEAN DEFAULT FALSE,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `
+    ).run();
+
     // Search for both primary guests and their partners
     const results = await platform.env.RSVPS.prepare(
       `

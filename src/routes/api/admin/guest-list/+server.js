@@ -1,5 +1,20 @@
 export async function GET({ platform }) {
   try {
+    // Check if table exists and create if it doesn't
+    await platform.env.RSVPS.prepare(
+      `
+      CREATE TABLE IF NOT EXISTS guest_list (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT,
+        partner_name TEXT,
+        partner_email TEXT,
+        plus_one_allowed BOOLEAN DEFAULT FALSE,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `
+    ).run();
+
     const results = await platform.env.RSVPS.prepare(
       `
       SELECT * FROM guest_list 
@@ -21,10 +36,39 @@ export async function GET({ platform }) {
 
 export async function POST({ request, platform }) {
   try {
+    // Check if table exists and create if it doesn't
+    await platform.env.RSVPS.prepare(
+      `
+      CREATE TABLE IF NOT EXISTS guest_list (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT,
+        partner_name TEXT,
+        partner_email TEXT,
+        plus_one_allowed BOOLEAN DEFAULT FALSE,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `
+    ).run();
+
     const guest = await request.json();
 
     if (!guest.name) {
       return new Response(JSON.stringify({ error: 'Name is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Check if guest already exists
+    const existingGuest = await platform.env.RSVPS.prepare(
+      'SELECT * FROM guest_list WHERE name = ?'
+    )
+      .bind(guest.name)
+      .first();
+
+    if (existingGuest) {
+      return new Response(JSON.stringify({ error: 'Guest already exists' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
