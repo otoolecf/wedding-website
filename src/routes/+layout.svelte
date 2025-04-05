@@ -91,7 +91,7 @@
     }
 
     // Update favicon if it exists in theme
-    if (theme.favicon && theme.favicon.uploaded) {
+    if (theme.favicon?.url) {
       const faviconElement = document.getElementById('dynamic-favicon');
       if (faviconElement) {
         faviconElement.href = theme.favicon.url;

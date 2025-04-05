@@ -309,7 +309,11 @@
     <div class="space-y-4">
       <div class="flex items-center gap-4">
         <div class="w-16 h-16 border rounded-lg overflow-hidden">
-          <img src={theme.favicon.url} alt="Current favicon" class="w-full h-full object-contain" />
+          <img
+            src={theme.favicon?.url || '/favicon.png'}
+            alt="Current favicon"
+            class="w-full h-full object-contain"
+          />
         </div>
         <div class="flex-1">
           <form id="favicon-form" class="space-y-2" on:submit|preventDefault={handleFaviconUpload}>
@@ -332,9 +336,6 @@
                 Upload Favicon
               </button>
             </div>
-            <p class="text-xs text-gray-500">
-              Upload a square image (PNG, JPEG, or GIF). Recommended size: 32x32 or 64x64 pixels.
-            </p>
           </form>
         </div>
       </div>

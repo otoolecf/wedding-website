@@ -25,6 +25,10 @@ export async function GET({ platform }) {
       fonts: {
         heading: 'sans-serif',
         body: 'sans-serif'
+      },
+      favicon: {
+        url: '/favicon.png',
+        uploaded: false
       }
     };
 
