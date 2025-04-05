@@ -36,6 +36,10 @@ export async function GET({ request, platform }) {
       fonts: {
         heading: 'sans-serif',
         body: 'sans-serif'
+      },
+      favicon: {
+        url: '/favicon.png', // Default favicon path
+        uploaded: false // Flag to indicate if favicon has been uploaded
       }
     };
 

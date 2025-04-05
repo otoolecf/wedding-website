@@ -18,6 +18,10 @@
     fonts: {
       heading: 'sans-serif',
       body: 'sans-serif'
+    },
+    favicon: {
+      url: '/favicon.png',
+      uploaded: false
     }
   };
 
@@ -126,6 +130,10 @@
       fonts: {
         heading: 'sans-serif',
         body: 'sans-serif'
+      },
+      favicon: {
+        url: '/favicon.png',
+        uploaded: false
       }
     };
     selectedPresetId = '';
@@ -150,6 +158,37 @@
   function getPresetColorBoxes(presetId) {
     const preset = getPreset(presetId);
     return preset.colors;
+  }
+
+  async function handleFaviconUpload(event) {
+    const form = event.target.form;
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch('/api/admin/theme/favicon', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        theme.favicon = data.favicon;
+        status = 'Favicon updated successfully!';
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload favicon');
+      }
+    } catch (err) {
+      error = err.message;
+      console.error(err);
+    } finally {
+      // Reset status message after 3 seconds
+      if (status) {
+        setTimeout(() => {
+          status = '';
+        }, 3000);
+      }
+    }
   }
 </script>
 
@@ -501,6 +540,46 @@
               <p style="font-family: {theme.fonts.body}">
                 This is a body text preview. The quick brown fox jumps over the lazy dog.
               </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Favicon Settings -->
+      <div class="bg-white p-6 rounded-lg shadow-sm">
+        <h2 class="text-xl font-medium mb-4">Favicon</h2>
+
+        <div class="space-y-4">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 border rounded-lg overflow-hidden">
+              <img
+                src={theme.favicon.url}
+                alt="Current favicon"
+                class="w-full h-full object-contain"
+              />
+            </div>
+            <div class="flex-1">
+              <form
+                id="favicon-form"
+                class="space-y-2"
+                on:submit|preventDefault={handleFaviconUpload}
+              >
+                <input
+                  type="file"
+                  name="favicon"
+                  accept="image/png,image/jpeg,image/gif"
+                  class="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-primary file:text-white
+                    hover:file:bg-primary/90"
+                />
+                <p class="text-xs text-gray-500">
+                  Upload a square image (PNG, JPEG, or GIF). Recommended size: 32x32 or 64x64
+                  pixels.
+                </p>
+              </form>
             </div>
           </div>
         </div>

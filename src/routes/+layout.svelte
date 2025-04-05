@@ -89,6 +89,14 @@
       document.documentElement.style.setProperty('--font-heading', theme.fonts.heading);
       document.documentElement.style.setProperty('--font-body', theme.fonts.body);
     }
+
+    // Update favicon if it exists in theme
+    if (theme.favicon && theme.favicon.uploaded) {
+      const faviconElement = document.getElementById('dynamic-favicon');
+      if (faviconElement) {
+        faviconElement.href = theme.favicon.url;
+      }
+    }
   }
 
   // Create Google Fonts URL for custom fonts
