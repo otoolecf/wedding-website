@@ -73,10 +73,9 @@ export async function POST({ request, platform }) {
         attending, 
         guests,
         dietary_requirements, 
-        song,
-        guest_id
+        song
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
 
     const result = await stmt
@@ -86,8 +85,7 @@ export async function POST({ request, platform }) {
         data.attending,
         data.guests || 0,
         data.dietaryRequirements || '',
-        data.song || '',
-        guestCheck.id
+        data.song || ''
       )
       .run();
 
