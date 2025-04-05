@@ -64,6 +64,15 @@
           RSVPs
         </a>
         <a
+          href="/admin/guest-list"
+          class="px-3 py-2 rounded hover:bg-primary hover:text-white transition-colors {$page.url
+            .pathname === '/admin/guest-list'
+            ? 'bg-primary text-white'
+            : ''}"
+        >
+          Guest List
+        </a>
+        <a
           href="/admin/theme"
           class="px-3 py-2 rounded hover:bg-primary hover:text-white transition-colors {$page.url
             .pathname === '/admin/theme'

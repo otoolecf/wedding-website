@@ -35,6 +35,42 @@ export async function POST({ request, platform }) {
       );
     }
 
+    // Check if the guest exists in the guest list
+    const guestCheck = await platform.env.RSVPS.prepare('SELECT * FROM guest_list WHERE name = ?')
+      .bind(data.name)
+      .first();
+
+    if (!guestCheck) {
+      console.error(`[${requestId}] Guest not found in guest list:`, data.name);
+      return new Response(
+        JSON.stringify({
+          error: 'Guest not found',
+          details:
+            'Your name was not found in our guest list. Please contact the couple if you believe this is an error.'
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Check if plus one is allowed
+    if (guestCheck.plus_one_allowed === false && data.guests > 0) {
+      console.error(`[${requestId}] Plus one not allowed for guest:`, data.name);
+      return new Response(
+        JSON.stringify({
+          error: 'Additional guests not allowed',
+          details:
+            'You are not allowed to bring additional guests. Please contact the couple if you believe this is an error.'
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     console.log(`[${requestId}] Preparing SQL insert`);
     const stmt = platform.env.RSVPS.prepare(`
       INSERT INTO rsvps (name, email, attending, guests, dietary_requirements, song)
