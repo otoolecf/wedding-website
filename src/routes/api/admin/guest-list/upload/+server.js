@@ -61,12 +61,25 @@ export async function POST({ request, platform }) {
 
     // Process each record
     let processedCount = 0;
+    let skippedCount = 0;
     for (const record of data) {
       try {
-        // Insert or update the guest record
+        // Check if guest already exists
+        const existingGuest = await platform.env.RSVPS.prepare(
+          'SELECT * FROM guest_list WHERE name = ?'
+        )
+          .bind(record.name?.trim())
+          .first();
+
+        if (existingGuest) {
+          skippedCount++;
+          continue;
+        }
+
+        // Insert the guest record
         await platform.env.RSVPS.prepare(
           `
-          INSERT OR REPLACE INTO guest_list (
+          INSERT INTO guest_list (
             name,
             partner_name
           ) VALUES (?, ?)
@@ -85,7 +98,8 @@ export async function POST({ request, platform }) {
       JSON.stringify({
         success: true,
         count: processedCount,
-        message: `Successfully processed ${processedCount} records`
+        skipped: skippedCount,
+        message: `Successfully processed ${processedCount} records, skipped ${skippedCount} duplicates`
       }),
       {
         headers: { 'Content-Type': 'application/json' }
