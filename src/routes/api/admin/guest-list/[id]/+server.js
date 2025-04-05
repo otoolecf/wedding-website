@@ -9,19 +9,17 @@ export async function DELETE({ params, platform }) {
       });
     }
 
-    // Start a transaction to delete both guest and their RSVPs
-    const result = await platform.env.RSVPS.prepare(
-      `
-      BEGIN TRANSACTION;
-      DELETE FROM rsvps WHERE guest_id = ?;
-      DELETE FROM guest_list WHERE id = ?;
-      COMMIT;
-    `
-    )
-      .bind(id, id)
+    // First delete the RSVPs
+    const rsvpResult = await platform.env.RSVPS.prepare('DELETE FROM rsvps WHERE guest_id = ?')
+      .bind(id)
       .run();
 
-    if (result.success) {
+    // Then delete the guest
+    const guestResult = await platform.env.RSVPS.prepare('DELETE FROM guest_list WHERE id = ?')
+      .bind(id)
+      .run();
+
+    if (guestResult.success) {
       return new Response(JSON.stringify({ success: true }), {
         headers: { 'Content-Type': 'application/json' }
       });
@@ -33,9 +31,15 @@ export async function DELETE({ params, platform }) {
     }
   } catch (error) {
     console.error('Error deleting guest:', error);
-    return new Response(JSON.stringify({ error: 'Failed to delete guest' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to delete guest',
+        details: error.message
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   }
 }
