@@ -262,7 +262,18 @@
         class="py-2 px-4 border-b-2 {activeTab === 'presets'
           ? 'border-primary font-medium'
           : 'border-transparent'}"
-        on:click={() => (activeTab = 'presets')}
+        on:click={() => {
+          activeTab = 'presets';
+          if (!theme.favicon) {
+            theme = {
+              ...theme,
+              favicon: {
+                url: '/favicon.png',
+                uploaded: false
+              }
+            };
+          }
+        }}
       >
         Theme Presets
       </button>
@@ -270,7 +281,18 @@
         class="py-2 px-4 border-b-2 {activeTab === 'custom'
           ? 'border-primary font-medium'
           : 'border-transparent'}"
-        on:click={() => (activeTab = 'custom')}
+        on:click={() => {
+          activeTab = 'custom';
+          if (!theme.favicon) {
+            theme = {
+              ...theme,
+              favicon: {
+                url: '/favicon.png',
+                uploaded: false
+              }
+            };
+          }
+        }}
       >
         Custom Theme
       </button>
