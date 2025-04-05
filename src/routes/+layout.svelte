@@ -159,6 +159,7 @@
       <p>© {new Date().getFullYear()} {coupleNames}'s Wedding</p>
       <div class="mt-2 text-xs text-gray-500 flex justify-center gap-4">
         <a href="/admin" class="hover:text-gray-700">Admin</a>
+        <a href="/about" class="hover:text-gray-700">About</a>
         <a
           href="https://github.com/otoolecf/wedding-website"
           target="_blank"
