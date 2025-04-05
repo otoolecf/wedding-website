@@ -160,6 +160,7 @@
             bind:value={formData.name}
             on:input={searchName}
             required
+            autocomplete="off"
             class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
             style="focus-ring-color: var(--color-primary)"
             placeholder="Search your name..."
@@ -188,23 +189,25 @@
               </svg>
             </div>
           {/if}
+          {#if nameSearchResults.length > 0}
+            <div
+              class="absolute left-0 right-0 z-50 mt-1 bg-white border rounded-lg shadow-lg overflow-hidden"
+            >
+              {#each nameSearchResults as guest}
+                <button
+                  type="button"
+                  on:click={() => selectGuest(guest)}
+                  class="w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  {guest.name}
+                  {#if guest.partner}
+                    <span class="text-gray-500"> & {guest.partner.name}</span>
+                  {/if}
+                </button>
+              {/each}
+            </div>
+          {/if}
         </div>
-        {#if nameSearchResults.length > 0}
-          <div class="absolute z-10 mt-1 w-full bg-white border rounded shadow-lg">
-            {#each nameSearchResults as guest}
-              <button
-                type="button"
-                on:click={() => selectGuest(guest)}
-                class="w-full text-left px-4 py-2 hover:bg-gray-100"
-              >
-                {guest.name}
-                {#if guest.partner}
-                  <span class="text-gray-500"> & {guest.partner.name}</span>
-                {/if}
-              </button>
-            {/each}
-          </div>
-        {/if}
       </div>
 
       {#if guestInfo}
@@ -216,6 +219,7 @@
               id="email"
               bind:value={formData.email}
               required
+              autocomplete="off"
               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
               style="focus-ring-color: var(--color-primary)"
             />
@@ -245,6 +249,7 @@
                   bind:value={formData.guests}
                   min="0"
                   max="4"
+                  autocomplete="off"
                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                   style="focus-ring-color: var(--color-primary)"
                 />
@@ -257,6 +262,7 @@
                 id="dietary"
                 bind:value={formData.dietaryRequirements}
                 rows="3"
+                autocomplete="off"
                 class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                 style="focus-ring-color: var(--color-primary)"
               ></textarea>
@@ -268,6 +274,7 @@
                 type="text"
                 id="song"
                 bind:value={formData.song}
+                autocomplete="off"
                 class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                 style="focus-ring-color: var(--color-primary)"
                 placeholder="What song will get you on the dance floor?"
@@ -286,6 +293,7 @@
                     id="partner_email"
                     bind:value={partnerFormData.email}
                     required
+                    autocomplete="off"
                     class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                     style="focus-ring-color: var(--color-primary)"
                   />
@@ -322,6 +330,7 @@
                       id="partner_dietary"
                       bind:value={partnerFormData.dietaryRequirements}
                       rows="3"
+                      autocomplete="off"
                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                       style="focus-ring-color: var(--color-primary)"
                     ></textarea>
@@ -333,6 +342,7 @@
                       type="text"
                       id="partner_song"
                       bind:value={partnerFormData.song}
+                      autocomplete="off"
                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                       style="focus-ring-color: var(--color-primary)"
                       placeholder="What song will get them on the dance floor?"
