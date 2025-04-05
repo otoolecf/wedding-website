@@ -74,9 +74,15 @@
     }
   });
 
+  function getPartnerName(rsvp) {
+    const guest = guestList.find((g) => g.name === rsvp.name);
+    return guest?.partner_name || '';
+  }
+
   function downloadCsv() {
     const headers = [
       'Name',
+      'Partner Name',
       'Email',
       'Attending',
       'Vegetarian',
@@ -91,9 +97,9 @@
       headers.join(','),
       ...rsvps.map((rsvp) =>
         [
-          rsvp.name,
-          rsvp.email,
-          getPartnerName(rsvp),
+          `"${rsvp.name.replace(/"/g, '""')}"`,
+          `"${getPartnerName(rsvp).replace(/"/g, '""')}"`,
+          `"${rsvp.email.replace(/"/g, '""')}"`,
           rsvp.attending,
           rsvp.is_vegetarian,
           `"${(rsvp.food_allergies || '').replace(/"/g, '""')}"`,
@@ -106,12 +112,13 @@
       )
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.setAttribute('href', url);
     a.setAttribute('download', `wedding-rsvps-${new Date().toISOString().split('T')[0]}.csv`);
     a.click();
+    window.URL.revokeObjectURL(url);
   }
 
   function confirmDelete(rsvp) {
