@@ -14,11 +14,23 @@ export async function POST({ request, platform }) {
 
     // Read and parse the CSV file
     const csvText = await file.text();
+    console.log('CSV Text:', csvText); // Debug log
+
     const records = parse(csvText, {
       columns: true,
       skip_empty_lines: true,
-      trim: true
+      trim: true,
+      skipRecordsWithError: true
     });
+
+    console.log('Parsed Records:', records); // Debug log
+
+    if (!records || records.length === 0) {
+      return new Response(JSON.stringify({ error: 'No valid records found in CSV' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     // Validate required columns
     const requiredColumns = ['name'];
@@ -34,7 +46,7 @@ export async function POST({ request, platform }) {
     for (const record of records) {
       try {
         // Insert or update the guest record
-        await platform.env.RSVPS.prepare(
+        const result = await platform.env.RSVPS.prepare(
           `
           INSERT OR REPLACE INTO guest_list (
             name,
@@ -44,6 +56,8 @@ export async function POST({ request, platform }) {
         )
           .bind(record.name, record.partner_name || null)
           .run();
+
+        console.log('Insert result:', result); // Debug log
       } catch (recordError) {
         console.error('Error processing record:', record, recordError);
         throw new Error(`Failed to process record: ${record.name}`);
