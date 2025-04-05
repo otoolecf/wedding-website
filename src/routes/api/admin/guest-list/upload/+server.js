@@ -32,17 +32,22 @@ export async function POST({ request, platform }) {
 
     // Process each record
     for (const record of records) {
-      // Insert or update the guest record
-      await platform.env.RSVPS.prepare(
-        `
-        INSERT OR REPLACE INTO guest_list (
-          name,
-          partner_name
-        ) VALUES (?, ?)
-        `
-      )
-        .bind(record.name, record.partner_name || null)
-        .run();
+      try {
+        // Insert or update the guest record
+        await platform.env.RSVPS.prepare(
+          `
+          INSERT OR REPLACE INTO guest_list (
+            name,
+            partner_name
+          ) VALUES (?, ?)
+          `
+        )
+          .bind(record.name, record.partner_name || null)
+          .run();
+      } catch (recordError) {
+        console.error('Error processing record:', record, recordError);
+        throw new Error(`Failed to process record: ${record.name}`);
+      }
     }
 
     return new Response(JSON.stringify({ success: true, count: records.length }), {
@@ -50,9 +55,15 @@ export async function POST({ request, platform }) {
     });
   } catch (error) {
     console.error('Error processing CSV:', error);
-    return new Response(JSON.stringify({ error: 'Failed to process CSV file' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to process CSV file',
+        details: error.message
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   }
 }

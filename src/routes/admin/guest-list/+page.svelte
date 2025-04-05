@@ -152,25 +152,28 @@
       >
         Select CSV
       </button>
-      <button
-        on:click={uploadGuestList}
-        disabled={!file || uploading}
-        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors disabled:opacity-50"
-      >
-        {uploading ? 'Uploading...' : 'Upload Guest List'}
-      </button>
     </div>
   </div>
 
   {#if error}
     <div class="bg-red-50 text-red-600 p-4 rounded mb-6">
       {error}
+      {#if error.includes('Failed to process CSV file')}
+        <p class="mt-2 text-sm">Please check your CSV format and try again.</p>
+      {/if}
     </div>
   {/if}
 
   {#if file}
-    <div class="bg-gray-50 p-4 rounded mb-6">
+    <div class="bg-gray-50 p-4 rounded mb-6 flex items-center justify-between">
       <p class="text-gray-700">Selected file: {file.name}</p>
+      <button
+        on:click={uploadGuestList}
+        disabled={uploading}
+        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors disabled:opacity-50"
+      >
+        {uploading ? 'Uploading...' : 'Upload Guest List'}
+      </button>
     </div>
   {/if}
 
