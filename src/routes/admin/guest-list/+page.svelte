@@ -11,8 +11,7 @@
   let addingGuest = false;
   let newGuest = {
     name: '',
-    partner_name: '',
-    plus_one_allowed: false
+    partner_name: ''
   };
   let showDeleteConfirm = false;
   let guestToDelete = null;
@@ -94,8 +93,7 @@
       await loadGuests();
       newGuest = {
         name: '',
-        partner_name: '',
-        plus_one_allowed: false
+        partner_name: ''
       };
       addingGuest = false;
     } catch (err) {
@@ -205,22 +203,6 @@
             />
           </div>
         </div>
-        <div class="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="plus_one_allowed"
-            bind:checked={newGuest.plus_one_allowed}
-            class="h-4 w-4 text-primary"
-          />
-          <label for="plus_one_allowed" class="text-sm font-medium text-gray-700"
-            >Allow additional guests (for family members, etc.)</label
-          >
-        </div>
-        <p class="text-sm text-gray-500 mt-1">
-          Note: Check this box if this guest should be allowed to bring additional family members
-          (e.g., children). Most guests will not have this option. If they have a partner/spouse,
-          add them in the fields above instead.
-        </p>
         <div class="flex justify-end">
           <button
             type="submit"
@@ -240,9 +222,6 @@
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Partner</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-              >Plus One Allowed</th
-            >
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
           </tr>
         </thead>
@@ -251,17 +230,6 @@
             <tr class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">{guest.name}</td>
               <td class="px-6 py-4 whitespace-nowrap">{guest.partner_name || '-'}</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  class={`px-2 py-1 rounded-full text-xs ${
-                    guest.plus_one_allowed
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}
-                >
-                  {guest.plus_one_allowed ? 'Yes' : 'No'}
-                </span>
-              </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <button
                   on:click={() => confirmDelete(guest)}

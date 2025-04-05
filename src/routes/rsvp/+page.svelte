@@ -119,11 +119,6 @@
       return;
     }
 
-    if (guestInfo.plus_one_allowed === false && formData.guests > 0) {
-      error = 'You are not allowed to bring additional guests';
-      return;
-    }
-
     submitting = true;
     error = null;
 

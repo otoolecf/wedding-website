@@ -32,20 +32,16 @@ export async function POST({ request, platform }) {
 
     // Process each record
     for (const record of records) {
-      // Convert plus_one_allowed to boolean
-      const plus_one_allowed = record.plus_one_allowed?.toLowerCase() === 'true';
-
       // Insert or update the guest record
       await platform.env.RSVPS.prepare(
         `
         INSERT OR REPLACE INTO guest_list (
           name,
-          partner_name,
-          plus_one_allowed
-        ) VALUES (?, ?, ?)
+          partner_name
+        ) VALUES (?, ?)
         `
       )
-        .bind(record.name, record.partner_name || null, plus_one_allowed)
+        .bind(record.name, record.partner_name || null)
         .run();
     }
 

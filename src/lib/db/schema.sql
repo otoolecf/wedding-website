@@ -27,7 +27,6 @@ CREATE TABLE guest_list (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   partner_name TEXT,
-  plus_one_allowed BOOLEAN DEFAULT FALSE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

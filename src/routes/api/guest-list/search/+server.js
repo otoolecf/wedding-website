@@ -18,7 +18,6 @@ export async function GET({ url, platform }) {
         email TEXT,
         partner_name TEXT,
         partner_email TEXT,
-        plus_one_allowed BOOLEAN DEFAULT FALSE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `
@@ -33,7 +32,6 @@ export async function GET({ url, platform }) {
         g1.email,
         g1.partner_name,
         g1.partner_email,
-        g1.plus_one_allowed,
         CASE 
           WHEN g1.partner_name IS NOT NULL THEN 1
           ELSE 0
@@ -58,8 +56,7 @@ export async function GET({ url, platform }) {
             name: guest.partner_name,
             email: guest.partner_email
           }
-        : null,
-      plus_one_allowed: guest.plus_one_allowed
+        : null
     }));
 
     return new Response(JSON.stringify({ results: processedResults }), {
