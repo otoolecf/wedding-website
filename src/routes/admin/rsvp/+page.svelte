@@ -11,6 +11,8 @@
     totalGuests: 0, // Including partners and +1s
     pendingResponses: 0
   };
+  let showDeleteConfirm = false;
+  let rsvpToDelete = null;
 
   // Fetch data on component mount
   onMount(async () => {
@@ -86,6 +88,67 @@
     a.setAttribute('download', `wedding-rsvps-${new Date().toISOString().split('T')[0]}.csv`);
     a.click();
   }
+
+  function confirmDelete(rsvp) {
+    rsvpToDelete = rsvp;
+    showDeleteConfirm = true;
+  }
+
+  async function deleteRsvp() {
+    if (!rsvpToDelete) return;
+
+    try {
+      const response = await fetch(`/api/admin/rsvps/${rsvpToDelete.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Failed to delete RSVP');
+      await loadRsvps();
+    } catch (err) {
+      error = err.message;
+      console.error('Error deleting RSVP:', err);
+    } finally {
+      showDeleteConfirm = false;
+      rsvpToDelete = null;
+    }
+  }
+
+  async function loadRsvps() {
+    try {
+      const rsvpResponse = await fetch('/api/admin/rsvps');
+      if (!rsvpResponse.ok) {
+        throw new Error(`Failed to fetch RSVPs: ${rsvpResponse.statusText}`);
+      }
+      const rsvpData = await rsvpResponse.json();
+      rsvps = rsvpData.rsvps;
+
+      // Recalculate stats
+      stats.totalResponses = rsvps.length;
+      stats.totalAttending = rsvps.filter((r) => r.attending === 'yes').length;
+      stats.totalNotAttending = rsvps.filter((r) => r.attending === 'no').length;
+      stats.totalGuests = rsvps
+        .filter((r) => r.attending === 'yes')
+        .reduce((sum, r) => sum + 1 + (r.guests || 0), 0);
+
+      // Fetch guest list to calculate pending responses
+      const guestResponse = await fetch('/api/admin/guest-list');
+      if (!guestResponse.ok) {
+        throw new Error(`Failed to fetch guest list: ${guestResponse.statusText}`);
+      }
+      const guestData = await guestResponse.json();
+      const guestList = guestData.guests;
+
+      const respondedNames = new Set(rsvps.map((r) => r.name));
+      stats.pendingResponses = guestList.reduce((count, guest) => {
+        if (!respondedNames.has(guest.name)) count++;
+        if (guest.partner_name && !respondedNames.has(guest.partner_name)) count++;
+        return count;
+      }, 0);
+    } catch (err) {
+      error = 'Failed to load RSVPs';
+      console.error(err);
+    }
+  }
 </script>
 
 <AdminNav />
@@ -140,18 +203,21 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th
               >
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Additional Guests
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Dietary Requirements
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Song Request
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Submitted
-              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Additional Guests</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Dietary Requirements</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Song Request</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Submitted</th
+              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >Actions</th
+              >
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -194,6 +260,14 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   {new Date(rsvp.created_at).toLocaleString()}
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <button
+                    on:click={() => confirmDelete(rsvp)}
+                    class="text-red-600 hover:text-red-800"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             {/each}
           </tbody>
@@ -202,3 +276,32 @@
     </div>
   {/if}
 </div>
+
+{#if showDeleteConfirm}
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+      <h3 class="text-lg font-medium mb-4">Confirm Delete</h3>
+      <p class="mb-4">
+        Are you sure you want to delete the RSVP for {rsvpToDelete.name}? This action cannot be
+        undone.
+      </p>
+      <div class="flex justify-end space-x-4">
+        <button
+          on:click={() => {
+            showDeleteConfirm = false;
+            rsvpToDelete = null;
+          }}
+          class="px-4 py-2 text-gray-600 hover:text-gray-800"
+        >
+          Cancel
+        </button>
+        <button
+          on:click={deleteRsvp}
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}

@@ -14,6 +14,8 @@
     partner_name: '',
     plus_one_allowed: false
   };
+  let showDeleteConfirm = false;
+  let guestToDelete = null;
 
   onMount(async () => {
     await loadGuests();
@@ -102,11 +104,16 @@
     }
   }
 
-  async function deleteGuest(id) {
-    if (!confirm('Are you sure you want to delete this guest?')) return;
+  function confirmDelete(guest) {
+    guestToDelete = guest;
+    showDeleteConfirm = true;
+  }
+
+  async function deleteGuest() {
+    if (!guestToDelete) return;
 
     try {
-      const response = await fetch(`/api/admin/guest-list/${id}`, {
+      const response = await fetch(`/api/admin/guest-list/${guestToDelete.id}`, {
         method: 'DELETE'
       });
 
@@ -115,6 +122,9 @@
     } catch (err) {
       error = err.message;
       console.error('Error deleting guest:', err);
+    } finally {
+      showDeleteConfirm = false;
+      guestToDelete = null;
     }
   }
 </script>
@@ -260,7 +270,7 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <button
-                  on:click={() => deleteGuest(guest.id)}
+                  on:click={() => confirmDelete(guest)}
                   class="text-red-600 hover:text-red-800"
                 >
                   Delete
@@ -303,3 +313,32 @@
     </p>
   </div>
 </div>
+
+{#if showDeleteConfirm}
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+      <h3 class="text-lg font-medium mb-4">Confirm Delete</h3>
+      <p class="mb-4">
+        Are you sure you want to delete {guestToDelete.name}? This will also delete any associated
+        RSVPs. This action cannot be undone.
+      </p>
+      <div class="flex justify-end space-x-4">
+        <button
+          on:click={() => {
+            showDeleteConfirm = false;
+            guestToDelete = null;
+          }}
+          class="px-4 py-2 text-gray-600 hover:text-gray-800"
+        >
+          Cancel
+        </button>
+        <button
+          on:click={deleteGuest}
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}

@@ -3,22 +3,15 @@ export async function DELETE({ params, platform }) {
     const { id } = params;
 
     if (!id || isNaN(id)) {
-      return new Response(JSON.stringify({ error: 'Valid guest ID is required' }), {
+      return new Response(JSON.stringify({ error: 'Valid RSVP ID is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // Start a transaction to delete both guest and their RSVPs
-    const result = await platform.env.RSVPS.prepare(
-      `
-      BEGIN TRANSACTION;
-      DELETE FROM rsvps WHERE guest_id = ?;
-      DELETE FROM guest_list WHERE id = ?;
-      COMMIT;
-    `
-    )
-      .bind(id, id)
+    // Delete the RSVP
+    const result = await platform.env.RSVPS.prepare('DELETE FROM rsvps WHERE id = ?')
+      .bind(id)
       .run();
 
     if (result.success) {
@@ -26,14 +19,14 @@ export async function DELETE({ params, platform }) {
         headers: { 'Content-Type': 'application/json' }
       });
     } else {
-      return new Response(JSON.stringify({ error: 'Guest not found' }), {
+      return new Response(JSON.stringify({ error: 'RSVP not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
       });
     }
   } catch (error) {
-    console.error('Error deleting guest:', error);
-    return new Response(JSON.stringify({ error: 'Failed to delete guest' }), {
+    console.error('Error deleting RSVP:', error);
+    return new Response(JSON.stringify({ error: 'Failed to delete RSVP' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
