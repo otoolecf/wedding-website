@@ -1,4 +1,6 @@
 // src/routes/api/rsvp/+server.js
+import { sendRsvpConfirmationEmail } from '$lib/services/email';
+
 export async function POST({ request, platform }) {
   const requestId = crypto.randomUUID();
   console.log(`[${requestId}] New RSVP submission received`);
@@ -119,6 +121,15 @@ export async function POST({ request, platform }) {
       found: inserted.results.length > 0,
       record: inserted.results[0]
     });
+
+    // Send confirmation email
+    try {
+      await sendRsvpConfirmationEmail(data, platform);
+      console.log(`[${requestId}] Confirmation email sent successfully`);
+    } catch (emailError) {
+      console.error(`[${requestId}] Failed to send confirmation email:`, emailError);
+      // Don't fail the RSVP submission if email fails
+    }
 
     return new Response(
       JSON.stringify({
