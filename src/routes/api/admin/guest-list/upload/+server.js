@@ -1,4 +1,4 @@
-import { parse } from 'csv-parse/sync';
+import Papa from 'papaparse';
 
 export async function POST({ request, platform }) {
   try {
@@ -14,18 +14,30 @@ export async function POST({ request, platform }) {
 
     // Read and parse the CSV file
     const csvText = await file.text();
-    console.log('CSV Text:', csvText); // Debug log
+    console.log('CSV content length:', csvText.length);
 
-    const records = parse(csvText, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true,
-      skipRecordsWithError: true
+    const { data, errors } = Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      trimHeaders: true,
+      trimValues: true
     });
 
-    console.log('Parsed Records:', records); // Debug log
+    if (errors.length > 0) {
+      console.error('CSV parsing errors:', errors);
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to parse CSV',
+          details: errors.map((e) => e.message).join(', ')
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
-    if (!records || records.length === 0) {
+    if (!data || data.length === 0) {
       return new Response(JSON.stringify({ error: 'No valid records found in CSV' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -34,19 +46,25 @@ export async function POST({ request, platform }) {
 
     // Validate required columns
     const requiredColumns = ['name'];
-    const missingColumns = requiredColumns.filter((col) => !records[0]?.[col]);
+    const missingColumns = requiredColumns.filter((col) => !data[0]?.[col]);
     if (missingColumns.length > 0) {
       return new Response(
-        JSON.stringify({ error: `Missing required columns: ${missingColumns.join(', ')}` }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          error: `Missing required columns: ${missingColumns.join(', ')}`
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
     // Process each record
-    for (const record of records) {
+    let processedCount = 0;
+    for (const record of data) {
       try {
         // Insert or update the guest record
-        const result = await platform.env.RSVPS.prepare(
+        await platform.env.RSVPS.prepare(
           `
           INSERT OR REPLACE INTO guest_list (
             name,
@@ -54,19 +72,25 @@ export async function POST({ request, platform }) {
           ) VALUES (?, ?)
           `
         )
-          .bind(record.name, record.partner_name || null)
+          .bind(record.name?.trim(), record.partner_name?.trim() || null)
           .run();
-
-        console.log('Insert result:', result); // Debug log
+        processedCount++;
       } catch (recordError) {
         console.error('Error processing record:', record, recordError);
-        throw new Error(`Failed to process record: ${record.name}`);
+        throw new Error(`Failed to process record ${processedCount + 1}: ${record.name}`);
       }
     }
 
-    return new Response(JSON.stringify({ success: true, count: records.length }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        count: processedCount,
+        message: `Successfully processed ${processedCount} records`
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   } catch (error) {
     console.error('Error processing CSV:', error);
     return new Response(
