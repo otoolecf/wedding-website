@@ -1,6 +1,8 @@
 <script>
   import AdminNav from '$lib/components/AdminNav.svelte';
   import { onMount } from 'svelte';
+  import { formSettings, loadFormSettings, saveFormSettings } from '$lib/stores/formSettings';
+  import { onDestroy } from 'svelte';
 
   let rsvps = [];
   let error = null;
@@ -17,10 +19,24 @@
   let editedRsvp = null;
   let guestList = [];
   let activeTab = 'dashboard';
+  let settings = {};
+
+  // Subscribe to form settings
+  const unsubscribe = formSettings.subscribe((value) => {
+    settings = value;
+  });
+
+  // Clean up subscription
+  onDestroy(() => {
+    unsubscribe();
+  });
 
   // Fetch data on component mount
   onMount(async () => {
     try {
+      // Load form settings
+      await loadFormSettings();
+
       // Fetch RSVPs
       const rsvpResponse = await fetch('/api/admin/rsvps');
       if (!rsvpResponse.ok) {
@@ -197,6 +213,16 @@
 
   function setActiveTab(tab) {
     activeTab = tab;
+  }
+
+  async function handleSaveSettings() {
+    const success = await saveFormSettings(settings);
+    if (success) {
+      // Show success message
+      alert('Settings saved successfully!');
+    } else {
+      error = 'Failed to save settings';
+    }
   }
 </script>
 
@@ -517,39 +543,98 @@
       <h2 class="text-xl font-medium mb-6">Form Settings</h2>
       <div class="space-y-6">
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Lodging Question Text</label>
+          <label class="block text-sm font-medium text-gray-700">Name Field Label</label>
           <input
             type="text"
+            bind:value={settings.nameLabel}
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Full Name"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Email Field Label</label>
+          <input
+            type="text"
+            bind:value={settings.emailLabel}
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Email"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Attendance Question</label>
+          <input
+            type="text"
+            bind:value={settings.attendanceQuestion}
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Will you be attending?"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Additional Guests Label</label>
+          <input
+            type="text"
+            bind:value={settings.additionalGuestsLabel}
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Number of Additional Guests"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Vegetarian Question</label>
+          <input
+            type="text"
+            bind:value={settings.vegetarianQuestion}
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Are you vegetarian?"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Food Allergies Label</label>
+          <input
+            type="text"
+            bind:value={settings.foodAllergiesLabel}
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Any food allergies?"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Lodging Question</label>
+          <input
+            type="text"
+            bind:value={settings.lodgingQuestion}
             class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Are you planning on staying at the lodging?"
           />
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Transport Question Text</label>
+          <label class="block text-sm font-medium text-gray-700">Transport Question</label>
           <input
             type="text"
+            bind:value={settings.transportQuestion}
             class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Are you planning on joining the transport to and from our lodging?"
           />
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Song Request Question Text</label>
+          <label class="block text-sm font-medium text-gray-700">Song Request Label</label>
           <input
             type="text"
+            bind:value={settings.songRequestLabel}
             class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="What song will get you on the dance floor?"
           />
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Special Notes Question Text</label>
+          <label class="block text-sm font-medium text-gray-700">Special Notes Label</label>
           <input
             type="text"
+            bind:value={settings.specialNotesLabel}
             class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Any special note for the couple?"
           />
         </div>
         <div class="flex justify-end">
           <button
+            on:click={handleSaveSettings}
             class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
           >
             Save Settings

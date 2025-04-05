@@ -1,5 +1,8 @@
 <!-- src/routes/rsvp/+page.svelte -->
 <script>
+  import { formSettings } from '$lib/stores/formSettings';
+  import { onMount } from 'svelte';
+
   let formData = {
     name: '',
     email: '',
@@ -33,6 +36,30 @@
   let searching = false;
   let guestInfo = null;
   let showPartnerForm = false;
+  let settings = {};
+
+  // Subscribe to form settings
+  const unsubscribe = formSettings.subscribe((value) => {
+    settings = value;
+  });
+
+  // Clean up subscription
+  onDestroy(() => {
+    unsubscribe();
+  });
+
+  // Load form settings on mount
+  onMount(async () => {
+    try {
+      const response = await fetch('/api/admin/form-settings');
+      if (response.ok) {
+        const data = await response.json();
+        formSettings.set(data);
+      }
+    } catch (error) {
+      console.error('Failed to load form settings:', error);
+    }
+  });
 
   async function searchName() {
     if (!formData.name.trim()) {
@@ -189,7 +216,7 @@
       class="space-y-6 bg-white p-8 rounded-lg shadow-sm"
     >
       <div class="space-y-2">
-        <label for="name" class="block">Full Name</label>
+        <label for="name" class="block">{settings.nameLabel || 'Full Name'}</label>
         <div class="relative">
           <input
             type="text"
@@ -256,7 +283,7 @@
             </div>
 
             <div class="space-y-2">
-              <label for="email" class="block">Email</label>
+              <label for="email" class="block">{settings.emailLabel || 'Email'}</label>
               <input
                 type="email"
                 id="email"
@@ -269,7 +296,7 @@
             </div>
 
             <div class="space-y-2">
-              <label class="block">Will you be attending?</label>
+              <label class="block">{settings.attendanceQuestion || 'Will you be attending?'}</label>
               <div class="space-x-4">
                 <label class="inline-flex items-center">
                   <input type="radio" bind:group={formData.attending} value="yes" class="mr-2" />
@@ -285,7 +312,9 @@
             {#if formData.attending === 'yes'}
               {#if guestInfo.plus_one_allowed}
                 <div class="space-y-2">
-                  <label for="guests" class="block">Number of Additional Guests</label>
+                  <label for="guests" class="block"
+                    >{settings.additionalGuestsLabel || 'Number of Additional Guests'}</label
+                  >
                   <input
                     type="number"
                     id="guests"
@@ -300,7 +329,7 @@
               {/if}
 
               <div class="space-y-2">
-                <label class="block">Are you vegetarian?</label>
+                <label class="block">{settings.vegetarianQuestion || 'Are you vegetarian?'}</label>
                 <div class="space-x-4">
                   <label class="inline-flex items-center">
                     <input
@@ -324,7 +353,9 @@
               </div>
 
               <div class="space-y-2">
-                <label for="food_allergies" class="block">Any food allergies?</label>
+                <label for="food_allergies" class="block"
+                  >{settings.foodAllergiesLabel || 'Any food allergies?'}</label
+                >
                 <textarea
                   id="food_allergies"
                   bind:value={formData.food_allergies}
@@ -336,7 +367,10 @@
               </div>
 
               <div class="space-y-2">
-                <label class="block">Are you planning on staying at the lodging?</label>
+                <label class="block"
+                  >{settings.lodgingQuestion ||
+                    'Are you planning on staying at the lodging?'}</label
+                >
                 <div class="space-x-4">
                   <label class="inline-flex items-center">
                     <input type="radio" bind:group={formData.lodging} value="yes" class="mr-2" />
@@ -351,7 +385,8 @@
 
               <div class="space-y-2">
                 <label class="block"
-                  >Are you planning on joining the transport to and from our lodging?</label
+                  >{settings.transportQuestion ||
+                    'Are you planning on joining the transport to and from our lodging?'}</label
                 >
                 <div class="space-x-4">
                   <label class="inline-flex items-center">
@@ -376,7 +411,10 @@
               </div>
 
               <div class="space-y-2">
-                <label for="song" class="block">Song requests?</label>
+                <label for="song" class="block"
+                  >{settings.songRequestLabel ||
+                    'What song will get you on the dance floor?'}</label
+                >
                 <input
                   type="text"
                   id="song"
@@ -384,12 +422,13 @@
                   autocomplete="off"
                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                   style="focus-ring-color: var(--color-primary)"
-                  placeholder="What song will get you on the dance floor?"
                 />
               </div>
 
               <div class="space-y-2">
-                <label for="special_notes" class="block">Any special note for the couple?</label>
+                <label for="special_notes" class="block"
+                  >{settings.specialNotesLabel || 'Any special note for the couple?'}</label
+                >
                 <textarea
                   id="special_notes"
                   bind:value={formData.special_notes}
