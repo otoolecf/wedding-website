@@ -1,7 +1,7 @@
 <!-- src/routes/rsvp/+page.svelte -->
 <script>
   import { formSettings } from '$lib/stores/formSettings';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
 
   let formData = {
     name: '',
