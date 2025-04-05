@@ -122,13 +122,24 @@ export async function POST({ request, platform }) {
       record: inserted.results[0]
     });
 
-    // Send confirmation email
-    try {
-      await sendRsvpConfirmationEmail(data, platform);
-      console.log(`[${requestId}] Confirmation email sent successfully`);
-    } catch (emailError) {
-      console.error(`[${requestId}] Failed to send confirmation email:`, emailError);
-      // Don't fail the RSVP submission if email fails
+    // Only send confirmation email if the person is not a partner
+    // Check if this person is listed as a partner in any guest record
+    const isPartner = await platform.env.RSVPS.prepare(
+      'SELECT COUNT(*) as count FROM guest_list WHERE LOWER(partner_name) = LOWER(?)'
+    )
+      .bind(data.name)
+      .first();
+
+    if (isPartner.count === 0) {
+      try {
+        await sendRsvpConfirmationEmail(data, platform);
+        console.log(`[${requestId}] Confirmation email sent successfully`);
+      } catch (emailError) {
+        console.error(`[${requestId}] Failed to send confirmation email:`, emailError);
+        // Don't fail the RSVP submission if email fails
+      }
+    } else {
+      console.log(`[${requestId}] Skipping email for partner RSVP`);
     }
 
     return new Response(
