@@ -9,15 +9,6 @@
       <div class="text-lg font-semibold mr-6">Wedding Admin</div>
       <div class="flex space-x-4">
         <a
-          href="/admin"
-          class="px-3 py-2 rounded hover:bg-primary hover:text-white transition-colors {$page.url
-            .pathname === '/admin'
-            ? 'bg-primary text-white'
-            : ''}"
-        >
-          Dashboard
-        </a>
-        <a
           href="/admin/settings"
           class="px-3 py-2 rounded hover:bg-primary hover:text-white transition-colors {$page.url
             .pathname === '/admin/settings'
@@ -57,7 +48,7 @@
         <a
           href="/admin/rsvp"
           class="px-3 py-2 rounded hover:bg-primary hover:text-white transition-colors {$page.url
-            .pathname === '/admin/rsvp'
+            .pathname === '/admin/rsvp' || $page.url.pathname === '/admin'
             ? 'bg-primary text-white'
             : ''}"
         >
