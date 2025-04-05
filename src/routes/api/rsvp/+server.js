@@ -73,9 +73,14 @@ export async function POST({ request, platform }) {
 
     console.log(`[${requestId}] Preparing SQL insert`);
     const stmt = platform.env.RSVPS.prepare(`
-      INSERT INTO rsvps (name, email, attending, guests, dietary_requirements, song)
+      INSERT OR REPLACE INTO rsvps (name, email, attending, guests, dietary_requirements, song)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
+
+    // Check if this is an update
+    const existingRsvp = await platform.env.RSVPS.prepare('SELECT * FROM rsvps WHERE name = ?')
+      .bind(data.name)
+      .first();
 
     const result = await stmt
       .bind(
@@ -89,21 +94,22 @@ export async function POST({ request, platform }) {
       .run();
 
     console.log(`[${requestId}] RSVP raw result: `, result);
-    console.log(`[${requestId}] RSVP successfully saved`, {
+    console.log(`[${requestId}] RSVP successfully ${existingRsvp ? 'updated' : 'saved'}`, {
       success: true,
       meta: {
         email: data.email,
         attending: data.attending,
         guests: data.guests || 0,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        isUpdate: !!existingRsvp
       }
     });
 
     // Look up the inserted record to confirm and log details
     const inserted = await platform.env.RSVPS.prepare(
-      'SELECT * FROM rsvps WHERE email = ? ORDER BY created_at DESC LIMIT 1'
+      'SELECT * FROM rsvps WHERE name = ? ORDER BY created_at DESC LIMIT 1'
     )
-      .bind(data.email)
+      .bind(data.name)
       .all();
 
     console.log(`[${requestId}] Database record verified:`, {
@@ -114,6 +120,7 @@ export async function POST({ request, platform }) {
     return new Response(
       JSON.stringify({
         success: true,
+        isUpdate: !!existingRsvp,
         requestId // Include requestId in response for tracking
       }),
       {

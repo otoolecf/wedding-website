@@ -19,6 +19,7 @@
 
   let submitting = false;
   let submitted = false;
+  let isUpdate = false;
   let error = null;
   let nameSearchResults = [];
   let searching = false;
@@ -104,6 +105,8 @@
 
       if (!response.ok) throw new Error(result.error || 'Failed to submit RSVP');
 
+      isUpdate = result.isUpdate;
+
       // If there's a partner, submit their RSVP too
       if (showPartnerForm && partnerFormData.name) {
         const partnerResponse = await fetch('/api/rsvp', {
@@ -144,7 +147,25 @@
   {#if submitted}
     <div class="text-center py-12 bg-white rounded-lg shadow-sm">
       <h2 class="text-2xl mb-4">Thank you for your RSVP!</h2>
-      <p class="text-gray-600">We're excited to celebrate with you!</p>
+      <p class="text-gray-600">
+        {#if isUpdate}
+          Your RSVP has been successfully updated.
+        {:else}
+          We're excited to celebrate with you!
+        {/if}
+      </p>
+      {#if isUpdate}
+        <button
+          class="mt-6 text-primary hover:text-primary/80 underline"
+          on:click={() => {
+            submitted = false;
+            isUpdate = false;
+            error = null;
+          }}
+        >
+          Make another change
+        </button>
+      {/if}
     </div>
   {:else}
     <form

@@ -6,9 +6,7 @@ export async function GET({ platform }) {
       CREATE TABLE IF NOT EXISTS guest_list (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        email TEXT,
         partner_name TEXT,
-        partner_email TEXT,
         plus_one_allowed BOOLEAN DEFAULT FALSE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -42,9 +40,7 @@ export async function POST({ request, platform }) {
       CREATE TABLE IF NOT EXISTS guest_list (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        email TEXT,
         partner_name TEXT,
-        partner_email TEXT,
         plus_one_allowed BOOLEAN DEFAULT FALSE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -78,20 +74,12 @@ export async function POST({ request, platform }) {
       `
       INSERT INTO guest_list (
         name,
-        email,
         partner_name,
-        partner_email,
         plus_one_allowed
-      ) VALUES (?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?)
       `
     )
-      .bind(
-        guest.name,
-        guest.email || null,
-        guest.partner_name || null,
-        guest.partner_email || null,
-        guest.plus_one_allowed ? 1 : 0
-      )
+      .bind(guest.name, guest.partner_name || null, guest.plus_one_allowed ? 1 : 0)
       .run();
 
     return new Response(JSON.stringify({ success: true }), {
@@ -106,17 +94,18 @@ export async function POST({ request, platform }) {
   }
 }
 
-export async function DELETE({ params, platform }) {
-  const id = params.id;
-
-  if (!id) {
-    return new Response(JSON.stringify({ error: 'Guest ID is required' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-
+export async function DELETE({ url, platform }) {
   try {
+    const id = url.pathname.split('/').pop();
+
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Guest ID is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Delete the guest
     await platform.env.RSVPS.prepare('DELETE FROM guest_list WHERE id = ?').bind(id).run();
 
     return new Response(JSON.stringify({ success: true }), {

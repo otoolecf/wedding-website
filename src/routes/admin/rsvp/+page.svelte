@@ -1,38 +1,59 @@
 <script>
   import AdminNav from '$lib/components/AdminNav.svelte';
+  import { onMount } from 'svelte';
 
   let rsvps = [];
   let error = null;
   let stats = {
-    totalGuests: 0,
-    attending: 0,
-    notAttending: 0
+    totalResponses: 0,
+    totalAttending: 0,
+    totalNotAttending: 0,
+    totalGuests: 0, // Including partners and +1s
+    pendingResponses: 0
   };
 
   // Fetch data on component mount
   onMount(async () => {
     try {
-      const response = await fetch('/api/admin/rsvps');
-      if (!response.ok) {
-        throw new Error(`Failed to fetch RSVPs: ${response.statusText}`);
+      // Fetch RSVPs
+      const rsvpResponse = await fetch('/api/admin/rsvps');
+      if (!rsvpResponse.ok) {
+        throw new Error(`Failed to fetch RSVPs: ${rsvpResponse.statusText}`);
       }
+      const rsvpData = await rsvpResponse.json();
+      rsvps = rsvpData.rsvps;
 
-      const data = await response.json();
-      rsvps = data.rsvps;
+      // Fetch guest list to calculate pending responses
+      const guestResponse = await fetch('/api/admin/guest-list');
+      if (!guestResponse.ok) {
+        throw new Error(`Failed to fetch guest list: ${guestResponse.statusText}`);
+      }
+      const guestData = await guestResponse.json();
+      const guestList = guestData.guests;
 
       // Calculate stats
-      stats.attending = rsvps.filter((r) => r.attending === 'yes').length;
-      stats.notAttending = rsvps.filter((r) => r.attending === 'no').length;
+      stats.totalResponses = rsvps.length;
+      stats.totalAttending = rsvps.filter((r) => r.attending === 'yes').length;
+      stats.totalNotAttending = rsvps.filter((r) => r.attending === 'no').length;
+
+      // Calculate total guests (including partners and +1s)
       stats.totalGuests = rsvps
         .filter((r) => r.attending === 'yes')
-        .reduce((sum, r) => sum + (r.guests || 0) + 1, 0);
+        .reduce((sum, r) => sum + 1 + (r.guests || 0), 0);
+
+      // Calculate pending responses
+      const respondedNames = new Set(rsvps.map((r) => r.name));
+      stats.pendingResponses = guestList.reduce((count, guest) => {
+        if (!respondedNames.has(guest.name)) count++;
+        if (guest.partner_name && !respondedNames.has(guest.partner_name)) count++;
+        return count;
+      }, 0);
     } catch (err) {
       error = 'Failed to load RSVPs';
       console.error(err);
     }
   });
 
-  import { onMount } from 'svelte';
   function downloadCsv() {
     const headers = [
       'Name',
@@ -86,18 +107,26 @@
     </div>
   {:else}
     <!-- Stats Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
       <div class="bg-white p-6 rounded-lg shadow-sm">
-        <h3 class="text-gray-500 text-sm">Total RSVPs</h3>
-        <p class="text-3xl font-light">{rsvps.length}</p>
+        <h3 class="text-gray-500 text-sm">Total Responses</h3>
+        <p class="text-3xl font-light">{stats.totalResponses}</p>
       </div>
       <div class="bg-white p-6 rounded-lg shadow-sm">
         <h3 class="text-gray-500 text-sm">Attending</h3>
-        <p class="text-3xl font-light">{stats.attending}</p>
+        <p class="text-3xl font-light text-green-600">{stats.totalAttending}</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-sm">
+        <h3 class="text-gray-500 text-sm">Not Attending</h3>
+        <p class="text-3xl font-light text-red-600">{stats.totalNotAttending}</p>
       </div>
       <div class="bg-white p-6 rounded-lg shadow-sm">
         <h3 class="text-gray-500 text-sm">Total Guest Count</h3>
-        <p class="text-3xl font-light">{stats.totalGuests}</p>
+        <p class="text-3xl font-light text-primary">{stats.totalGuests}</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-sm">
+        <h3 class="text-gray-500 text-sm">Pending Responses</h3>
+        <p class="text-3xl font-light text-yellow-600">{stats.pendingResponses}</p>
       </div>
     </div>
 
@@ -109,35 +138,59 @@
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                >Attending</th
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th
               >
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Guests</th
-              >
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                >Dietary Requirements</th
-              >
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Song</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                >Submitted</th
-              >
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Additional Guests
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Dietary Requirements
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Song Request
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Submitted
+              </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             {#each rsvps as rsvp}
               <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">{rsvp.name}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{rsvp.email}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4">
+                  <div class="font-medium">{rsvp.name}</div>
+                </td>
+                <td class="px-6 py-4">{rsvp.email}</td>
+                <td class="px-6 py-4">
                   <span
-                    class={`px-2 py-1 rounded-full text-xs ${rsvp.attending === 'yes' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    class={`px-2 py-1 rounded-full text-xs ${
+                      rsvp.attending === 'yes'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
                   >
-                    {rsvp.attending}
+                    {rsvp.attending === 'yes' ? 'Attending' : 'Not Attending'}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">{rsvp.guests || 0}</td>
-                <td class="px-6 py-4">{rsvp.dietary_requirements || '-'}</td>
-                <td class="px-6 py-4">{rsvp.song || '-'}</td>
+                <td class="px-6 py-4">
+                  {#if rsvp.attending === 'yes' && rsvp.guests > 0}
+                    <span class="px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
+                      +{rsvp.guests}
+                    </span>
+                  {:else}
+                    -
+                  {/if}
+                </td>
+                <td class="px-6 py-4">
+                  <div class="max-w-xs truncate">
+                    {rsvp.dietary_requirements || '-'}
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="max-w-xs truncate">
+                    {rsvp.song || '-'}
+                  </div>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   {new Date(rsvp.created_at).toLocaleString()}
                 </td>
