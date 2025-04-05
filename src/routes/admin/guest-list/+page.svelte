@@ -8,6 +8,14 @@
   let uploading = false;
   let fileInput;
   let file = null;
+  let addingGuest = false;
+  let newGuest = {
+    name: '',
+    email: '',
+    partner_name: '',
+    partner_email: '',
+    plus_one_allowed: false
+  };
 
   onMount(async () => {
     await loadGuests();
@@ -63,6 +71,41 @@
     }
   }
 
+  async function addGuest() {
+    if (!newGuest.name) {
+      error = 'Name is required';
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/guest-list', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newGuest)
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to add guest');
+      }
+
+      await loadGuests();
+      newGuest = {
+        name: '',
+        email: '',
+        partner_name: '',
+        partner_email: '',
+        plus_one_allowed: false
+      };
+      addingGuest = false;
+    } catch (err) {
+      error = err.message;
+      console.error('Error adding guest:', err);
+    }
+  }
+
   async function deleteGuest(id) {
     if (!confirm('Are you sure you want to delete this guest?')) return;
 
@@ -86,6 +129,12 @@
   <div class="flex justify-between items-center mb-8">
     <h1 class="text-3xl font-light">Guest List Management</h1>
     <div class="flex items-center space-x-4">
+      <button
+        on:click={() => (addingGuest = !addingGuest)}
+        class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors"
+      >
+        {addingGuest ? 'Cancel' : 'Add Guest'}
+      </button>
       <input
         type="file"
         bind:this={fileInput}
@@ -118,6 +167,80 @@
   {#if file}
     <div class="bg-gray-50 p-4 rounded mb-6">
       <p class="text-gray-700">Selected file: {file.name}</p>
+    </div>
+  {/if}
+
+  {#if addingGuest}
+    <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+      <h2 class="text-xl font-light mb-4">Add New Guest</h2>
+      <form on:submit|preventDefault={addGuest} class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+            <input
+              type="text"
+              id="name"
+              bind:value={newGuest.name}
+              required
+              class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              style="focus-ring-color: var(--color-primary)"
+            />
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              id="email"
+              bind:value={newGuest.email}
+              class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              style="focus-ring-color: var(--color-primary)"
+            />
+          </div>
+          <div>
+            <label for="partner_name" class="block text-sm font-medium text-gray-700 mb-1"
+              >Partner Name</label
+            >
+            <input
+              type="text"
+              id="partner_name"
+              bind:value={newGuest.partner_name}
+              class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              style="focus-ring-color: var(--color-primary)"
+            />
+          </div>
+          <div>
+            <label for="partner_email" class="block text-sm font-medium text-gray-700 mb-1"
+              >Partner Email</label
+            >
+            <input
+              type="email"
+              id="partner_email"
+              bind:value={newGuest.partner_email}
+              class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              style="focus-ring-color: var(--color-primary)"
+            />
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="plus_one_allowed"
+            bind:checked={newGuest.plus_one_allowed}
+            class="h-4 w-4 text-primary"
+          />
+          <label for="plus_one_allowed" class="text-sm font-medium text-gray-700"
+            >Allow additional guests</label
+          >
+        </div>
+        <div class="flex justify-end">
+          <button
+            type="submit"
+            class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+          >
+            Add Guest
+          </button>
+        </div>
+      </form>
     </div>
   {/if}
 

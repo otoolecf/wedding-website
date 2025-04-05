@@ -52,6 +52,12 @@ export async function GET({ url, platform }) {
     });
   } catch (error) {
     console.error('Guest list search error:', error);
+    // Return empty results instead of an error if the table doesn't exist or is empty
+    if (error.message.includes('no such table') || error.message.includes('empty')) {
+      return new Response(JSON.stringify({ results: [] }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
     return new Response(JSON.stringify({ error: 'Failed to search guest list' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
