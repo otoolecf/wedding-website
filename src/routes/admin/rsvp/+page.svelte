@@ -13,6 +13,8 @@
   };
   let showDeleteConfirm = false;
   let rsvpToDelete = null;
+  let editingRsvp = null;
+  let editedRsvp = null;
 
   // Fetch data on component mount
   onMount(async () => {
@@ -149,6 +151,38 @@
       console.error(err);
     }
   }
+
+  function startEdit(rsvp) {
+    editingRsvp = rsvp;
+    editedRsvp = { ...rsvp };
+  }
+
+  function cancelEdit() {
+    editingRsvp = null;
+    editedRsvp = null;
+  }
+
+  async function saveEdit() {
+    if (!editingRsvp || !editedRsvp) return;
+
+    try {
+      const response = await fetch(`/api/admin/rsvps/${editingRsvp.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editedRsvp)
+      });
+
+      if (!response.ok) throw new Error('Failed to update RSVP');
+      await loadRsvps();
+      editingRsvp = null;
+      editedRsvp = null;
+    } catch (err) {
+      error = err.message;
+      console.error('Error updating RSVP:', err);
+    }
+  }
 </script>
 
 <AdminNav />
@@ -223,51 +257,118 @@
           <tbody class="bg-white divide-y divide-gray-200">
             {#each rsvps as rsvp}
               <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4">
-                  <div class="font-medium">{rsvp.name}</div>
-                </td>
-                <td class="px-6 py-4">{rsvp.email}</td>
-                <td class="px-6 py-4">
-                  <span
-                    class={`px-2 py-1 rounded-full text-xs ${
-                      rsvp.attending === 'yes'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {rsvp.attending === 'yes' ? 'Attending' : 'Not Attending'}
-                  </span>
-                </td>
-                <td class="px-6 py-4">
-                  {#if rsvp.attending === 'yes' && rsvp.guests > 0}
-                    <span class="px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
-                      +{rsvp.guests}
+                {#if editingRsvp?.id === rsvp.id}
+                  <!-- Edit Mode -->
+                  <td class="px-6 py-4">
+                    <input
+                      type="text"
+                      bind:value={editedRsvp.name}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </td>
+                  <td class="px-6 py-4">
+                    <input
+                      type="email"
+                      bind:value={editedRsvp.email}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </td>
+                  <td class="px-6 py-4">
+                    <select
+                      bind:value={editedRsvp.attending}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="yes">Attending</option>
+                      <option value="no">Not Attending</option>
+                    </select>
+                  </td>
+                  <td class="px-6 py-4">
+                    <input
+                      type="number"
+                      bind:value={editedRsvp.guests}
+                      min="0"
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </td>
+                  <td class="px-6 py-4">
+                    <input
+                      type="text"
+                      bind:value={editedRsvp.dietary_requirements}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </td>
+                  <td class="px-6 py-4">
+                    <input
+                      type="text"
+                      bind:value={editedRsvp.song}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {new Date(rsvp.created_at).toLocaleString()}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                    <button on:click={saveEdit} class="text-green-600 hover:text-green-800">
+                      Save
+                    </button>
+                    <button on:click={cancelEdit} class="text-gray-600 hover:text-gray-800">
+                      Cancel
+                    </button>
+                  </td>
+                {:else}
+                  <!-- View Mode -->
+                  <td class="px-6 py-4">
+                    <div class="font-medium">{rsvp.name}</div>
+                  </td>
+                  <td class="px-6 py-4">{rsvp.email}</td>
+                  <td class="px-6 py-4">
+                    <span
+                      class={`px-2 py-1 rounded-full text-xs ${
+                        rsvp.attending === 'yes'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {rsvp.attending === 'yes' ? 'Attending' : 'Not Attending'}
                     </span>
-                  {:else}
-                    -
-                  {/if}
-                </td>
-                <td class="px-6 py-4">
-                  <div class="max-w-xs truncate">
-                    {rsvp.dietary_requirements || '-'}
-                  </div>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="max-w-xs truncate">
-                    {rsvp.song || '-'}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  {new Date(rsvp.created_at).toLocaleString()}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <button
-                    on:click={() => confirmDelete(rsvp)}
-                    class="text-red-600 hover:text-red-800"
-                  >
-                    Delete
-                  </button>
-                </td>
+                  </td>
+                  <td class="px-6 py-4">
+                    {#if rsvp.attending === 'yes' && rsvp.guests > 0}
+                      <span class="px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
+                        +{rsvp.guests}
+                      </span>
+                    {:else}
+                      -
+                    {/if}
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="max-w-xs truncate">
+                      {rsvp.dietary_requirements || '-'}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="max-w-xs truncate">
+                      {rsvp.song || '-'}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {new Date(rsvp.created_at).toLocaleString()}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                    <button
+                      on:click={() => startEdit(rsvp)}
+                      class="text-blue-600 hover:text-blue-800"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      on:click={() => confirmDelete(rsvp)}
+                      class="text-red-600 hover:text-red-800"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                {/if}
               </tr>
             {/each}
           </tbody>
