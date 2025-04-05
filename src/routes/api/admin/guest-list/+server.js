@@ -94,8 +94,9 @@ export async function POST({ request, platform }) {
   }
 }
 
-export async function DELETE({ url, platform }) {
+export async function DELETE({ request, platform }) {
   try {
+    const url = new URL(request.url);
     const id = url.pathname.split('/').pop();
 
     if (!id) {
