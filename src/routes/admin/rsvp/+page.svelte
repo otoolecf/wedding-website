@@ -25,6 +25,7 @@
   let editorStatus = { loading: false, error: null };
   let tinymceLoaded = false;
   let editor = null;
+  let previousTab = null;
 
   // Subscribe to form settings
   const unsubscribe = formSettings.subscribe((value) => {
@@ -299,7 +300,9 @@
           console.log('TinyMCE script loaded successfully');
           tinymceLoaded = true;
           editorStatus.loading = false;
-          initializeEditor();
+          if (activeTab === 'email') {
+            initializeEditor();
+          }
         };
         script.onerror = () => {
           console.error('Error loading TinyMCE from:', cdnUrls[index]);
@@ -314,7 +317,9 @@
     } else {
       console.log('TinyMCE already loaded');
       tinymceLoaded = true;
-      initializeEditor();
+      if (activeTab === 'email') {
+        initializeEditor();
+      }
     }
   }
 
@@ -333,7 +338,7 @@
   }
 
   function initializeEditor() {
-    if (!window.tinymce || editorInitialized) return;
+    if (!window.tinymce) return;
 
     // Clean up any existing editor first
     cleanupEditor();
@@ -389,12 +394,18 @@
   }
 
   // Watch for activeTab changes to reinitialize the editor when needed
-  $: if (activeTab === 'email') {
-    if (tinymceLoaded) {
-      initializeEditor();
-    } else {
-      loadTinyMCE();
+  $: if (activeTab !== previousTab) {
+    console.log(`Tab changed from ${previousTab} to ${activeTab}`);
+    if (activeTab === 'email') {
+      if (tinymceLoaded) {
+        initializeEditor();
+      } else {
+        loadTinyMCE();
+      }
+    } else if (previousTab === 'email') {
+      cleanupEditor();
     }
+    previousTab = activeTab;
   }
 
   onMount(() => {
