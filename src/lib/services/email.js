@@ -15,11 +15,24 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
   // Get form settings for field labels
   console.log('Fetching form settings...');
   const settingsResult = await platform.env.RSVPS.prepare(
-    'SELECT settings FROM form_settings ORDER BY created_at DESC LIMIT 1'
+    'SELECT * FROM form_settings WHERE id = 1'
   ).first();
   console.log('Settings result:', settingsResult);
-  const settings = settingsResult?.settings ? JSON.parse(settingsResult.settings) : {};
-  console.log('Parsed settings:', settings);
+
+  // Use default settings if none are found
+  const settings = settingsResult || {
+    nameLabel: 'Full Name',
+    emailLabel: 'Email',
+    attendanceQuestion: 'Will you be attending?',
+    additionalGuestsLabel: 'Number of Additional Guests',
+    vegetarianQuestion: 'Are you vegetarian?',
+    foodAllergiesLabel: 'Any food allergies?',
+    lodgingQuestion: 'Are you planning on staying at the lodging?',
+    transportQuestion: 'Are you planning on joining the transport to and from our lodging?',
+    songRequestLabel: 'What song will get you on the dance floor?',
+    specialNotesLabel: 'Any special note for the couple?'
+  };
+  console.log('Using settings:', settings);
 
   // Get partner information if this is a primary guest
   let partnerInfo = null;
@@ -40,18 +53,18 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
     <div class="rsvp-summary">
       <h3>Your Information</h3>
       <ul>
-        <li><strong>${settings.nameLabel || 'Name'}:</strong> ${rsvpData.name}</li>
-        <li><strong>${settings.emailLabel || 'Email'}:</strong> ${rsvpData.email}</li>
-        <li><strong>${settings.attendanceQuestion || 'Will you be attending?'}:</strong> ${rsvpData.attending === 'yes' ? 'Yes' : 'No'}</li>
+        <li><strong>${settings.nameLabel}:</strong> ${rsvpData.name}</li>
+        <li><strong>${settings.emailLabel}:</strong> ${rsvpData.email}</li>
+        <li><strong>${settings.attendanceQuestion}:</strong> ${rsvpData.attending === 'yes' ? 'Yes' : 'No'}</li>
         ${
           rsvpData.attending === 'yes'
             ? `
-          <li><strong>${settings.vegetarianQuestion || 'Are you vegetarian?'}:</strong> ${rsvpData.is_vegetarian === 'yes' ? 'Yes' : 'No'}</li>
-          <li><strong>${settings.foodAllergiesLabel || 'Any food allergies?'}:</strong> ${rsvpData.food_allergies || 'None'}</li>
-          <li><strong>${settings.lodgingQuestion || 'Are you planning on staying at the lodging?'}:</strong> ${rsvpData.lodging === 'yes' ? 'Yes' : 'No'}</li>
-          <li><strong>${settings.transportQuestion || 'Are you planning on joining the transport?'}:</strong> ${rsvpData.using_transport === 'yes' ? 'Yes' : 'No'}</li>
-          <li><strong>${settings.songRequestLabel || 'What song will get you on the dance floor?'}:</strong> ${rsvpData.song || 'None'}</li>
-          <li><strong>${settings.specialNotesLabel || 'Any special note for the couple?'}:</strong> ${rsvpData.special_notes || 'None'}</li>
+          <li><strong>${settings.vegetarianQuestion}:</strong> ${rsvpData.is_vegetarian === 'yes' ? 'Yes' : 'No'}</li>
+          <li><strong>${settings.foodAllergiesLabel}:</strong> ${rsvpData.food_allergies || 'None'}</li>
+          <li><strong>${settings.lodgingQuestion}:</strong> ${rsvpData.lodging === 'yes' ? 'Yes' : 'No'}</li>
+          <li><strong>${settings.transportQuestion}:</strong> ${rsvpData.using_transport === 'yes' ? 'Yes' : 'No'}</li>
+          <li><strong>${settings.songRequestLabel}:</strong> ${rsvpData.song || 'None'}</li>
+          <li><strong>${settings.specialNotesLabel}:</strong> ${rsvpData.special_notes || 'None'}</li>
         `
             : ''
         }
@@ -62,18 +75,18 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
           ? `
         <h3>Partner's Information</h3>
         <ul>
-          <li><strong>${settings.nameLabel || 'Name'}:</strong> ${partnerInfo.name}</li>
-          <li><strong>${settings.emailLabel || 'Email'}:</strong> ${partnerInfo.email}</li>
-          <li><strong>${settings.attendanceQuestion || 'Will they be attending?'}:</strong> ${partnerInfo.attending === 'yes' ? 'Yes' : 'No'}</li>
+          <li><strong>${settings.nameLabel}:</strong> ${partnerInfo.name}</li>
+          <li><strong>${settings.emailLabel}:</strong> ${partnerInfo.email}</li>
+          <li><strong>${settings.attendanceQuestion}:</strong> ${partnerInfo.attending === 'yes' ? 'Yes' : 'No'}</li>
           ${
             partnerInfo.attending === 'yes'
               ? `
-            <li><strong>${settings.vegetarianQuestion || 'Are they vegetarian?'}:</strong> ${partnerInfo.is_vegetarian === 'yes' ? 'Yes' : 'No'}</li>
-            <li><strong>${settings.foodAllergiesLabel || 'Any food allergies?'}:</strong> ${partnerInfo.food_allergies || 'None'}</li>
-            <li><strong>${settings.lodgingQuestion || 'Are they planning on staying at the lodging?'}:</strong> ${partnerInfo.lodging === 'yes' ? 'Yes' : 'No'}</li>
-            <li><strong>${settings.transportQuestion || 'Are they planning on joining the transport?'}:</strong> ${partnerInfo.using_transport === 'yes' ? 'Yes' : 'No'}</li>
-            <li><strong>${settings.songRequestLabel || 'What song will get them on the dance floor?'}:</strong> ${partnerInfo.song || 'None'}</li>
-            <li><strong>${settings.specialNotesLabel || 'Any special note for the couple?'}:</strong> ${partnerInfo.special_notes || 'None'}</li>
+            <li><strong>${settings.vegetarianQuestion}:</strong> ${partnerInfo.is_vegetarian === 'yes' ? 'Yes' : 'No'}</li>
+            <li><strong>${settings.foodAllergiesLabel}:</strong> ${partnerInfo.food_allergies || 'None'}</li>
+            <li><strong>${settings.lodgingQuestion}:</strong> ${partnerInfo.lodging === 'yes' ? 'Yes' : 'No'}</li>
+            <li><strong>${settings.transportQuestion}:</strong> ${partnerInfo.using_transport === 'yes' ? 'Yes' : 'No'}</li>
+            <li><strong>${settings.songRequestLabel}:</strong> ${partnerInfo.song || 'None'}</li>
+            <li><strong>${settings.specialNotesLabel}:</strong> ${partnerInfo.special_notes || 'None'}</li>
           `
               : ''
           }
