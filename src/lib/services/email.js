@@ -1,8 +1,7 @@
 export async function sendRsvpConfirmationEmail(rsvpData, platform) {
   console.log('Starting email send process for RSVP:', {
     name: rsvpData.name,
-    email: rsvpData.email,
-    is_primary: rsvpData.is_primary
+    email: rsvpData.email
   });
 
   // Get the latest email template
@@ -34,17 +33,28 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
   };
   console.log('Using settings:', settings);
 
+  // Check if this is a primary guest (their name is in the guest_list table's name column)
+  console.log('Checking if guest is primary...');
+  const guestCheck = await platform.env.RSVPS.prepare(
+    'SELECT * FROM guest_list WHERE LOWER(name) = LOWER(?)'
+  )
+    .bind(rsvpData.name)
+    .first();
+  console.log('Guest check result:', guestCheck);
+
   // Get partner information if this is a primary guest
   let partnerInfo = null;
-  if (rsvpData.is_primary) {
+  if (guestCheck) {
     console.log('Fetching partner information for primary guest...');
-    const partnerResult = await platform.env.RSVPS.prepare(
-      'SELECT * FROM rsvps WHERE name = ? AND is_primary = false'
-    )
-      .bind(rsvpData.name)
-      .first();
-    console.log('Partner result:', partnerResult);
-    partnerInfo = partnerResult || null;
+    if (guestCheck.partner_name) {
+      const partnerResult = await platform.env.RSVPS.prepare(
+        'SELECT * FROM rsvps WHERE LOWER(name) = LOWER(?)'
+      )
+        .bind(guestCheck.partner_name)
+        .first();
+      console.log('Partner result:', partnerResult);
+      partnerInfo = partnerResult || null;
+    }
   }
 
   // Generate the form data section
