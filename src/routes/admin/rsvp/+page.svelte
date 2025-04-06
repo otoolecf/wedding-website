@@ -84,8 +84,8 @@
       const response = await fetch('/api/admin/email-template');
       if (response.ok) {
         const data = await response.json();
-        // Escape the template content to prevent JavaScript template literal evaluation
-        emailTemplate = data.template.replace(/\${form_data}/g, '\\${form_data}');
+        // Replace the form_data placeholder with a special marker that won't be interpreted as a template literal
+        emailTemplate = data.template.replace(/\${form_data}/g, 'FORM_DATA_PLACEHOLDER');
       }
     } catch (err) {
       console.error('Error loading email template:', err);
@@ -94,8 +94,8 @@
 
   async function saveEmailTemplate() {
     try {
-      // Unescape the template content before saving
-      const templateToSave = emailTemplate.replace(/\\\${form_data}/g, '${form_data}');
+      // Replace the special marker back with the form_data placeholder before saving
+      const templateToSave = emailTemplate.replace(/FORM_DATA_PLACEHOLDER/g, '${form_data}');
 
       const response = await fetch('/api/admin/email-template', {
         method: 'POST',
