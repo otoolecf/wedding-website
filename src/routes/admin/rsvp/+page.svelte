@@ -23,6 +23,8 @@
   let emailTemplate = '';
   let editorInitialized = false;
   let editorStatus = { loading: false, error: null };
+  let tinymceLoaded = false;
+  let editor = null;
 
   // Subscribe to form settings
   const unsubscribe = formSettings.subscribe((value) => {
@@ -295,6 +297,7 @@
         script.src = cdnUrls[index];
         script.onload = () => {
           console.log('TinyMCE script loaded successfully');
+          tinymceLoaded = true;
           editorStatus.loading = false;
           initializeEditor();
         };
@@ -310,12 +313,30 @@
       loadScript(0);
     } else {
       console.log('TinyMCE already loaded');
+      tinymceLoaded = true;
       initializeEditor();
+    }
+  }
+
+  function cleanupEditor() {
+    if (window.tinymce) {
+      try {
+        if (editor) {
+          editor.remove();
+          editor = null;
+        }
+        editorInitialized = false;
+      } catch (e) {
+        console.error('Error removing editor:', e);
+      }
     }
   }
 
   function initializeEditor() {
     if (!window.tinymce || editorInitialized) return;
+
+    // Clean up any existing editor first
+    cleanupEditor();
 
     const editorConfig = {
       selector: '#email-template-editor',
@@ -338,9 +359,10 @@
         blockquote { border-left: 4px solid #ccc; padding-left: 1rem; font-style: italic; }
       `,
       setup: (ed) => {
+        editor = ed;
         ed.on('init', () => {
           console.log('Editor initialized');
-          ed.setContent(emailTemplate);
+          ed.setContent(emailTemplate || '');
           editorInitialized = true;
         });
 
@@ -350,25 +372,39 @@
       }
     };
 
-    window.tinymce
-      .init(editorConfig)
-      .then(() => {
-        console.log('TinyMCE editor successfully initialized');
-      })
-      .catch((err) => {
-        console.error('Failed to initialize TinyMCE editor:', err);
-        editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
-      });
+    try {
+      window.tinymce
+        .init(editorConfig)
+        .then((editorInstances) => {
+          console.log('TinyMCE editor successfully initialized');
+        })
+        .catch((err) => {
+          console.error('Failed to initialize TinyMCE editor:', err);
+          editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
+        });
+    } catch (error) {
+      console.error('Error during editor initialization:', error);
+      editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
+    }
+  }
+
+  // Watch for activeTab changes to reinitialize the editor when needed
+  $: if (activeTab === 'email') {
+    if (tinymceLoaded) {
+      initializeEditor();
+    } else {
+      loadTinyMCE();
+    }
   }
 
   onMount(() => {
-    loadTinyMCE();
+    if (activeTab === 'email') {
+      loadTinyMCE();
+    }
   });
 
   onDestroy(() => {
-    if (window.tinymce) {
-      window.tinymce.remove('#email-template-editor');
-    }
+    cleanupEditor();
   });
 </script>
 
