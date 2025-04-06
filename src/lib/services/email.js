@@ -75,13 +75,13 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
     `
     <h2>Thank you for your RSVP!</h2>
     <p>Here's a summary of your response:</p>
-    ${formDataSection}
+    [[form_data]]
     <p>If you need to make any changes to your RSVP, please contact us directly.</p>
     <p>We look forward to celebrating with you!</p>
   `;
 
   // Replace the form data placeholder with the actual form data
-  emailContent = emailContent.replace(/\${form_data}/g, formDataSection);
+  emailContent = emailContent.replace(/\[\[form_data\]\]/g, formDataSection);
 
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',

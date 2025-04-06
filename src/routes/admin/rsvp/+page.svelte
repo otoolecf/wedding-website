@@ -84,8 +84,8 @@
       const response = await fetch('/api/admin/email-template');
       if (response.ok) {
         const data = await response.json();
-        // Replace the form_data placeholder with a special marker that won't be interpreted as a template literal
-        emailTemplate = data.template.replace(/\${form_data}/g, 'FORM_DATA_PLACEHOLDER');
+        // No need to escape or replace anything since we're using a different format
+        emailTemplate = data.template;
       }
     } catch (err) {
       console.error('Error loading email template:', err);
@@ -94,8 +94,8 @@
 
   async function saveEmailTemplate() {
     try {
-      // Replace the special marker back with the form_data placeholder before saving
-      const templateToSave = emailTemplate.replace(/FORM_DATA_PLACEHOLDER/g, '${form_data}');
+      // No need to replace anything since we're using a different format
+      const templateToSave = emailTemplate;
 
       const response = await fetch('/api/admin/email-template', {
         method: 'POST',
@@ -804,7 +804,7 @@
               <p class="mb-4">
                 This editor allows you to customize the text that appears before and after the RSVP
                 form data in the confirmation email. The form data section will be automatically
-                inserted where you place the <code>${form_data}</code> placeholder.
+                inserted where you place the <code>[[form_data]]</code> placeholder.
               </p>
 
               <h4 class="font-medium mb-2">Example Structure:</h4>
@@ -812,7 +812,7 @@
 &lt;h2&gt;Thank you for your RSVP!&lt;/h2&gt;
 &lt;p&gt;Here's a summary of your response:&lt;/p&gt;
 
-${form_data}
+[[form_data]]
 
 &lt;p&gt;If you need to make any changes to your RSVP, please contact us directly.&lt;/p&gt;
 &lt;p&gt;We look forward to celebrating with you!&lt;/p&gt;</pre>
@@ -821,7 +821,7 @@ ${form_data}
               <p class="mb-2">Use this placeholder in your template:</p>
               <ul class="list-disc list-inside space-y-1">
                 <li>
-                  <code>${form_data}</code> - This will be replaced with the guest's form responses,
+                  <code>[[form_data]]</code> - This will be replaced with the guest's form responses,
                   including partner information if applicable
                 </li>
               </ul>
