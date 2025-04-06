@@ -2,6 +2,7 @@
 <script>
   import { openLightbox } from '$lib/stores/lightbox';
   import AssignedImage from '$lib/components/AssignedImage.svelte';
+  import { onMount } from 'svelte';
 
   // Props
   export let properties = {
@@ -32,18 +33,45 @@
 
   // Function to open the lightbox for all gallery images
   function openGalleryLightbox(startIndex) {
-    // Since we don't have actual images in the properties yet, we'll need
-    // to replace this with actual gallery items from your implementation
     if (properties.images.length === 0) return;
 
-    const galleryImages = properties.images.map((imageId) => ({
-      src: '', // This would need to be fetched in a real implementation
-      alt: 'Gallery image',
-      caption: ''
-    }));
+    // Get all images from the gallery
+    const galleryImages = properties.images
+      .map((imageId) => {
+        const imageElement = document.querySelector(`[data-image-id="${imageId}"]`);
+        if (!imageElement) return null;
 
-    openLightbox(galleryImages, startIndex);
+        const img = imageElement.querySelector('img');
+        const caption = imageElement.querySelector('.gallery-caption')?.textContent || '';
+
+        return {
+          src: img?.src || '',
+          alt: img?.alt || 'Gallery image',
+          caption: caption
+        };
+      })
+      .filter(Boolean);
+
+    if (galleryImages.length > 0) {
+      openLightbox(galleryImages, startIndex);
+    }
   }
+
+  // Update captions after images load
+  onMount(() => {
+    // Wait for images to load
+    setTimeout(() => {
+      document.querySelectorAll('.gallery-item').forEach((item) => {
+        const img = item.querySelector('img');
+        const captionText = item.querySelector('.caption-text');
+        if (img && captionText) {
+          const alt = img.getAttribute('alt') || '';
+          const caption = alt.replace(/^Image for /, '');
+          captionText.textContent = caption || 'No caption';
+        }
+      });
+    }, 100);
+  });
 </script>
 
 <div class="gallery-section">
@@ -55,7 +83,8 @@
     <div class="grid {gridClasses}">
       {#each properties.images as imageId, index}
         <div
-          class="gallery-item cursor-pointer overflow-hidden rounded"
+          class="gallery-item group relative cursor-pointer overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+          data-image-id={imageId}
           on:click={() => openGalleryLightbox(index)}
           on:keydown={(e) => e.key === 'Enter' && openGalleryLightbox(index)}
           tabindex="0"
@@ -64,9 +93,19 @@
         >
           <AssignedImage
             locationId={imageId}
-            className="w-full h-64 object-cover transition-transform duration-300 hover:scale-105"
+            className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
             enableLightbox={false}
           />
+          <div
+            class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end"
+          >
+            <div class="p-4 text-white">
+              <p class="gallery-caption text-sm font-light line-clamp-2">
+                <AssignedImage locationId={imageId} className="hidden" enableLightbox={false} />
+                <span class="caption-text">Loading caption...</span>
+              </p>
+            </div>
+          </div>
         </div>
       {/each}
     </div>
