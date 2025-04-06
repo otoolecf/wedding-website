@@ -55,29 +55,31 @@
   {:else if photos.length === 0}
     <div class="text-center text-secondary p-4 rounded">No images available in the gallery.</div>
   {:else}
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
       {#each photos as photo, index}
         <div
-          class="group relative cursor-pointer overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+          class="group cursor-pointer"
           on:click={() => openGalleryLightbox(index)}
           on:keydown={(e) => e.key === 'Enter' && openGalleryLightbox(index)}
           tabindex="0"
           role="button"
           aria-label="View gallery image"
         >
-          <img
-            src={photo.src}
-            alt={photo.alt || photo.id}
-            class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-          />
           <div
-            class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end"
+            class="relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
           >
-            <div class="p-4 text-white w-full">
-              <p class="text-sm font-light line-clamp-2">
-                {photo.caption || photo.alt || 'No caption'}
-              </p>
-            </div>
+            <img
+              src={photo.src}
+              alt={photo.alt || photo.id}
+              class="w-full aspect-[4/3] object-contain bg-gray-50 transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+          <div class="mt-2">
+            <p
+              class="text-sm text-gray-600 line-clamp-2 group-hover:text-gray-900 transition-colors"
+            >
+              {photo.caption || photo.alt || 'No caption'}
+            </p>
           </div>
         </div>
       {/each}
