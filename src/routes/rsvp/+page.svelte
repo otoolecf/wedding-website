@@ -18,7 +18,6 @@
 
   let partnerFormData = {
     name: '',
-    email: '',
     attending: 'yes',
     is_vegetarian: 'no',
     food_allergies: '',
@@ -96,12 +95,10 @@
     if (guest.partner) {
       showPartnerForm = true;
       partnerFormData.name = guest.partner.name;
-      partnerFormData.email = guest.partner.email || '';
     } else {
       showPartnerForm = false;
       partnerFormData = {
         name: '',
-        email: '',
         attending: 'yes',
         is_vegetarian: 'no',
         food_allergies: '',
@@ -426,19 +423,6 @@
             <div class="bg-gray-50 p-6 rounded-lg space-y-6">
               <div class="border-b pb-4">
                 <h3 class="text-xl font-medium">{partnerFormData.name}'s RSVP</h3>
-              </div>
-
-              <div class="space-y-2">
-                <label for="partner_email" class="block">Email</label>
-                <input
-                  type="email"
-                  id="partner_email"
-                  bind:value={partnerFormData.email}
-                  required
-                  autocomplete="off"
-                  class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                  style="focus-ring-color: var(--color-primary)"
-                />
               </div>
 
               <div class="space-y-2">

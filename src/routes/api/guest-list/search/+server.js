@@ -17,7 +17,6 @@ export async function GET({ url, platform }) {
         name TEXT NOT NULL,
         email TEXT,
         partner_name TEXT,
-        partner_email TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `
@@ -31,7 +30,6 @@ export async function GET({ url, platform }) {
         g1.name,
         g1.email,
         g1.partner_name,
-        g1.partner_email,
         CASE 
           WHEN g1.partner_name IS NOT NULL THEN 1
           ELSE 0
@@ -53,8 +51,7 @@ export async function GET({ url, platform }) {
       email: guest.email,
       partner: guest.partner_name
         ? {
-            name: guest.partner_name,
-            email: guest.partner_email
+            name: guest.partner_name
           }
         : null
     }));
@@ -63,13 +60,7 @@ export async function GET({ url, platform }) {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    console.error('Guest list search error:', error);
-    // Return empty results instead of an error if the table doesn't exist or is empty
-    if (error.message.includes('no such table') || error.message.includes('empty')) {
-      return new Response(JSON.stringify({ results: [] }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+    console.error('Error searching guest list:', error);
     return new Response(JSON.stringify({ error: 'Failed to search guest list' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

@@ -86,7 +86,6 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
         <h3>Partner's Information</h3>
         <ul>
           <li><strong>${settings.nameLabel}:</strong> ${partnerInfo.name}</li>
-          <li><strong>${settings.emailLabel}:</strong> ${partnerInfo.email}</li>
           <li><strong>${settings.attendanceQuestion}:</strong> ${partnerInfo.attending === 'yes' ? 'Yes' : 'No'}</li>
           ${
             partnerInfo.attending === 'yes'
