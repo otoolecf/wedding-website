@@ -483,7 +483,13 @@
             on:click={() => handleImageClick(image.kv_id)}
             on:keydown={(event) => handleKeyDown(event, image.kv_id)}
           >
-            <img src={image.src} alt={image.id} class="w-full h-32 object-cover rounded mb-2" />
+            <div class="w-full h-32 flex items-center justify-center bg-transparent">
+              <img
+                src={image.src}
+                alt={image.id}
+                class="max-w-full max-h-32 object-contain rounded"
+              />
+            </div>
 
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs text-gray-500">ID: {image.id}</span>
