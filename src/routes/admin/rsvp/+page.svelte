@@ -376,6 +376,8 @@
         h4 { font-size: 1rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
         blockquote { border-left: 4px solid #ccc; padding-left: 1rem; font-style: italic; }
       `,
+      convert_urls: false,
+      relative_urls: false,
       setup: (ed) => {
         editor = ed;
         ed.on('init', () => {
