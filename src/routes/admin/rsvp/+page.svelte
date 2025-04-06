@@ -330,6 +330,11 @@
           editor.remove();
           editor = null;
         }
+        // Also remove the editor container to ensure a clean slate
+        const container = document.getElementById('email-template-editor');
+        if (container) {
+          container.innerHTML = '';
+        }
         editorInitialized = false;
       } catch (e) {
         console.error('Error removing editor:', e);
@@ -342,6 +347,14 @@
 
     // Clean up any existing editor first
     cleanupEditor();
+
+    // Ensure the editor container exists and is empty
+    const container = document.getElementById('email-template-editor');
+    if (!container) {
+      console.error('Editor container not found');
+      return;
+    }
+    container.innerHTML = '';
 
     const editorConfig = {
       selector: '#email-template-editor',
@@ -397,11 +410,14 @@
   $: if (activeTab !== previousTab) {
     console.log(`Tab changed from ${previousTab} to ${activeTab}`);
     if (activeTab === 'email') {
-      if (tinymceLoaded) {
-        initializeEditor();
-      } else {
-        loadTinyMCE();
-      }
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        if (tinymceLoaded) {
+          initializeEditor();
+        } else {
+          loadTinyMCE();
+        }
+      }, 100);
     } else if (previousTab === 'email') {
       cleanupEditor();
     }
