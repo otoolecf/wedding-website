@@ -3,190 +3,198 @@ import { sendRsvpConfirmationEmail } from '$lib/services/email';
 
 export async function POST({ request, platform }) {
   const requestId = crypto.randomUUID();
-  console.log(`[${requestId}] New RSVP submission received`);
+  console.log(`[${requestId}] Received RSVP request`);
 
   try {
     const data = await request.json();
-    console.log(`[${requestId}] Received RSVP data:`, {
-      name: data.name,
-      email: data.email,
-      attending: data.attending,
-      hasDietaryRequirements: !!data.dietaryRequirements,
-      hasSongRequest: !!data.song,
-      timestamp: new Date().toISOString()
-    });
+    console.log(`[${requestId}] RSVP data:`, data);
 
-    // Validate required fields
-    if (!data.name || !data.email || !data.attending) {
-      const missingFields = [];
-      if (!data.name) missingFields.push('name');
-      if (!data.email) missingFields.push('email');
-      if (!data.attending) missingFields.push('attending');
+    // Validate primary guest data
+    if (!data.primary) {
+      return new Response(
+        JSON.stringify({
+          error: 'Missing required fields',
+          details: 'Missing: primary guest data'
+        }),
+        { status: 400 }
+      );
+    }
 
-      console.error(`[${requestId}] Validation failed - Missing required fields:`, missingFields);
+    const { primary, partner } = data;
+
+    // Validate required fields for primary guest
+    const requiredFields = ['name', 'email', 'attending'];
+    const missingFields = requiredFields.filter((field) => !primary[field]);
+    if (missingFields.length > 0) {
       return new Response(
         JSON.stringify({
           error: 'Missing required fields',
           details: `Missing: ${missingFields.join(', ')}`
         }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
+        { status: 400 }
       );
     }
 
-    // Check if the guest exists in the guest list
+    // Check if guest exists in guest list
     const guestCheck = await platform.env.RSVPS.prepare(
-      `
-      SELECT * FROM guest_list 
-      WHERE LOWER(name) = LOWER(?) 
-      OR LOWER(partner_name) = LOWER(?)
-    `
+      'SELECT * FROM guest_list WHERE LOWER(name) = LOWER(?)'
     )
-      .bind(data.name, data.name)
+      .bind(primary.name)
       .first();
 
     if (!guestCheck) {
-      console.error(`[${requestId}] Guest not found in guest list:`, data.name);
       return new Response(
         JSON.stringify({
           error: 'Guest not found',
           details:
-            'Your name was not found in our guest list. Please contact the couple if you believe this is an error.'
+            'Your name was not found in our guest list. Please contact us if you believe this is an error.'
         }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' }
-        }
+        { status: 404 }
       );
     }
 
     // Check if this is an update
-    const existingRsvp = await platform.env.RSVPS.prepare('SELECT * FROM rsvps WHERE name = ?')
-      .bind(data.name)
+    const existingRsvp = await platform.env.RSVPS.prepare(
+      'SELECT * FROM rsvps WHERE LOWER(name) = LOWER(?)'
+    )
+      .bind(primary.name)
       .first();
 
-    // Insert or update the RSVP
-    const stmt = platform.env.RSVPS.prepare(`
-      INSERT OR REPLACE INTO rsvps (
-        name, 
-        email, 
-        attending, 
-        guests,
-        is_vegetarian,
-        food_allergies,
-        lodging,
-        using_transport,
-        song,
-        special_notes
+    const isUpdate = !!existingRsvp;
+
+    // Insert or update primary guest's RSVP
+    if (isUpdate) {
+      await platform.env.RSVPS.prepare(
+        `UPDATE rsvps SET 
+          email = ?,
+          attending = ?,
+          guests = ?,
+          is_vegetarian = ?,
+          food_allergies = ?,
+          lodging = ?,
+          using_transport = ?,
+          song = ?,
+          special_notes = ?,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE LOWER(name) = LOWER(?)`
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const result = await stmt
-      .bind(
-        data.name,
-        data.email,
-        data.attending,
-        data.guests || 0,
-        data.is_vegetarian || 'no',
-        data.food_allergies || '',
-        data.lodging || 'no',
-        data.using_transport || 'no',
-        data.song || '',
-        data.special_notes || ''
-      )
-      .run();
-
-    console.log(`[${requestId}] RSVP raw result: `, result);
-    console.log(`[${requestId}] RSVP successfully ${existingRsvp ? 'updated' : 'saved'}`, {
-      success: true,
-      meta: {
-        email: data.email,
-        attending: data.attending,
-        timestamp: new Date().toISOString(),
-        isUpdate: !!existingRsvp
-      }
-    });
-
-    // Look up the inserted record to confirm and log details
-    const inserted = await platform.env.RSVPS.prepare(
-      'SELECT * FROM rsvps WHERE name = ? ORDER BY created_at DESC LIMIT 1'
-    )
-      .bind(data.name)
-      .all();
-
-    console.log(`[${requestId}] Database record verified:`, {
-      found: inserted.results.length > 0,
-      record: inserted.results[0]
-    });
-
-    // Only send confirmation email if the person is not a partner
-    // Check if this person is listed as a partner in any guest record
-    console.log(`[${requestId}] Checking if guest is a partner...`);
-    const isPartner = await platform.env.RSVPS.prepare(
-      'SELECT COUNT(*) as count FROM guest_list WHERE LOWER(partner_name) = LOWER(?)'
-    )
-      .bind(data.name)
-      .first();
-    console.log(`[${requestId}] Partner check result:`, { isPartner: isPartner.count > 0 });
-
-    if (isPartner.count === 0) {
-      console.log(`[${requestId}] Attempting to send confirmation email...`);
-      try {
-        // Add is_primary flag to data for email service
-        const emailData = {
-          ...data,
-          is_primary: true // Since this is not a partner, they are primary
-        };
-        console.log(`[${requestId}] Prepared email data:`, {
-          name: emailData.name,
-          email: emailData.email,
-          is_primary: emailData.is_primary
-        });
-
-        await sendRsvpConfirmationEmail(emailData, platform);
-        console.log(`[${requestId}] Confirmation email sent successfully`);
-      } catch (emailError) {
-        console.error(`[${requestId}] Failed to send confirmation email:`, {
-          error: emailError.message,
-          stack: emailError.stack,
-          timestamp: new Date().toISOString()
-        });
-        // Don't fail the RSVP submission if email fails
-      }
+        .bind(
+          primary.email,
+          primary.attending,
+          primary.guests || 0,
+          primary.is_vegetarian || 'no',
+          primary.food_allergies || '',
+          primary.lodging || 'no',
+          primary.using_transport || 'no',
+          primary.song || '',
+          primary.special_notes || '',
+          primary.name
+        )
+        .run();
     } else {
-      console.log(`[${requestId}] Skipping email for partner RSVP - partner name:`, data.name);
+      await platform.env.RSVPS.prepare(
+        `INSERT INTO rsvps (
+          name, email, attending, guests, is_vegetarian, 
+          food_allergies, lodging, using_transport, song, special_notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+        .bind(
+          primary.name,
+          primary.email,
+          primary.attending,
+          primary.guests || 0,
+          primary.is_vegetarian || 'no',
+          primary.food_allergies || '',
+          primary.lodging || 'no',
+          primary.using_transport || 'no',
+          primary.song || '',
+          primary.special_notes || ''
+        )
+        .run();
+    }
+
+    // Handle partner RSVP if provided
+    if (partner && partner.name) {
+      const partnerCheck = await platform.env.RSVPS.prepare(
+        'SELECT * FROM rsvps WHERE LOWER(name) = LOWER(?)'
+      )
+        .bind(partner.name)
+        .first();
+
+      if (partnerCheck) {
+        // Update existing partner RSVP
+        await platform.env.RSVPS.prepare(
+          `UPDATE rsvps SET 
+            attending = ?,
+            is_vegetarian = ?,
+            food_allergies = ?,
+            lodging = ?,
+            using_transport = ?,
+            song = ?,
+            special_notes = ?,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE LOWER(name) = LOWER(?)`
+        )
+          .bind(
+            partner.attending,
+            partner.is_vegetarian || 'no',
+            partner.food_allergies || '',
+            partner.lodging || 'no',
+            partner.using_transport || 'no',
+            partner.song || '',
+            partner.special_notes || '',
+            partner.name
+          )
+          .run();
+      } else {
+        // Insert new partner RSVP
+        await platform.env.RSVPS.prepare(
+          `INSERT INTO rsvps (
+            name, attending, is_vegetarian, food_allergies, 
+            lodging, using_transport, song, special_notes
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+          .bind(
+            partner.name,
+            partner.attending,
+            partner.is_vegetarian || 'no',
+            partner.food_allergies || '',
+            partner.lodging || 'no',
+            partner.using_transport || 'no',
+            partner.song || '',
+            partner.special_notes || ''
+          )
+          .run();
+      }
+    }
+
+    // Send confirmation email only for primary guest
+    if (primary.attending === 'yes') {
+      try {
+        await sendRsvpConfirmationEmail(primary, platform);
+        console.log(`[${requestId}] Confirmation email sent to ${primary.email}`);
+      } catch (emailError) {
+        console.error(`[${requestId}] Failed to send confirmation email:`, emailError);
+        // Don't fail the request if email fails
+      }
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        isUpdate: !!existingRsvp,
-        requestId
+        isUpdate,
+        message: isUpdate ? 'RSVP updated successfully' : 'RSVP submitted successfully'
       }),
-      {
-        headers: { 'Content-Type': 'application/json' }
-      }
+      { status: 200 }
     );
   } catch (error) {
-    console.error(`[${requestId}] RSVP Error:`, {
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-
+    console.error(`[${requestId}] RSVP Error:`, error);
     return new Response(
       JSON.stringify({
-        error: 'Failed to save RSVP',
-        details: error.message,
-        requestId
+        error: 'Failed to process RSVP',
+        details: error.message
       }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
+      { status: 500 }
     );
   }
 }

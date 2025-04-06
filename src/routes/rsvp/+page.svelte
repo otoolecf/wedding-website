@@ -120,13 +120,19 @@
     error = null;
 
     try {
-      // Submit primary guest's RSVP
+      // Prepare the request data
+      const requestData = {
+        primary: formData,
+        partner: showPartnerForm && partnerFormData.name ? partnerFormData : null
+      };
+
+      // Submit RSVP in a single request
       const response = await fetch('/api/rsvp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(requestData)
       });
 
       const responseText = await response.text();
@@ -142,29 +148,6 @@
       }
 
       isUpdate = result.isUpdate;
-
-      // If there's a partner, submit their RSVP too
-      if (showPartnerForm && partnerFormData.name) {
-        const partnerResponse = await fetch('/api/rsvp', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(partnerFormData)
-        });
-
-        const partnerResponseText = await partnerResponse.text();
-        try {
-          result = JSON.parse(partnerResponseText);
-        } catch (e) {
-          throw new Error(`Server returned invalid JSON: ${partnerResponseText}`);
-        }
-
-        if (!partnerResponse.ok) {
-          throw new Error(result.details || result.error || 'Failed to submit partner RSVP');
-        }
-      }
-
       submitted = true;
     } catch (e) {
       error = e.message;
