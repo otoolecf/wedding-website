@@ -75,7 +75,7 @@
           {#if photo.caption}
             <div class="mt-2">
               <p
-                class="text-sm text-gray-600 line-clamp-2 group-hover:text-gray-900 transition-colors"
+                class="text-sm text-center text-gray-600 line-clamp-2 group-hover:text-gray-900 transition-colors"
               >
                 {photo.caption}
               </p>
