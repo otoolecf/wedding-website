@@ -19,12 +19,13 @@ export async function GET({ platform }) {
     const imagePromises = orderList.map(async (img_id) => {
       const img_data = await platform.env.IMAGES_KV.get(`image:${img_id}`);
       if (img_data) {
-        const { r2_key, alt } = JSON.parse(img_data);
+        const { r2_key, alt, caption } = JSON.parse(img_data);
         return {
           id: img_id,
           kv_id: `image:${img_id}`,
           src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${r2_key}`,
-          alt: alt || ''
+          alt: alt || '',
+          caption: caption || ''
         };
       }
       return null;

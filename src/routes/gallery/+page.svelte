@@ -30,7 +30,7 @@
     const galleryImages = photos.map((photo) => ({
       src: photo.src,
       alt: photo.alt || photo.id,
-      caption: photo.caption || ''
+      caption: photo.caption
     }));
 
     openLightbox(galleryImages, startIndex);
@@ -74,12 +74,12 @@
               class="w-full aspect-[4/3] object-contain bg-gray-50 transition-transform duration-300 group-hover:scale-105"
             />
           </div>
-          {#if photo.caption || photo.alt}
+          {#if photo.caption}
             <div class="mt-2">
               <p
                 class="text-sm text-gray-600 line-clamp-2 group-hover:text-gray-900 transition-colors"
               >
-                {photo.caption || photo.alt}
+                {photo.caption}
               </p>
             </div>
           {/if}
