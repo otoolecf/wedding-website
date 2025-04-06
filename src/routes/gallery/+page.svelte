@@ -71,7 +71,7 @@
             <img
               src={photo.src}
               alt={photo.alt || photo.id}
-              class="w-full aspect-[4/3] object-contain bg-gray-50 transition-transform duration-300 group-hover:scale-105"
+              class="w-full aspect-[4/3] object-contain bg-transparent transition-transform duration-300 group-hover:scale-105"
             />
           </div>
           {#if photo.caption}
