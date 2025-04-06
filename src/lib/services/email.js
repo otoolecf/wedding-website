@@ -1,27 +1,41 @@
 export async function sendRsvpConfirmationEmail(rsvpData, platform) {
+  console.log('Starting email send process for RSVP:', {
+    name: rsvpData.name,
+    email: rsvpData.email,
+    is_primary: rsvpData.is_primary
+  });
+
   // Get the latest email template
+  console.log('Fetching email template...');
   const templateResult = await platform.env.RSVPS.prepare(
     'SELECT template FROM email_templates ORDER BY created_at DESC LIMIT 1'
   ).first();
+  console.log('Template result:', templateResult);
 
   // Get form settings for field labels
+  console.log('Fetching form settings...');
   const settingsResult = await platform.env.RSVPS.prepare(
     'SELECT settings FROM form_settings ORDER BY created_at DESC LIMIT 1'
   ).first();
+  console.log('Settings result:', settingsResult);
   const settings = settingsResult?.settings ? JSON.parse(settingsResult.settings) : {};
+  console.log('Parsed settings:', settings);
 
   // Get partner information if this is a primary guest
   let partnerInfo = null;
   if (rsvpData.is_primary) {
+    console.log('Fetching partner information for primary guest...');
     const partnerResult = await platform.env.RSVPS.prepare(
       'SELECT * FROM rsvps WHERE name = ? AND is_primary = false'
     )
       .bind(rsvpData.name)
       .first();
+    console.log('Partner result:', partnerResult);
     partnerInfo = partnerResult || null;
   }
 
   // Generate the form data section
+  console.log('Generating form data section...');
   let formDataSection = `
     <div class="rsvp-summary">
       <h3>Your Information</h3>
@@ -42,6 +56,7 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
             : ''
         }
       </ul>
+      
       ${
         partnerInfo
           ? `
@@ -70,6 +85,7 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
   `;
 
   // Default template if none is configured
+  console.log('Preparing email content...');
   let emailContent =
     templateResult?.template ||
     `
@@ -79,10 +95,13 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
     <p>If you need to make any changes to your RSVP, please contact us directly.</p>
     <p>We look forward to celebrating with you!</p>
   `;
+  console.log('Email content before form data replacement:', emailContent);
 
   // Replace the form data placeholder with the actual form data
   emailContent = emailContent.replace(/\[\[form_data\]\]/g, formDataSection);
+  console.log('Final email content:', emailContent);
 
+  console.log('Sending email via Brevo API...');
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
@@ -106,10 +125,13 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
     })
   });
 
+  console.log('Brevo API response status:', response.status);
+  const responseData = await response.json();
+  console.log('Brevo API response:', responseData);
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(`Failed to send email: ${error.message}`);
+    throw new Error(`Failed to send email: ${responseData.message}`);
   }
 
-  return response.json();
+  return responseData;
 }

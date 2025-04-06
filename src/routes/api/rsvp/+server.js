@@ -124,22 +124,40 @@ export async function POST({ request, platform }) {
 
     // Only send confirmation email if the person is not a partner
     // Check if this person is listed as a partner in any guest record
+    console.log(`[${requestId}] Checking if guest is a partner...`);
     const isPartner = await platform.env.RSVPS.prepare(
       'SELECT COUNT(*) as count FROM guest_list WHERE LOWER(partner_name) = LOWER(?)'
     )
       .bind(data.name)
       .first();
+    console.log(`[${requestId}] Partner check result:`, { isPartner: isPartner.count > 0 });
 
     if (isPartner.count === 0) {
+      console.log(`[${requestId}] Attempting to send confirmation email...`);
       try {
-        await sendRsvpConfirmationEmail(data, platform);
+        // Add is_primary flag to data for email service
+        const emailData = {
+          ...data,
+          is_primary: true // Since this is not a partner, they are primary
+        };
+        console.log(`[${requestId}] Prepared email data:`, {
+          name: emailData.name,
+          email: emailData.email,
+          is_primary: emailData.is_primary
+        });
+
+        await sendRsvpConfirmationEmail(emailData, platform);
         console.log(`[${requestId}] Confirmation email sent successfully`);
       } catch (emailError) {
-        console.error(`[${requestId}] Failed to send confirmation email:`, emailError);
+        console.error(`[${requestId}] Failed to send confirmation email:`, {
+          error: emailError.message,
+          stack: emailError.stack,
+          timestamp: new Date().toISOString()
+        });
         // Don't fail the RSVP submission if email fails
       }
     } else {
-      console.log(`[${requestId}] Skipping email for partner RSVP`);
+      console.log(`[${requestId}] Skipping email for partner RSVP - partner name:`, data.name);
     }
 
     return new Response(
