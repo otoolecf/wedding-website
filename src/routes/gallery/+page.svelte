@@ -65,9 +65,7 @@
           role="button"
           aria-label="View gallery image"
         >
-          <div
-            class="relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
-          >
+          <div class="relative overflow-hidden transition-all duration-300">
             <img
               src={photo.src}
               alt={photo.alt || photo.id}
