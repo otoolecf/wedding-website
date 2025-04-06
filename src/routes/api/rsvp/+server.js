@@ -74,8 +74,7 @@ export async function POST({ request, platform }) {
           lodging = ?,
           using_transport = ?,
           song = ?,
-          special_notes = ?,
-          updated_at = CURRENT_TIMESTAMP
+          special_notes = ?
         WHERE LOWER(name) = LOWER(?)`
       )
         .bind(
@@ -131,8 +130,7 @@ export async function POST({ request, platform }) {
             lodging = ?,
             using_transport = ?,
             song = ?,
-            special_notes = ?,
-            updated_at = CURRENT_TIMESTAMP
+            special_notes = ?
           WHERE LOWER(name) = LOWER(?)`
         )
           .bind(
