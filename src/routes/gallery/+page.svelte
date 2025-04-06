@@ -74,13 +74,15 @@
               class="w-full aspect-[4/3] object-contain bg-gray-50 transition-transform duration-300 group-hover:scale-105"
             />
           </div>
-          <div class="mt-2">
-            <p
-              class="text-sm text-gray-600 line-clamp-2 group-hover:text-gray-900 transition-colors"
-            >
-              {photo.caption || photo.alt || 'No caption'}
-            </p>
-          </div>
+          {#if photo.caption || photo.alt}
+            <div class="mt-2">
+              <p
+                class="text-sm text-gray-600 line-clamp-2 group-hover:text-gray-900 transition-colors"
+              >
+                {photo.caption || photo.alt}
+              </p>
+            </div>
+          {/if}
         </div>
       {/each}
     </div>

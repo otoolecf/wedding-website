@@ -85,7 +85,9 @@
 
       <!-- Caption and controls -->
       <div class="mt-4 text-white text-center w-full">
-        <p class="mb-2 text-lg font-light">{activeImage.caption || 'No caption'}</p>
+        {#if activeImage.caption}
+          <p class="mb-2 text-lg font-light">{activeImage.caption}</p>
+        {/if}
 
         {#if $lightboxStore.images.length > 1}
           <div class="text-sm text-gray-400 mt-2">
