@@ -43,46 +43,33 @@
   <title>{coupleNames}'s Wedding</title>
 </svelte:head>
 
-{#if data.isPreview}
-  <div class="min-h-screen flex flex-col items-center justify-center p-4">
-    <h1 class="text-4xl font-bold mb-8">{coupleNames}</h1>
+<div class="min-h-screen flex flex-col items-center justify-center p-4">
+  <h1 class="text-4xl font-bold mb-8">{coupleNames}</h1>
 
-    {#if data.settings.showCountdown}
-      <div class="text-2xl mb-8">
-        {daysUntil} days until our wedding
-      </div>
-    {/if}
-
-    <div class="text-xl mb-8">
-      {formattedDate}
+  {#if data.settings.showCountdown}
+    <div class="text-2xl mb-8">
+      {daysUntil} days until our wedding
     </div>
+  {/if}
 
-    <div class="text-lg mb-8">
-      {data.settings.venueName}
-    </div>
-
-    <div class="text-lg mb-8">
-      {data.settings.venueAddress}
-    </div>
-
-    {#if !data.settings.restrictToHomePage}
-      <a
-        href="/rsvp"
-        class="bg-primary text-white px-8 py-3 rounded-full text-lg hover:bg-primary/90 transition-colors"
-      >
-        RSVP
-      </a>
-    {/if}
+  <div class="text-xl mb-8">
+    {formattedDate}
   </div>
-{:else}
-  <div class="min-h-screen flex flex-col items-center justify-center p-4">
-    <h1 class="text-4xl font-bold mb-8">Welcome to Our Wedding Website</h1>
-    <p class="text-lg mb-8">Please log in to view the wedding details.</p>
+
+  <div class="text-lg mb-8">
+    {data.settings.venueName}
+  </div>
+
+  <div class="text-lg mb-8">
+    {data.settings.venueAddress}
+  </div>
+
+  {#if !data.settings.restrictToHomePage}
     <a
-      href="/admin"
+      href="/rsvp"
       class="bg-primary text-white px-8 py-3 rounded-full text-lg hover:bg-primary/90 transition-colors"
     >
-      Admin Login
+      RSVP
     </a>
-  </div>
-{/if}
+  {/if}
+</div>

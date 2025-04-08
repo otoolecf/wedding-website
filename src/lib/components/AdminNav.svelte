@@ -72,6 +72,15 @@
         >
           Theme
         </a>
+        <a
+          href="/admin/deploy"
+          class="px-3 py-2 rounded hover:bg-primary hover:text-white transition-colors {$page.url
+            .pathname === '/admin/deploy'
+            ? 'bg-primary text-white'
+            : ''}"
+        >
+          Deploy
+        </a>
       </div>
       <div class="ml-auto">
         <a
