@@ -144,11 +144,11 @@
         [
           `"${rsvp.name.replace(/"/g, '""')}"`,
           `"${getPartnerName(rsvp).replace(/"/g, '""')}"`,
-          `"${rsvp.email.replace(/"/g, '""')}"`,
+          `"${(rsvp.email || '').replace(/"/g, '""')}"`,
           rsvp.attending,
           rsvp.is_vegetarian,
           `"${(rsvp.food_allergies || '').replace(/"/g, '""')}"`,
-          rsvp.staying_at_melrose,
+          rsvp.lodging,
           rsvp.using_transport,
           `"${(rsvp.song || '').replace(/"/g, '""')}"`,
           `"${(rsvp.special_notes || '').replace(/"/g, '""')}"`,
