@@ -65,12 +65,14 @@
       {data.settings.venueAddress}
     </div>
 
-    <a
-      href="/rsvp"
-      class="bg-primary text-white px-8 py-3 rounded-full text-lg hover:bg-primary/90 transition-colors"
-    >
-      RSVP
-    </a>
+    {#if !data.settings.restrictToHomePage}
+      <a
+        href="/rsvp"
+        class="bg-primary text-white px-8 py-3 rounded-full text-lg hover:bg-primary/90 transition-colors"
+      >
+        RSVP
+      </a>
+    {/if}
   </div>
 {:else}
   <div class="min-h-screen flex flex-col items-center justify-center p-4">
