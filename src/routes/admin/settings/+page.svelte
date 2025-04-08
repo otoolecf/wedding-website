@@ -11,6 +11,7 @@
     groomName: '',
     brideName: '',
     showCountdown: true,
+    restrictToHomePage: true,
     nameOrder: 'groom-first',
     rsvpButtonText: 'RSVP Now',
     rsvpButtonLink: '/rsvp',
@@ -235,7 +236,7 @@
         <label class="flex items-center space-x-2">
           <input
             type="checkbox"
-            bind:checked={settings.showOnlyHomeInProduction}
+            bind:checked={settings.restrictToHomePage}
             class="form-checkbox h-4 w-4 text-primary"
           />
           <span class="text-sm font-medium text-gray-700">Restrict site to home page only</span>

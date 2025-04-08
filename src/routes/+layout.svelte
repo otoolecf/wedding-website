@@ -151,6 +151,8 @@
         {/each}
       </ul>
     </nav>
+  {:else}
+    <div class="h-16"></div>
   {/if}
 </header>
 
