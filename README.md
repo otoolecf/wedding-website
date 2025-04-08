@@ -1,21 +1,202 @@
 # Wedding Website
 
-This is a custom wedding website using SvelteKit and Cloudflare.
+This is a custom wedding website using SvelteKit and Cloudflare. The site provides a complete solution for managing wedding information, RSVPs, and photos, with a focus on ease of customization and maintenance.
+
+Key benefits:
+
+- Full visual customization through an admin interface
+- Secure and reliable hosting
+- Cost-effective infrastructure
+- Simple guest experience
+- No coding required for updates
+
+## Project Status & Requirements
+
+### Current Status
+
+This project is being actively used for my own wedding website, and theoretically can be adapted out-of-box to your own! If you try to use it for your own needs and run into trouble, open an issue and I will try to accommodate. Feel free to contact me directly if you want help setting this up. My main goal (apart from learning) was to have it designed so I could hand over content duties to my non-programmer partner, much like The Knot or other popular wedding site builder services.
+
+### Prerequisites
+
+To use this project, you should have:
+
+- Basic understanding of web hosting and domain management
+- A Cloudflare account (free tier is sufficient)
+- A domain name (can be purchased through Cloudflare)
+- Basic understanding of environment variables and configuration
+- Familiarity with command line tools (for setup and deployment)
+
+### Technical Requirements
+
+- Node.js 18+ and npm
+- Cloudflare account with access to:
+  - Pages
+  - Workers
+  - D1 Database
+  - KV Storage
+  - R2 Storage
+  - Zero Trust (for admin protection)
+- Brevo account (for email notifications)
 
 ## Features
 
-- Responsive design for all devices
-- RSVP form with database storage
-- Photo gallery with admin management
-- Theme customization system
-- Custom font support
-- Content editing
+- **Visual Customization**
+
+  - Customize colors, fonts, and styles
+  - Rearrange pages and sections
+  - Add or remove content blocks
+  - Preview changes before publishing
+
+- **Content Management**
+
+  - Edit text, images, and links
+  - Organize photos into galleries
+  - Create custom pages
+  - Update wedding details
+
+- **Essential Pages**
+
+  - Home page with key information
+  - Photo gallery with lightbox
+  - RSVP form with email confirmations
+  - Registry page
+  - Custom pages
+
+- **Guest Features**
+  - Mobile-responsive design
+  - Simple RSVP process
+  - Photo galleries
+  - Clear information display
+
+## Admin Interface
+
+The admin dashboard provides access to all website configuration options. It's accessed at `/admin` and protected by Cloudflare Zero Trust.
+
+The admin interface allows complete customization without requiring code changes:
+
+### Site Settings
+
+Configure basic wedding information including names, date, location, and other details that appear throughout the site.
+
+### Theme Editor
+
+Adjust colors and fonts for the entire website. Options include:
+
+- Color selection for all site elements
+- Font choices for headings and body text
+- Pre-made theme presets
+- Custom theme creation
+
+### Gallery Manager
+
+Central image management system:
+
+- Upload and organize images
+- Create albums for better organization
+- Add captions and metadata
+- Images uploaded here can be used throughout the site
+
+### Page Builder
+
+Interface for creating and modifying pages:
+
+- Drag and drop sections to create layouts
+- Add various content blocks (text, images, maps, timelines)
+- Reorder sections as needed
+- Configure section-specific settings
+- Add hyperlinks to other pages or external sites
+
+### RSVP Dashboard
+
+Guest response management:
+
+- View all submitted RSVPs
+- Export guest data for planning
+- Manage guest list
+- Send reminder emails to pending guests
+
+### Registry Links
+
+Add and manage registry information with custom images and descriptions.
+
+### Preview Mode
+
+All changes stay in preview mode until you're ready to publish, so you can experiment without breaking your live site.
+
+### Staging to Production
+
+When you're happy with how everything looks on your staging site, there's a handy feature to copy everything over to production in one go. No more copying and pasting between environments! When everything looks perfect, just hit publish!
+
+## How It All Works
+
+The admin interface components work together as an integrated system:
+
+### Image Management
+
+The Gallery Manager is the central repository for all images:
+
+1. All images must be uploaded to the gallery first
+2. Images are automatically optimized and resized
+3. Once in the gallery, images can be used anywhere on the site
+4. To add a new image to any page, it must first exist in the gallery
+
+### Site Building Process
+
+1. **Site Settings**
+   Set basic information like names, wedding date, and location. These details appear throughout the site and in default templates.
+
+2. **Theme Settings**
+   Set colors and fonts for the entire site. Changes apply globally to maintain consistent styling.
+
+3. **Default Pages**
+   The site includes pre-built pages (Home, Gallery, RSVP, Registry) that you can customize.
+
+4. **Custom Pages**
+   Use the Page Builder to:
+   - Create new pages
+   - Add content sections (text, images, maps, etc.)
+   - Arrange sections in your preferred order
+   - Link to other pages or external sites
+
+### RSVP System
+
+1. **Guest List Management**
+
+   - Add guests individually or upload in bulk from a spreadsheet
+   - Include guest details like email and meal preferences
+   - Organize guests by household
+
+2. **RSVP Form Settings**
+
+   - Configure what information to collect
+   - Set deadlines
+   - Customize messages
+
+3. **Response Management**
+   - Track responses
+   - Send reminders
+   - Export guest data
+   - Edit email templates for confirmation messages
+
+### Preview and Publishing
+
+The site uses a staging-to-production workflow:
+
+1. Changes made in the admin are saved to preview mode
+2. Preview the site to check changes before publishing
+3. Publish changes when ready
+4. Use the staging-to-production sync for moving multiple changes at once
+
+This approach lets you make and test changes without affecting the live site.
 
 ## Documentation
 
 - [Font Customization Guide](docs/font-customization-guide.md) - How to use Google Fonts and custom fonts
 - [Theme System Guide](docs/theme-system-guide.md) - How to customize colors and apply theme presets
 - [Content Setup Guide](docs/content-setup-guide.md) - How to set up and adjust site content
+- [Gallery Guide](docs/gallery-guide.md) - How to use and manage the image gallery system
+- [RSVP and Guest List Admin Guide](docs/rsvp-admin-guide.md) - Comprehensive guide to managing RSVPs and guest information
+- [Admin Settings Guide](docs/admin-settings-guide.md) - Complete guide to configuring and managing all site settings
 
 ## Setup Instructions
 
@@ -31,6 +212,9 @@ This is a custom wedding website using SvelteKit and Cloudflare.
    - D1 Database for RSVPs
    - KV Namespace for image metadata
    - R2 Bucket for image storage
+     - Configure the R2 bucket with a custom domain
+     - Ensure the bucket is set to be publicly accessible for image serving
+     - Set CORS policy to only allow GET and HEAD requests from your website domains
 5. Set up your environment variables:
    - For local development: Create a `.dev.vars` file (never commit this!)
    - For production: Set them up in the Cloudflare Pages settings under the GitHub integration
@@ -46,7 +230,6 @@ The main environment variables you'll need are:
 - `PROD_IMAGES_KV` (your production KV namespace ID)
 - `PROD_IMAGES_BUCKET` (your production R2 bucket name)
 - `RSVPS` (your D1 database ID)
-- `RSVPS_PROD` (your production D1 database ID)
 - `BREVO_API_KEY` (your Brevo/Sendinblue API key for email notifications)
 - `EMAIL_SENDER_NAME` (the name that will appear in the "From" field of emails)
 - `EMAIL_SENDER_ADDRESS` (the email address that will be used to send notifications)
@@ -80,11 +263,24 @@ For the Brevo API key, you'll need to:
    - When you are happy with the staging images, there is functionality to copy them over all at once to production!
 
 3. **Database Setup**:
+
    - Similar to KV, keep staging and production databases separate
    - Use the preview database for testing RSVP functionality
    - Only use the production database when you're ready to go live
    - Note: RSVPs and guest lists are stored in the database and are unaffected by deployments
    - This means you can safely deploy changes to the site without affecting any submitted RSVPs or guest data
+
+4. **Zero Trust Access**:
+
+   - For preview/staging environment:
+     - Set up Zero Trust access for the entire site
+     - This ensures only authorized users can access the preview site
+     - Configure access policies to match your needs
+   - For production environment:
+     - Only apply Zero Trust access to the admin paths (e.g., `/admin`)
+     - Keep the main site publicly accessible
+     - This allows guests to access the site while protecting admin functionality
+   - Access policies can be configured in Cloudflare Zero Trust > Access > Applications
 
 ## Development
 
@@ -133,14 +329,53 @@ You can run `d` in the terminal window once built to open devtools.
 
 The project is configured to deploy to Cloudflare Pages & Workers. Pushes to dev, staging, or prod branches will automatically trigger a deployment.
 
-## Why Cloudflare?
+## Behind the Scenes
 
-Cloudflare has a very generous free tier for backend serverless workers, no object storage egress fees (R2, the S3 equivalent), and domains are also much cheaper to purchase directly through cloudflare vs domain registry companies like GoDaddy. There are a lot of nice and helpful tools around domain management, email forwarding, github integrations, and security that make it a fairly quick and easy setup experience.
+This section is very personal to me and my opinions on this project as a whole. It has some details on my motivations for the project, my notes on what I used for this project, what I liked, what I didn't like, and general thoughts on the process and usability of it all.
 
-## Why Svelte?
+### Background and Motivation
 
-Svelte is very simple and straightforward to get a lightweight site up and running!
+I am a software engineer by trade, so I have some experience with web and cloud development! I had about a year and a half between the engagement and the wedding, so I felt safe committing to building the wedding website myself, knowing I could always fall back to one of the more popular & free online site builders. I had some accountability for once on a personal project, but plenty of time and pretty low stakes (max 150 users maybe), so it was motivating but not overwhelming to get this done. I don't have much experience standing up a website truly from scratch, so I wanted to take the chance to put a personal touch on an exciting event, show off a bit to my friends and family, and try out some new technologies I have been interested in. The result is arguably a less-featured (read: shitty) version of The Knot, but it is a true "soup to nuts" custom build with what I think are some unique and cool customizations around configurability, and sets you up with a pretty solid starting-point custom wedding website. Plus, it should be completely free to host, assuming you don't have tens of thousands of friends/family/guests (I sure don't)! Cost-effectiveness and generous free tiers was a very strong factor in selecting these services/technologies.
 
-## Why Brevo?
+### Tech Stack & Services
 
-Emails are cool functionality to have and it is nice for guests to see what they just said and be able to save it for later. Brevo has a very generous free tier where you don't need a credit card and can get 300 emails / day.
+I usually use AWS for cloud / hosting services and javascript / node.js language, and Vue for web framework at work. I wanted to shake things up and try out SvelteKit web framework and Cloudflare for cloud service, which have both been on my list to try out. I have also been wanting to try out some AI helper coding tools to see how fast and to what level I could get a "polished" project completed.
+
+Here are my opinions on the components of the tech stack; I want to make a disclaimer that I am by no means an expert, pro, or purist with front end development. For me, front end is largely a means to an end and I view it almost as a "necessary evil". Part of this is probably because I am a self-taught programmer so I didn't start off my programming career with the strongest grasp of UI development patterns, HTML, etc.; Part of it is because I am a bit of a perfectionist and often finding myself spending an hour adjusting the width and postioning of a textbox or something similar. If you are a UI dev you may have some very strong opinions on my blasphemous statements on web framework; feel free to let me know (nicely), I am always interested to learn more.
+
+#### Why SvelteKit?
+
+I use angular.JS (the old one) at work daily and it is a bit complicated. I understand why they made new ones, but it is pretty easy to add on to things and get some cool SPAs going once you get the hang of it. I have a problem where I end up with huge scope / controller files to get things done efficiently, and directives are really awkward and weird to create for something that is supposed to be reusable.
+
+I also use Vue 3 at work daily and like it a lot (especially in comparison to angular.JS). It is simple to read and I really like the logical compartmentalization the single file component offers, and it makes jumping in a lot easier because all your context is present in the same file. I like that it mostly still reads like HTML. It is so easy to make reusable UI components. The options API is a little weird though, and the Composition API is also a little weird in a differnt way, and some of the prop inheritance is a little weird. Most of it makes sense, but there are some clunky parts, probably because they serve some really powerful use case for scale or crazy apps, but for most of my use cases the benefits of these clunky parts are overkill for my use case and I try to work around them. Setting up routing can be weird, and backend logic & APIs have to be a separate setup / deploy project, so it can take some organization and discipline to keep things consistent and keep a holistic picture of the app when working with Vue.
+
+I have recently gotten some experience with React and Next.js as well, and really like the simplicity of the file-based routing! It is great to have front end live right next to the backend in the code, and the file-based routing makes it really easy to chase down bugs. That being said, I am really just not a fan of React, a lot of it is not intuitive to me at first glance. I also am not a fan of the clunkiness / overhead of Next.js, it also feels very overkill for a lot of my use cases.
+
+I did some research and Svelte/SvelteKit looked like a nice combo of the 2 that is super lightweight and gaining some traction recently, so would probably be a good framework to get some experience with. Plus, it has some direct integrations with Cloudflare that would make my life a bit easier deploying changes.
+
+SvelteKit is awesome. I think it is the best of both worlds honestly, it reads SFC-style and HTML-like in the svelte files, but also has the benefits of the file-based routing. It is super lightweight and very quick to get going, but has enough functionality that every time I thought I was going to get blocked I found out a new feature to solve my problem. My only real complaint is it is kind of hard to flip back and forth between files in VSCode because all of the files have the same end path, but overall I am a fan and will definitely use again. I really liked that it worked pretty much out of box with cloudflare with very minimal configuration, and I would expect it to behave similarly for AWS / Azure / GCP as well.
+
+### Why Cloudflare?
+
+Cloudflare's ecosystem offered everything needed for a production-ready application:
+
+- Generous free tier for serverless workers
+- No egress fees for R2 (their S3 equivalent)
+- Affordable domain management
+- Built-in security features
+- Seamless GitHub integration for CI/CD
+- Comprehensive developer tools
+
+### Why Brevo?
+
+Email functionality was important for RSVP confirmations and guest communication. Brevo (formerly Sendinblue) stood out because:
+
+- Generous free tier (300 emails/day)
+- No credit card required
+- Simple API integration
+- Reliable delivery
+- Professional email templates
+
+## Planned Improvements
+
+I plan to add screenshots of the interface and documentation to make it easier to understand the system. If you're interested in contributing or have specific features you'd like to see, feel free to open an issue!
