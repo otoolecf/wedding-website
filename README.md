@@ -43,7 +43,8 @@ The main environment variables you'll need are:
 - `IMAGES_BUCKET_SITE_URL` (where your images are hosted)
 - `IMAGES_BUCKET_NAME` (your R2 bucket name)
 - `IMAGES_KV` (your KV namespace ID for image metadata)
-- `IMAGES_KV_PROD` (your production KV namespace ID)
+- `PROD_IMAGES_KV` (your production KV namespace ID)
+- `PROD_IMAGES_BUCKET` (your production R2 bucket name)
 - `RSVPS` (your D1 database ID)
 - `RSVPS_PROD` (your production D1 database ID)
 - `BREVO_API_KEY` (your Brevo/Sendinblue API key for email notifications)
@@ -73,7 +74,7 @@ For the Brevo API key, you'll need to:
 
 2. **KV Namespaces**:
 
-   - For production, `IMAGES_KV` and `IMAGES_KV_PROD` should point to the same namespace
+   - For production, `IMAGES_KV` and `PROD_IMAGES_KV` should point to the same namespace
    - For staging/preview, they should be separate to avoid affecting production data
    - This separation allows you to test image uploads and management without risking production data
    - When you are happy with the staging images, there is functionality to copy them over all at once to production!
