@@ -43,8 +43,7 @@ export async function POST({ request, platform }) {
     for (const key of contentKeys) {
       const value = await platform.env.IMAGES_KV.get(key.name);
       if (value) {
-        // Use the production KV store ID from wrangler.toml
-        await platform.env.IMAGES_KV.put(key.name, value);
+        await platform.env.PROD_IMAGES_KV.put(key.name, value);
         console.log(`[${requestId}] Copied KV key: ${key.name}`);
       }
     }
@@ -54,8 +53,7 @@ export async function POST({ request, platform }) {
     for (const object of previewObjects.objects) {
       const objectData = await platform.env.IMAGES_BUCKET.get(object.key);
       if (objectData) {
-        // Use the production R2 bucket from wrangler.toml
-        await platform.env.IMAGES_BUCKET.put(object.key, objectData);
+        await platform.env.PROD_IMAGES_BUCKET.put(object.key, objectData);
         console.log(`[${requestId}] Copied R2 object: ${object.key}`);
       }
     }
