@@ -33,9 +33,11 @@ export async function POST({ request, platform }) {
       await platform.env.RSVPS.prepare('SELECT updated_at FROM rsvps LIMIT 1').first();
     } catch (error) {
       console.log('Adding updated_at column to rsvps table:', error.message);
-      // If the column doesn't exist, add it
+      // If the column doesn't exist, add it without a default value
+      await platform.env.RSVPS.prepare('ALTER TABLE rsvps ADD COLUMN updated_at DATETIME').run();
+      // Set the initial value for existing records
       await platform.env.RSVPS.prepare(
-        'ALTER TABLE rsvps ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP'
+        'UPDATE rsvps SET updated_at = created_at WHERE updated_at IS NULL'
       ).run();
     }
 
