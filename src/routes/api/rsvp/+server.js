@@ -28,17 +28,31 @@ export async function POST({ request, platform }) {
     `
     ).run();
 
-    // Check if updated_at column exists, if not add it
+    // Drop and recreate the table to ensure proper structure
     try {
-      await platform.env.RSVPS.prepare('SELECT updated_at FROM rsvps LIMIT 1').first();
-    } catch (error) {
-      console.log('Adding updated_at column to rsvps table:', error.message);
-      // If the column doesn't exist, add it without a default value
-      await platform.env.RSVPS.prepare('ALTER TABLE rsvps ADD COLUMN updated_at DATETIME').run();
-      // Set the initial value for existing records
+      await platform.env.RSVPS.prepare('DROP TABLE rsvps').run();
       await platform.env.RSVPS.prepare(
-        'UPDATE rsvps SET updated_at = created_at WHERE updated_at IS NULL'
+        `
+        CREATE TABLE rsvps (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          email TEXT,
+          attending TEXT NOT NULL,
+          guests INTEGER DEFAULT 0,
+          is_vegetarian TEXT DEFAULT 'no',
+          food_allergies TEXT,
+          lodging TEXT DEFAULT 'no',
+          using_transport TEXT DEFAULT 'no',
+          song TEXT,
+          special_notes TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(name)
+        )
+      `
       ).run();
+    } catch (error) {
+      console.log('Error recreating table:', error.message);
     }
 
     const data = await request.json();
