@@ -15,18 +15,12 @@
     nameOrder: 'groom-first',
     rsvpButtonText: 'RSVP Now',
     rsvpButtonLink: '/rsvp',
-    registries: {
-      externalRegistries: [],
-      honeymoonFund: {
-        enabled: true,
-        title: 'Honeymoon Fund',
-        description:
-          "If you'd prefer to contribute to our honeymoon adventures, we've set up a honeymoon fund.",
-        buttonText: 'Contribute to Our Honeymoon',
-        venmoUsername: '',
-        showVenmo: false
-      }
-    }
+    defaultPages: [
+      { id: 'home', name: 'Home', slug: '', order: 0 },
+      { id: 'gallery', name: 'Gallery', slug: 'gallery', order: 1 },
+      { id: 'rsvp', name: 'RSVP', slug: 'rsvp', order: 2 },
+      { id: 'registry', name: 'Registry', slug: 'registry', order: 3 }
+    ]
   };
 
   let error = null;
@@ -222,6 +216,32 @@
       </div>
 
       <div class="md:col-span-2">
+        <label for="rsvpButtonText" class="block text-sm font-medium text-gray-700 mb-1">
+          RSVP Button Text
+        </label>
+        <input
+          type="text"
+          id="rsvpButtonText"
+          bind:value={settings.rsvpButtonText}
+          class="w-full p-2 border rounded"
+          required
+        />
+      </div>
+
+      <div>
+        <label for="rsvpButtonLink" class="block text-sm font-medium text-gray-700 mb-1">
+          RSVP Button Link
+        </label>
+        <input
+          type="text"
+          id="rsvpButtonLink"
+          bind:value={settings.rsvpButtonLink}
+          class="w-full p-2 border rounded"
+          required
+        />
+      </div>
+
+      <div class="md:col-span-2">
         <label class="flex items-center space-x-2">
           <input
             type="checkbox"
@@ -241,6 +261,49 @@
           />
           <span class="text-sm font-medium text-gray-700">Restrict site to home page only</span>
         </label>
+      </div>
+
+      <div class="md:col-span-2">
+        <label for="nameOrder" class="block text-sm font-medium text-gray-700 mb-1">
+          Name Order
+        </label>
+        <select
+          id="nameOrder"
+          bind:value={settings.nameOrder}
+          class="w-full p-2 border rounded"
+          required
+        >
+          <option value="groom-first">Groom's Name First</option>
+          <option value="bride-first">Bride's Name First</option>
+        </select>
+      </div>
+
+      <div class="md:col-span-2">
+        <h3 class="text-lg font-medium mb-4">Default Pages</h3>
+        <div class="space-y-4">
+          {#each settings.defaultPages as page}
+            <div class="flex items-center gap-4">
+              <input
+                type="text"
+                bind:value={page.name}
+                class="flex-1 p-2 border rounded"
+                placeholder="Page Name"
+              />
+              <input
+                type="text"
+                bind:value={page.slug}
+                class="flex-1 p-2 border rounded"
+                placeholder="URL Slug"
+              />
+              <input
+                type="number"
+                bind:value={page.order}
+                class="w-20 p-2 border rounded"
+                placeholder="Order"
+              />
+            </div>
+          {/each}
+        </div>
       </div>
 
       <div class="md:col-span-2">
@@ -267,172 +330,6 @@
           rows="3"
           required
         ></textarea>
-      </div>
-
-      <div>
-        <label for="rsvpButtonText" class="block text-sm font-medium text-gray-700 mb-1">
-          RSVP Button Text
-        </label>
-        <input
-          type="text"
-          id="rsvpButtonText"
-          bind:value={settings.rsvpButtonText}
-          class="w-full p-2 border rounded"
-          required
-        />
-      </div>
-
-      <div>
-        <label for="rsvpButtonLink" class="block text-sm font-medium text-gray-700 mb-1">
-          RSVP Button Link
-        </label>
-        <input
-          type="text"
-          id="rsvpButtonLink"
-          bind:value={settings.rsvpButtonLink}
-          class="w-full p-2 border rounded"
-          required
-        />
-      </div>
-    </div>
-
-    <!-- Registry Settings -->
-    <div class="border-t pt-8 mt-8">
-      <h2 class="text-2xl font-light mb-6">Registry Settings</h2>
-
-      <!-- External Registries -->
-      <div class="mb-8">
-        <h3 class="text-xl font-medium mb-4">External Registries</h3>
-        <div class="space-y-4">
-          {#each settings.registries.externalRegistries as registry, i}
-            <div class="bg-gray-50 p-4 rounded border">
-              <div class="flex justify-between items-start mb-2">
-                <h4 class="font-medium">{registry.name}</h4>
-                <button
-                  type="button"
-                  on:click={() => removeRegistry(i)}
-                  class="text-red-600 hover:text-red-800"
-                >
-                  Remove
-                </button>
-              </div>
-              <p class="text-sm text-gray-600">{registry.description}</p>
-              <a href={registry.url} target="_blank" class="text-sm text-primary hover:underline">
-                {registry.url}
-              </a>
-            </div>
-          {/each}
-        </div>
-
-        <div class="mt-6 p-4 bg-gray-50 rounded border">
-          <h4 class="font-medium mb-4">Add New Registry</h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input
-                type="text"
-                bind:value={newRegistry.name}
-                class="w-full p-2 border rounded"
-                placeholder="Registry Name"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
-              <input
-                type="url"
-                bind:value={newRegistry.url}
-                class="w-full p-2 border rounded"
-                placeholder="https://example.com/registry"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-              <input
-                type="url"
-                bind:value={newRegistry.image}
-                class="w-full p-2 border rounded"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <input
-                type="text"
-                bind:value={newRegistry.description}
-                class="w-full p-2 border rounded"
-                placeholder="Brief description"
-              />
-            </div>
-          </div>
-          <button
-            type="button"
-            on:click={addRegistry}
-            class="mt-4 bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
-          >
-            Add Registry
-          </button>
-        </div>
-      </div>
-
-      <!-- Honeymoon Fund -->
-      <div>
-        <h3 class="text-xl font-medium mb-4">Honeymoon Fund</h3>
-        <div class="space-y-4">
-          <div class="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              bind:checked={settings.registries.honeymoonFund.enabled}
-              class="form-checkbox h-4 w-4 text-primary"
-            />
-            <span class="text-sm font-medium text-gray-700">Enable Honeymoon Fund Section</span>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input
-              type="text"
-              bind:value={settings.registries.honeymoonFund.title}
-              class="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              bind:value={settings.registries.honeymoonFund.description}
-              class="w-full p-2 border rounded"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
-            <input
-              type="text"
-              bind:value={settings.registries.honeymoonFund.buttonText}
-              class="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Venmo Username</label>
-            <input
-              type="text"
-              bind:value={settings.registries.honeymoonFund.venmoUsername}
-              class="w-full p-2 border rounded"
-              placeholder="@username"
-            />
-          </div>
-
-          <div class="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              bind:checked={settings.registries.honeymoonFund.showVenmo}
-              class="form-checkbox h-4 w-4 text-primary"
-            />
-            <span class="text-sm font-medium text-gray-700">Show Venmo Information</span>
-          </div>
-        </div>
       </div>
     </div>
 
