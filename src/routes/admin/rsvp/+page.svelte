@@ -126,16 +126,16 @@
 
   function downloadCsv() {
     const headers = [
-      'Name',
+      settings.nameLabel || 'Name',
       'Partner Name',
-      'Email',
-      'Attending',
-      'Vegetarian',
-      'Food Allergies',
-      'Staying at Melrose',
-      'Using Transport',
-      'Song Request',
-      'Special Notes',
+      settings.emailLabel || 'Email',
+      settings.attendanceQuestion || 'Attending',
+      settings.vegetarianQuestion || 'Vegetarian',
+      settings.foodAllergiesLabel || 'Food Allergies',
+      settings.lodgingQuestion || 'Staying at Melrose',
+      settings.transportQuestion || 'Using Transport',
+      settings.songRequestLabel || 'Song Request',
+      settings.specialNotesLabel || 'Special Notes',
       'Submitted At'
     ];
     const csvContent = [
