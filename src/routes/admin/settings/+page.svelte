@@ -30,6 +30,7 @@
 
   let error = null;
   let saving = false;
+  let saveSuccess = false;
   let newRegistry = {
     name: '',
     url: '',
@@ -85,7 +86,7 @@
   async function saveSettings() {
     saving = true;
     error = null;
-
+    saveSuccess = false;
     try {
       const response = await fetch('/api/admin/settings', {
         method: 'POST',
@@ -99,9 +100,14 @@
         const data = await response.json();
         throw new Error(data.error || 'Failed to save settings');
       }
-    } catch (err) {
-      error = err.message;
-      console.error('Error saving settings:', err);
+
+      saveSuccess = true;
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        saveSuccess = false;
+      }, 3000);
+    } catch (e) {
+      error = e.message;
     } finally {
       saving = false;
     }
@@ -232,7 +238,7 @@
             bind:checked={settings.showOnlyHomeInProduction}
             class="form-checkbox h-4 w-4 text-primary"
           />
-          <span class="text-sm font-medium text-gray-700">Show Only Home Page in Production</span>
+          <span class="text-sm font-medium text-gray-700">Restrict site to home page only</span>
         </label>
       </div>
 
@@ -429,10 +435,16 @@
       </div>
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-4">
+      {#if error}
+        <div class="text-red-600">{error}</div>
+      {/if}
+      {#if saveSuccess}
+        <div class="text-green-600">Settings saved successfully!</div>
+      {/if}
       <button
         type="submit"
-        class="bg-primary text-white px-6 py-2 rounded hover:bg-primary/90 transition-colors"
+        class="px-4 py-2 bg-primary text-white rounded hover:opacity-90 disabled:opacity-50"
         disabled={saving}
       >
         {#if saving}

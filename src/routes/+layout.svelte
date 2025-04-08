@@ -111,6 +111,9 @@
     data.settings.nameOrder === 'groom-first'
       ? `${data.settings.groomName} & ${data.settings.brideName}`
       : `${data.settings.brideName} & ${data.settings.groomName}`;
+
+  // Check if site is restricted to home page only
+  $: isRestricted = data.settings?.restrictToHomePage;
 </script>
 
 <svelte:head>
@@ -124,36 +127,38 @@
 </svelte:head>
 
 <header class="fixed w-full top-0 bg-white/90 backdrop-blur-sm shadow-sm z-50">
-  <nav class="max-w-4xl mx-auto px-4 py-4">
-    <ul class="flex gap-6 justify-center">
-      {#each allPages as page}
-        <li>
-          <a
-            href={page.slug
-              ? page.id.startsWith('page_')
-                ? `/pages/${page.slug}`
-                : `/${page.slug}`
-              : '/'}
-            class:active={data.pathname ===
-              (page.slug
+  {#if !isRestricted}
+    <nav class="max-w-4xl mx-auto px-4 py-4">
+      <ul class="flex gap-6 justify-center">
+        {#each allPages as page}
+          <li>
+            <a
+              href={page.slug
                 ? page.id.startsWith('page_')
                   ? `/pages/${page.slug}`
                   : `/${page.slug}`
-                : '/')}
-          >
-            {page.name}
-          </a>
-        </li>
-      {/each}
-    </ul>
-  </nav>
+                : '/'}
+              class:active={data.pathname ===
+                (page.slug
+                  ? page.id.startsWith('page_')
+                    ? `/pages/${page.slug}`
+                    : `/${page.slug}`
+                  : '/')}
+            >
+              {page.name}
+            </a>
+          </li>
+        {/each}
+      </ul>
+    </nav>
+  {/if}
 </header>
 
 <main class="mt-16 min-h-screen">
   <slot />
 </main>
 
-{#if data.isPreview}
+{#if data.isPreview && !isRestricted}
   <footer class="bg-accent mt-16">
     <div class="max-w-4xl mx-auto px-4 py-8 text-center">
       <p>© {new Date().getFullYear()} {coupleNames}'s Wedding</p>

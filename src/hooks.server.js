@@ -11,8 +11,8 @@ export async function handle({ event, resolve }) {
   // Get settings from KV store
   const settings = await event.platform.env.IMAGES_KV.get('wedding_settings', 'json');
 
-  // If showOnlyHomeInProduction is true, redirect to home page
-  if (settings?.showOnlyHomeInProduction) {
+  // If restrictToHomePage is true, redirect to home page
+  if (settings?.restrictToHomePage) {
     return new Response(null, {
       status: 302,
       headers: { Location: '/' }
