@@ -9,6 +9,7 @@ const defaultSettings = {
   groomName: "Groom's Name",
   brideName: "Bride's Name",
   showCountdown: true,
+  showOnlyHomeInProduction: true,
   nameOrder: 'groom-first', // 'groom-first' or 'bride-first'
   rsvpButtonText: 'RSVP Now',
   rsvpButtonLink: '/rsvp',

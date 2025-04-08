@@ -226,6 +226,17 @@
       </div>
 
       <div class="md:col-span-2">
+        <label class="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            bind:checked={settings.showOnlyHomeInProduction}
+            class="form-checkbox h-4 w-4 text-primary"
+          />
+          <span class="text-sm font-medium text-gray-700">Show Only Home Page in Production</span>
+        </label>
+      </div>
+
+      <div class="md:col-span-2">
         <label for="venueName" class="block text-sm font-medium text-gray-700 mb-1">
           Venue Name
         </label>
