@@ -160,7 +160,7 @@
   <slot />
 </main>
 
-{#if data.isPreview && !isRestricted}
+{#if data.isPreview}
   <footer class="bg-accent mt-16">
     <div class="max-w-4xl mx-auto px-4 py-8 text-center">
       <p>© {new Date().getFullYear()} {coupleNames}'s Wedding</p>
