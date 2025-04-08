@@ -6,6 +6,39 @@ export async function POST({ request, platform }) {
   console.log(`[${requestId}] Received RSVP request`);
 
   try {
+    // Ensure the rsvps table has the proper structure
+    await platform.env.RSVPS.prepare(
+      `
+      CREATE TABLE IF NOT EXISTS rsvps (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT,
+        attending TEXT NOT NULL,
+        guests INTEGER DEFAULT 0,
+        is_vegetarian TEXT DEFAULT 'no',
+        food_allergies TEXT,
+        lodging TEXT DEFAULT 'no',
+        using_transport TEXT DEFAULT 'no',
+        song TEXT,
+        special_notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(name)
+      )
+    `
+    ).run();
+
+    // Check if updated_at column exists, if not add it
+    try {
+      await platform.env.RSVPS.prepare('SELECT updated_at FROM rsvps LIMIT 1').first();
+    } catch (error) {
+      console.log('Adding updated_at column to rsvps table:', error.message);
+      // If the column doesn't exist, add it
+      await platform.env.RSVPS.prepare(
+        'ALTER TABLE rsvps ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP'
+      ).run();
+    }
+
     const data = await request.json();
     console.log(`[${requestId}] RSVP data:`, data);
 
@@ -55,9 +88,9 @@ export async function POST({ request, platform }) {
 
     // Check if this is an update
     const existingRsvp = await platform.env.RSVPS.prepare(
-      'SELECT * FROM rsvps WHERE LOWER(name) = LOWER(?)'
+      'SELECT * FROM rsvps WHERE LOWER(name) = LOWER(?) OR LOWER(email) = LOWER(?)'
     )
-      .bind(primary.name)
+      .bind(primary.name, primary.email)
       .first();
 
     const isUpdate = !!existingRsvp;
@@ -66,6 +99,7 @@ export async function POST({ request, platform }) {
     if (isUpdate) {
       await platform.env.RSVPS.prepare(
         `UPDATE rsvps SET 
+          name = ?,
           email = ?,
           attending = ?,
           guests = ?,
@@ -74,10 +108,12 @@ export async function POST({ request, platform }) {
           lodging = ?,
           using_transport = ?,
           song = ?,
-          special_notes = ?
-        WHERE LOWER(name) = LOWER(?)`
+          special_notes = ?,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE LOWER(name) = LOWER(?) OR LOWER(email) = LOWER(?)`
       )
         .bind(
+          primary.name,
           primary.email,
           primary.attending,
           primary.guests || 0,
@@ -87,15 +123,17 @@ export async function POST({ request, platform }) {
           primary.using_transport || 'no',
           primary.song || '',
           primary.special_notes || '',
-          primary.name
+          primary.name,
+          primary.email
         )
         .run();
     } else {
       await platform.env.RSVPS.prepare(
         `INSERT INTO rsvps (
           name, email, attending, guests, is_vegetarian, 
-          food_allergies, lodging, using_transport, song, special_notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          food_allergies, lodging, using_transport, song, special_notes,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
       )
         .bind(
           primary.name,
@@ -130,7 +168,8 @@ export async function POST({ request, platform }) {
             lodging = ?,
             using_transport = ?,
             song = ?,
-            special_notes = ?
+            special_notes = ?,
+            updated_at = CURRENT_TIMESTAMP
           WHERE LOWER(name) = LOWER(?)`
         )
           .bind(
@@ -149,8 +188,9 @@ export async function POST({ request, platform }) {
         await platform.env.RSVPS.prepare(
           `INSERT INTO rsvps (
             name, attending, is_vegetarian, food_allergies, 
-            lodging, using_transport, song, special_notes
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+            lodging, using_transport, song, special_notes,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
         )
           .bind(
             partner.name,
