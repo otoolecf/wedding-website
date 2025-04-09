@@ -11,10 +11,10 @@
     </p>
 
     <p class="mb-6 leading-relaxed">
-      He wanted to put a personal touch on his wedding website. He also wanted to learn how to build
-      websites from scratch (he hasn't done much of that before). He also wanted to try out some new
-      tech with very kind free tiers. He also wanted to save a few bucks on those wedding website
-      services.
+      He wanted to put a personal touch on this wedding website. He also wanted to learn how to
+      build websites from scratch (he hasn't done much of that before). He also wanted to try out
+      some new tech with very kind free tiers. He also wanted to save a few bucks on those wedding
+      website services.
     </p>
 
     <p class="mb-6 leading-relaxed">
@@ -29,8 +29,7 @@
       it's an option! You can contact Connor directly if you are interested, he is happy to help and
       can get you set up quite fast. Once the site is set up, you don't need any coding or anything,
       you can do everything from an admin section on the site. The admin interface lets you change
-      colors, fonts, add pages, upload photos, and manage RSVPs without needing to know what HTML
-      stands for.
+      colors, fonts, add pages, upload photos, and manage RSVPs.
     </p>
 
     <p class="mb-4 leading-relaxed">
