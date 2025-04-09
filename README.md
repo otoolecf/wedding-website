@@ -1,8 +1,10 @@
 # Wedding Website
 
-This is a custom wedding website using SvelteKit and Cloudflare. It is intended to be an alternative to standard wedding websites like The Knot, and for most use cases is completely free. It can easily be used with a custom domain; You will still have to pay for the domain, but going through a provider like Cloudflare is usually significantly cheaper than buying the domain throguh a wedding site service, and still cheaper than something like GoDaddy. It is also a great way to really personalize the experience! The site provides a complete solution for managing wedding information, RSVPs, and photos, with a focus on ease of customization and maintenance.
+A custom wedding website using SvelteKit and Cloudflare - a free alternative to standard wedding websites like The Knot. It's easily used with a custom domain (you'll still pay for the domain, but it's usually cheaper through Cloudflare than through a wedding site service or GoDaddy). The site provides a complete solution for managing wedding information, RSVPs, and photos, with a focus on ease of customization and maintenance.
 
-Key benefits:
+> If you are more curious about my personal motivations and opinions rather than implementing the site yourself, I wrote about my experience building this thing in [JOURNEY.md](JOURNEY.md) - it's got all my opinions on the tech I used, what worked, what didn't, and the whole process.
+
+**Key benefits:**
 
 - Full visual customization through an admin interface
 - Secure and reliable hosting
@@ -10,35 +12,19 @@ Key benefits:
 - Simple guest experience
 - No coding required for content updates
 
-## Project Status & Requirements
+![Website Preview - Coming Soon](path/to/screenshot.png)
 
-### Current Status
+## Table of Contents
 
-This project is being actively used for my own wedding website, and theoretically can be adapted out-of-box to your own! If you try to use it for your own needs and run into trouble, open an issue and I will try to accommodate. Feel free to contact me directly if you want help setting this up. My main goal (apart from learning) was to have it designed so I could hand over content duties to my non-programmer partner, much like The Knot or other popular wedding site builder services.
-
-### Prerequisites
-
-To use this project, you do have to be somewhat technical. You should have:
-
-- Basic understanding of web hosting and domain management
-- A Cloudflare account (free tier is sufficient)
-- A domain name (can be purchased through Cloudflare)
-- Basic understanding of environment variables and configuration
-- Familiarity with command line tools (for setup and deployment)
-
-If you want to use it but are having trouble with some of the technical parts, contact me! I am happy to help.
-
-### Technical Requirements
-
-- Node.js 18+ and npm
-- Cloudflare account with access to:
-  - Pages
-  - Workers
-  - D1 Database
-  - KV Storage
-  - R2 Storage
-  - Zero Trust (for admin protection)
-- Brevo account (for email notifications)
+- [Features](#features)
+- [Project Status & Requirements](#project-status--requirements)
+- [Admin Interface](#admin-interface)
+- [How It All Works](#how-it-all-works)
+- [Setup Instructions](#setup-instructions)
+- [Development](#development)
+- [Deployment](#deployment)
+- [Documentation](#documentation)
+- [Project Background](#project-background)
 
 ## Features
 
@@ -69,6 +55,36 @@ If you want to use it but are having trouble with some of the technical parts, c
   - Simple RSVP process
   - Photo galleries
   - Clear information display
+
+## Project Status & Requirements
+
+### Current Status
+
+This project is being actively used for my own wedding website, and theoretically can be adapted out-of-box to your own! If you try to use it for your own needs and run into trouble, open an issue and I will try to accommodate. Feel free to contact me directly if you want help setting this up. My main goal (apart from learning) was to have it designed so I could hand over content duties to my non-programmer partner, much like The Knot or other popular wedding site builder services.
+
+### Prerequisites
+
+To use this project, you do have to be somewhat technical. You should have:
+
+- Basic understanding of web hosting and domain management
+- A Cloudflare account (free tier is sufficient)
+- A domain name (can be purchased through Cloudflare)
+- Basic understanding of environment variables and configuration
+- Familiarity with command line tools (for setup and deployment)
+
+If you want to use it but are having trouble with some of the technical parts, contact me! I am happy to help.
+
+### Technical Requirements
+
+- Node.js 18+ and npm
+- Cloudflare account with access to:
+  - Pages
+  - Workers
+  - D1 Database
+  - KV Storage
+  - R2 Storage
+  - Zero Trust (for admin protection)
+- Brevo account (for email notifications)
 
 ## Admin Interface
 
@@ -191,16 +207,18 @@ The site uses a staging-to-production workflow:
 
 This approach lets you make and test changes without affecting the live site.
 
-## Documentation
-
-- [Font Customization Guide](docs/font-customization-guide.md) - How to use Google Fonts and custom fonts
-- [Theme System Guide](docs/theme-system-guide.md) - How to customize colors and apply theme presets
-- [Content Setup Guide](docs/content-setup-guide.md) - How to set up and adjust site content
-- [Gallery Guide](docs/gallery-guide.md) - How to use and manage the image gallery system
-- [RSVP and Guest List Admin Guide](docs/rsvp-admin-guide.md) - Comprehensive guide to managing RSVPs and guest information
-- [Admin Settings Guide](docs/admin-settings-guide.md) - Complete guide to configuring and managing all site settings
-
 ## Setup Instructions
+
+### Quick Start
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Copy and configure `wrangler.toml`
+4. Create Cloudflare resources (D1, KV, R2)
+5. Set up environment variables
+6. Deploy to Cloudflare Pages
+
+### Detailed Instructions
 
 1. Clone the repository
 2. Install dependencies:
@@ -248,7 +266,7 @@ For the Brevo API key, you'll need to:
 2. Go to SMTP & API > API Keys
 3. Create a new API key with appropriate permissions
 
-##### Environment Setup Tips
+### Environment Setup Tips
 
 1. **Staging vs Production**:
 
@@ -331,62 +349,48 @@ You can run `d` in the terminal window once built to open devtools.
 
 The project is configured to deploy to Cloudflare Pages & Workers. Pushes to dev, staging, or prod branches will automatically trigger a deployment.
 
-## Behind the Scenes
+## Documentation
 
-This section is very personal to me and my opinions on this project as a whole. It has some details on my motivations for the project, my notes on what I used for this project, what I liked, what I didn't like, and general thoughts on the process and usability of it all.
+- [Font Customization Guide](docs/font-customization-guide.md) - How to use Google Fonts and custom fonts
+- [Theme System Guide](docs/theme-system-guide.md) - How to customize colors and apply theme presets
+- [Content Setup Guide](docs/content-setup-guide.md) - How to set up and adjust site content
+- [Gallery Guide](docs/gallery-guide.md) - How to use and manage the image gallery system
+- [RSVP and Guest List Admin Guide](docs/rsvp-admin-guide.md) - Comprehensive guide to managing RSVPs and guest information
+- [Admin Settings Guide](docs/admin-settings-guide.md) - Complete guide to configuring and managing all site settings
+- [Project Journey](JOURNEY.md) - My personal experience building this project, tech choices, and opinions
 
-### Background and Motivation
+## Project Background
 
-I am a software engineer by trade, so I have some experience with web and cloud development! I had about a year and a half between the engagement and the wedding, so I felt safe committing to building the wedding website myself, knowing I could always fall back to one of the more popular & free online site builders. I had some accountability for once on a personal project, but plenty of time and pretty low stakes (max 150 users maybe), so it was motivating but not overwhelming to get this done. I don't have much experience standing up a website truly from scratch, so I wanted to take the chance to put a personal touch on an exciting event, show off a bit to my friends and family, and try out some new technologies I have been interested in. The result is arguably a less-featured (read: shitty) version of The Knot, but it is a true "soup to nuts" custom build with what I think are some unique and cool customizations around configurability, and sets you up with a pretty solid starting-point custom wedding website. Plus, it should be completely free to host, assuming you don't have tens of thousands of friends/family/guests (I sure don't)! Cost-effectiveness and generous free tiers was a very strong factor in selecting these services/technologies.
+I built this as an alternative to paid wedding websites, with the dual purpose of learning new technologies and creating something truly customizable for my own wedding.
 
-### Tech Stack & Services
+I wanted to create something that would:
 
-I usually use AWS for cloud / hosting services and javascript / node.js language, and Vue for web framework at work. I wanted to shake things up and try out SvelteKit web framework and Cloudflare for cloud service, which have both been on my list to try out. I have also been wanting to try out some AI helper coding tools to see how fast and to what level I could get a "polished" project completed.
+1. Be completely free to host (or very close to it)
+2. Allow full customization of the look and feel
+3. Let my non-technical partner manage content easily
+4. Provide a simple RSVP system with email confirmations
 
-Here are my opinions on the components of the tech stack; I want to make a disclaimer that I am by no means an expert, pro, or purist with front end development. For me, front end is largely a means to an end and I view it almost as a "necessary evil". Part of this is probably because I am a self-taught programmer so I didn't start off my programming career with the strongest grasp of UI development patterns, HTML, etc.; Part of it is because I am a bit of a perfectionist and often finding myself spending an hour adjusting the width and postioning of a textbox or something similar. If you are a UI dev you may have some very strong opinions on my blasphemous statements on web framework; feel free to let me know (nicely), I am always interested to learn more.
+For my complete journey including detailed thoughts on the tech stack choices, challenges, and what I learned, check out the [Project Journey](JOURNEY.md) document.
 
-#### Why SvelteKit?
+## Contributing
 
-I use angularJS (the old one) at work daily and it is a bit complicated. I understand why they made new ones, but it is pretty easy to add on to things and get some cool SPAs going once you get the hang of it. I have a problem where I end up with huge scope / controller files to get things done efficiently, and directives are really awkward and weird to create for something that is supposed to be reusable.
+Contributions are welcome! If you're interested in improving this project, please feel free to:
 
-I also use Vue 3 at work daily and like it a lot (especially in comparison to angularJS). It is simple to read and I really like the logical compartmentalization the single file component offers, and it makes jumping in a lot easier because all your context is present in the same file. I like that it mostly still reads like HTML. It is so easy to make reusable UI components. The options API is a little weird though, and the Composition API is also a little weird in a differnt way, and some of the prop inheritance is a little weird. Most of it makes sense, but there are some clunky parts, probably because they serve some really powerful use case for scale or crazy apps, but for most of my use cases the benefits of these clunky parts are overkill for my use case and I try to work around them. Setting up routing can be weird, and backend logic & APIs have to be a separate setup / deploy project, so it can take some organization and discipline to keep things consistent and keep a holistic picture of the app when working with Vue.
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
 
-I have recently gotten some experience with React and Next.js as well, and really like the simplicity of the file-based routing! It is great to have front end live right next to the backend in the code, and the file-based routing makes it really easy to chase down bugs. That being said, I am really just not a fan of React, a lot of it is not intuitive to me and feels awkward. I also am not a fan of the clunkiness / overhead of Next.js, it also feels very overkill for a lot of my use cases.
+Areas where help would be especially appreciated:
 
-I did some research and Svelte/SvelteKit looked like a nice combo of the 2 that is super lightweight and gaining some traction recently, so would probably be a good framework to get some experience with. Plus, it has some direct integrations with Cloudflare that would make my life a bit easier deploying changes.
+- Improved mobile responsiveness
+- Additional theme presets
+- Documentation improvements
+- Accessibility enhancements
 
-SvelteKit is awesome. I think it is the best of both worlds honestly, it reads SFC-style and HTML-like in the svelte files, but also has the benefits of the file-based routing. It is super lightweight and very quick to get going, but has enough functionality that every time I thought I was going to get blocked I found out a new feature to solve my problem. My only real complaint is it is kind of hard to flip back and forth between files in VSCode because all of the files have the same end path, but overall I am a fan and will definitely use again. I really liked that it worked pretty much out of box with cloudflare with very minimal configuration, and I would expect it to behave similarly for AWS / Azure / GCP as well.
+## License
 
-### Why Cloudflare?
+[MIT License](LICENSE)
 
-Cloudflare is traditionally more focused on web hosting, DNS, and CDN services. Recently, they have been heavily expanding their cloud offerings (especially in AI and cybersecurity). They also have probably the best free tier of any provider, and I wanted to get some experience with something other than AWS. I knew I could easily stay within free tier without much issue, and no egress fees for their S3 equivalent was pretty attractive for a wedding webiste, which usually has a lot of images.
+---
 
-I think Cloudflare is great! Their free tier alone makes it worth using, but they do have a pretty easy development experience on top of it. Despite no experience with Cloudflare or Sveltekit, I was able to get something I could get to in a browser in about an hour and a half, which is pretty impressive. The github integration is very nice, all I have to do is push to prod and it will automatically deploy. It was super easy to buy and set up a domain for the site.
-
-That being said, I do think it has some limitations, and I don't think I would count it as a full "cloud provider" in the same breath as AWS, Azure, and GCP. In my opinion it would be pretty difficult to do a full SaaS, or even a web app with heavy business logic. They only have serverless functions for a backend offering, and only in javascript (not full Node.JS), and it looks like it is fairly coupled to their HTML / static hosting. Their extra services are fine and good! They offer a Workers KV, which is just a key-value store and does the job. It did take some getting used to since it is eventually consistent, so one has to be very careful around read-after-writes. I would prefer to use AWS DynamoDB. D1 is just SQLite, which is easy, simple, and fast, but huge volumes of data might start to cause issues. R2 is just S3, infinitely useful infinite storage which is even more dirt cheap on Cloudflare. I didn't use their queues service.
-
-Cloudflare is really great for websites and most standard web apps though, wedding websites included, and I would definitely use again!
-
-### Why Brevo?
-
-I really wanted emails to send people a copy of their RSVP response! I have used Sendgrid in the past, but Sendgrid costs money. Brevo had the best free tier of API email services, it lets me send 300 emails per day without even needing a credit card. It was fast to set up and easy to verify my domain, it let me log into Cloudflare directly through their portal to apply the DNS records. It sends the email when I call the API, no complaints!
-
-### Why Tailwind CSS?
-
-Tailwind is super popular and I really only have a little experience with it. I am honestly lukewarm on it. It is easy for quick prototyping, but I have had trouble in the past with the inline CSS adjustments on large projects, it is very easy for things to become a beast of their own. I perfer regular CSS classes to keep things simple and uniform styling, it ends up being less typing and is easier to make a site "cohesive" in my opinion. I am still not great at either Tailwind or regular CSS.
-
-### Claude, Cursor, and Other AI Help
-
-I used AI help for this, including some code generation. It is somewhat controversial right now (at least at the time of this writing in April 2025), but it does speed me up a lot!
-
-I used Claude's github integration in the regular chat web interface for the first half, and it is great. I also find that Claude is a good "sentient rubber duck" to bounce ideas off with (somewhat) collaboratively and to get a basic idea of what is "typical" best practice for architecture decisions. I use ChatGPT for quick hits and other day-to-day or one-offs, but really like Claude Projects.
-
-I used Cursor for the first time for the second half of this project and really love it. I am a VSCode fan and feel in my element inside cursor, and love the direct apply to the file with the diff view. If you have not tried it and are a programmer, I recommend giving it a whirl, it feels very natural and easy to use.
-
-I think this would have taken me at least 2 more months without AI help. I still had to design the features and functionality. I still wrote my own code. I still read the generated code, understand the generated code, and where it fits in the larger project. I often had to fix bugs in a lot of the generated code. But, honestly, it is pretty fun to code with AI. For me, where AI really shines is on UI, which is my least favorite, as I often have the vision in my head but takes ages to implement (Without AI). I am a builder at heart, and really enjoy seeing some concrete results, and AI is excellent at speeding up the 0 to 1 step and getting some visual outcomes for me before I lose interest or motivation. I have a lot to say on this and am happy to expand if you are interested or have differing opinions.
-
-## Final Thoughts and Planned Improvements
-
-I learned a lot from this project, got some experience with some new technologies, and found a lot of keepers for future projects. I also hope that maybe someone else can use this and get joy from this. You can use it for your own wedding to save some money and add a personal touch, use it as a starting point for your own personal project, or whatever else you want!
-
-I plan to add screenshots of the interface and documentation to make it easier to understand the system. If you're interested in contributing or have specific features you'd like to see, feel free to open an issue!
+_Built with ❤️ for my own wedding. I hope it helps with yours too!_
