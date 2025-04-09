@@ -13,7 +13,7 @@
       services.
     </p>
     <p class="mb-4">
-      He defintiely overthought it and got too fixated on making things configurable to the point
+      He definitely overthought it and got too fixated on making things configurable to the point
       where he reinvented a worse version of The Knot. But, that means you theoretically could use
       it yourself if you wanted, for free! All you pay is for your domain name. There is a link to
       the github at the bottom of the page, you can click it to see all the code and some setup
@@ -26,22 +26,21 @@
     </p>
     <div class="bg-gray-100 p-6 rounded-lg mt-8 border border-gray-200">
       <p class="mb-2">
-        I wrote about my whole experience building this thing on GitHub. If you're curious about:
+        He wrote about his whole experience building this thing on GitHub. If you're curious about:
       </p>
       <ul class="list-disc pl-5 mb-4">
-        <li>Why I think SvelteKit is awesome (and React is... not my favorite)</li>
-        <li>How Cloudflare's free tier saved me money</li>
-        <li>My honest opinion on using AI coding tools</li>
-        <li>All the mistakes I made along the way</li>
+        <li>Strong opinions on SvelteKit and React</li>
+        <li>How Cloudflare's free tier saves some money</li>
+        <li>Connor's opinions on AI coding tools</li>
+        <li>Why he'd do some things differently next time</li>
       </ul>
       <p>
         Check out <a
-          href="https://github.com/your-username/wedding-website/blob/main/JOURNEY.md"
+          href="https://github.com/otoolecf/wedding-website/blob/main/JOURNEY.md"
           class="text-primary hover:underline"
           target="_blank"
           rel="noopener noreferrer">JOURNEY.md</a
-        > on GitHub. It's got all my unfiltered opinions - maybe useful if you're building something
-        similar or just want to laugh at my development process.
+        > on GitHub. It's got all of Connor's opinions - maybe useful if you're building something similar!
       </p>
     </div>
   </div>
