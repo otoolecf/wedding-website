@@ -784,15 +784,6 @@
           />
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Additional Guests Label</label>
-          <input
-            type="text"
-            bind:value={settings.additionalGuestsLabel}
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Number of Additional Guests"
-          />
-        </div>
-        <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">Vegetarian Question</label>
           <input
             type="text"
