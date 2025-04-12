@@ -60,6 +60,6 @@ I used Cursor for the first time for the second half of this project and really 
 
 I think this would have taken me at least 2 more months without AI help. I still had to design the features and functionality. I still wrote my own code. I still read the generated code, understand the generated code, and where it fits in the larger project. I often had to fix bugs in a lot of the generated code. But, honestly, it is pretty fun to code with AI. For me, where AI really shines is on UI, which is my least favorite, as I often have the vision in my head but takes ages to implement (Without AI). I am a builder at heart, and really enjoy seeing some concrete results, and AI is excellent at speeding up the 0 to 1 step and getting some visual outcomes for me before I lose interest or motivation. I have a lot to say on this and am happy to expand if you are interested or have differing opinions.
 
-## Final Thoughts and Lessons Learned
+## Final Thoughts
 
 I learned a lot from this project, got some experience with some new technologies, and found a lot of keepers for future projects. I also hope that maybe someone else can use this and get joy from this. You can use it for your own wedding to save some money and add a personal touch, use it as a starting point for your own personal project, or whatever else you want!

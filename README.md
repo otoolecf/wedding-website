@@ -182,7 +182,7 @@ The Gallery Manager is the central repository for all images:
 
    - Add guests individually or upload in bulk from a spreadsheet
    - Include guest details like email and meal preferences
-  
+
 2. **RSVP Form Settings**
 
    - Configure what information to collect
@@ -365,16 +365,8 @@ I built this as an alternative to paid wedding websites, with the dual purpose o
 I wanted to create something that would:
 
 1. Be completely free to host (or very close to it)
-2. Allow full customization of the look and feel
+2. Allow (mostly) full customization of the look and feel
 3. Let my non-technical partner manage content easily
 4. Provide a simple RSVP system with email confirmations
 
 For my complete journey including detailed thoughts on the tech stack choices, challenges, and what I learned, check out the [Project Journey](JOURNEY.md) document.
-
-## Contributing
-
-Contributions are welcome! If you're interested in improving this project, please feel free to:
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
