@@ -182,8 +182,7 @@ The Gallery Manager is the central repository for all images:
 
    - Add guests individually or upload in bulk from a spreadsheet
    - Include guest details like email and meal preferences
-   - Organize guests by household
-
+  
 2. **RSVP Form Settings**
 
    - Configure what information to collect
@@ -379,18 +378,3 @@ Contributions are welcome! If you're interested in improving this project, pleas
 1. Fork the repository
 2. Create a feature branch
 3. Submit a pull request
-
-Areas where help would be especially appreciated:
-
-- Improved mobile responsiveness
-- Additional theme presets
-- Documentation improvements
-- Accessibility enhancements
-
-## License
-
-[MIT License](LICENSE)
-
----
-
-_Built with ❤️ for my own wedding. I hope it helps with yours too!_

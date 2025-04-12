@@ -63,13 +63,3 @@ I think this would have taken me at least 2 more months without AI help. I still
 ## Final Thoughts and Lessons Learned
 
 I learned a lot from this project, got some experience with some new technologies, and found a lot of keepers for future projects. I also hope that maybe someone else can use this and get joy from this. You can use it for your own wedding to save some money and add a personal touch, use it as a starting point for your own personal project, or whatever else you want!
-
-Some key takeaways:
-
-1. **SvelteKit is a keeper** - I'll definitely be using this for future projects where I need a lightweight but powerful web framework
-2. **Cloudflare's free tier is amazing** - For small to medium projects, it's hard to beat the value
-3. **AI tools significantly boost productivity** - Especially for UI elements and boilerplate code
-4. **The admin interface pattern is powerful** - Separating technical implementation from content management is key for collaboration
-5. **Building in public is rewarding** - Sharing this work has led to interesting conversations and feedback
-
-I plan to continue maintaining this project and would love to see it help others create their own wedding websites without the limitations and costs of commercial alternatives.
