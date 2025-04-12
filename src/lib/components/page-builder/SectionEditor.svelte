@@ -128,8 +128,12 @@
       );
       // Clean up existing editors
       cleanupEditors();
-      // Initialize new editors
-      initializeAllEditors();
+      // Wait for next tick to ensure DOM is updated
+      setTimeout(() => {
+        if (tinymceLoaded) {
+          initializeAllEditors();
+        }
+      }, 0);
       // Update previous section ID
       previousSectionId = section.id;
     }
@@ -162,7 +166,10 @@
     // Initialize editors for all richtext fields
     Object.entries(schema.properties).forEach(([propName, config]) => {
       if (config.type === 'richtext') {
-        initializeEditor(propName);
+        // Add a small delay between initializations to prevent race conditions
+        setTimeout(() => {
+          initializeEditor(propName);
+        }, 50);
       }
     });
 
@@ -175,13 +182,25 @@
     // Create a unique ID for the editor
     const editorId = `editor-${section.id}-${propName}`;
     const containerId = `editor-container-${section.id}-${propName}`;
-    const containerElement = document.getElementById(containerId);
 
-    if (!containerElement) {
-      console.warn(`Editor container not found for selector: #${containerId}`);
-      return;
-    }
+    // Wait for the container to be available in the DOM
+    const waitForContainer = (retries = 5) => {
+      const containerElement = document.getElementById(containerId);
+      if (containerElement) {
+        setupEditor(containerElement, editorId, propName);
+      } else if (retries > 0) {
+        setTimeout(() => waitForContainer(retries - 1), 100);
+      } else {
+        console.warn(
+          `Editor container not found for selector: #${containerId} after multiple attempts`
+        );
+      }
+    };
 
+    waitForContainer();
+  }
+
+  function setupEditor(containerElement, editorId, propName) {
     // Check if the editor is already initialized
     if (editors[propName]) {
       console.log(`Editor for ${propName} already exists, skipping initialization`);
