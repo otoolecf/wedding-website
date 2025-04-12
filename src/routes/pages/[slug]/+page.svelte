@@ -1,0 +1,65 @@
+<!-- src/routes/pages/[slug]/+page.svelte -->
+<script>
+  import { SECTION_TYPES } from '$lib/page-builder/schema';
+  import TextSection from '$lib/components/page-builder/sections/TextSection.svelte';
+  import ImageSection from '$lib/components/page-builder/sections/ImageSection.svelte';
+  import TextImageSection from '$lib/components/page-builder/sections/TextImageSection.svelte';
+  import HeroSection from '$lib/components/page-builder/sections/HeroSection.svelte';
+  import GallerySection from '$lib/components/page-builder/sections/GallerySection.svelte';
+  import ColumnsSection from '$lib/components/page-builder/sections/ColumnsSection.svelte';
+  import SpacerSection from '$lib/components/page-builder/sections/SpacerSection.svelte';
+  import DividerSection from '$lib/components/page-builder/sections/DividerSection.svelte';
+  import ButtonSection from '$lib/components/page-builder/sections/ButtonSection.svelte';
+  import GlobalLightbox from '$lib/components/GlobalLightbox.svelte';
+
+  export let data;
+
+  // Extract the page data
+  const { page } = data;
+</script>
+
+<svelte:head>
+  <title>{page.name} | Connor & Colette Wedding</title>
+</svelte:head>
+
+<GlobalLightbox />
+
+<div class="custom-page">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    {#if !page.sections || page.sections.length === 0}
+      <div class="py-12 text-center text-gray-500">
+        <p>This page has no content sections yet.</p>
+      </div>
+    {:else}
+      {#each page.sections as section (section.id)}
+        <div class="section-wrapper mb-8">
+          {#if section.type === SECTION_TYPES.TEXT}
+            <TextSection properties={section.properties} />
+          {:else if section.type === SECTION_TYPES.IMAGE}
+            <ImageSection properties={section.properties} />
+          {:else if section.type === SECTION_TYPES.TEXT_IMAGE_LEFT}
+            <TextImageSection properties={section.properties} imagePosition="left" />
+          {:else if section.type === SECTION_TYPES.TEXT_IMAGE_RIGHT}
+            <TextImageSection properties={section.properties} imagePosition="right" />
+          {:else if section.type === SECTION_TYPES.HERO}
+            <HeroSection properties={section.properties} />
+          {:else if section.type === SECTION_TYPES.GALLERY}
+            <GallerySection properties={section.properties} />
+          {:else if section.type === SECTION_TYPES.COLUMNS}
+            <ColumnsSection properties={section.properties} />
+          {:else if section.type === SECTION_TYPES.SPACER}
+            <SpacerSection properties={section.properties} />
+          {:else if section.type === SECTION_TYPES.DIVIDER}
+            <DividerSection properties={section.properties} />
+          {:else if section.type === SECTION_TYPES.BUTTON}
+            <ButtonSection properties={section.properties} />
+          {:else}
+            <div class="p-4 bg-red-50 text-red-600 rounded">
+              Unknown section type: {section.type}
+            </div>
+          {/if}
+        </div>
+      {/each}
+    {/if}
+  </div>
+</div>

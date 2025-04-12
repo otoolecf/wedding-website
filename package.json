@@ -15,7 +15,7 @@
     "@cloudflare/workers-types": "^4.20250109.0",
     "@eslint/compat": "^1.2.3",
     "@sveltejs/adapter-auto": "^3.0.0",
-    "@sveltejs/adapter-cloudflare": "^5.0.1",
+    "@sveltejs/adapter-cloudflare": "^5.1.0",
     "@sveltejs/kit": "^2.9.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "autoprefixer": "^10.4.20",
@@ -28,11 +28,14 @@
     "svelte": "^5.0.0",
     "tailwindcss": "^3.4.16",
     "vite": "^6.0.0",
-    "wrangler": "^3.103.2"
+    "wrangler": "^3.114.4"
   },
   "dependencies": {
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/forms": "^0.5.9",
-    "@tailwindcss/typography": "^0.5.15"
+    "@tailwindcss/typography": "^0.5.15",
+    "axios": "^1.7.9",
+    "papaparse": "^5.5.2",
+    "uuid": "^11.0.5"
   }
 }

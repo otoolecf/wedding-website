@@ -1,24 +1,86 @@
 name = "wedding-website"
 compatibility_date = "2024-01-18"
+
+# Define the main worker entry point
 main = "./.svelte-kit/cloudflare/_worker.js"
 
-# Preview environment (covers both dev and staging branches)
+# Local D1 database
+[[d1_databases]]
+binding = "RSVPS"
+database_name = "wedding-rsvps-preview"
+database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
+
+# Local KV store
+[[kv_namespaces]]
+binding = "IMAGES_KV"
+id = "REPLACE_WITH_YOUR_KV_ID"
+preview_id = "REPLACE_WITH_YOUR_KV_ID"
+
+[[r2_buckets]]
+binding = "IMAGES_BUCKET"
+bucket_name = "wedding-images-preview"
+preview_bucket_name = "wedding-images-preview"
+
+# Preview environment configuration
 [env.preview]
 [[env.preview.d1_databases]]
-binding = "DB"
+binding = "RSVPS"
 database_name = "wedding-rsvps-preview"
-database_id = "581d792c-603c-4a42-a9c4-c3dc69c8d41d"
+database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
+preview_database_name = "wedding-rsvps-preview"
+preview_database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
 
-# Production environment
+[[env.preview.r2_buckets]]
+binding = "IMAGES_BUCKET"
+bucket_name = "wedding-images-preview"
+
+[[env.preview.kv_namespaces]]
+binding = "IMAGES_KV"
+id = "REPLACE_WITH_YOUR_KV_ID"
+
+# Production environment configuration
 [env.production]
 [[env.production.d1_databases]]
-binding = "DB"
+binding = "RSVPS"
 database_name = "wedding-rsvps-prod"
-database_id = "5f4ee888-0757-44bf-8a69-49566936ae45"
-routes = [
-  { pattern = "/admin*", zone_name = "martinelliotoole.com" }
-]
+database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
+
+[[env.production.r2_buckets]]
+binding = "IMAGES_BUCKET"
+bucket_name = "wedding-images-prod"
+
+[[env.production.kv_namespaces]]
+binding = "IMAGES_KV"
+id = "REPLACE_WITH_YOUR_KV_ID"
 
 # Development configuration
 [dev]
 port = 8788
+ip = "localhost"
+local_protocol = "http"
+upstream_protocol = "https"
+
+# Build configuration
+[build]
+command = "npm run build"
+watch_dir = "src"
+
+[vars]
+ENVIRONMENT = "development"
+SITE_URL = "https://your-dev-domain.pages.dev"
+IMAGES_BUCKET_SITE_URL = "https://your-images-dev-domain.com"
+IMAGES_BUCKET_NAME = "wedding-images-preview"
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+SITE_URL = "https://your-preview-domain.pages.dev"
+IMAGES_BUCKET_SITE_URL = "https://your-images-preview-domain.com"
+IMAGES_BUCKET_NAME = "wedding-images-preview"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+SITE_URL = "https://your-production-domain.com"
+IMAGES_BUCKET_SITE_URL = "https://your-images-production-domain.com"
+IMAGES_BUCKET_NAME = "wedding-images-prod"
+PROD_IMAGES_KV = "REPLACE_WITH_YOUR_KV_ID"
+PROD_IMAGES_BUCKET = "wedding-images-prod"

@@ -1,80 +1,75 @@
 <!-- src/routes/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
 
   export let data;
 
-  // Set the wedding date with a specific time in your timezone
-  const weddingDate = new Date('2026-04-18T16:00:00'); // 4:00 PM on your wedding day
-  let daysUntil = 0;
-  let formattedDate = '';
+  let daysUntil;
+  let formattedDate;
 
-  onMount(() => {
-    // Calculate days until wedding, handling timezone differences
+  // Compute couple names based on order preference
+  $: coupleNames =
+    data.settings.nameOrder === 'groom-first'
+      ? `${data.settings.groomName} & ${data.settings.brideName}`
+      : `${data.settings.brideName} & ${data.settings.groomName}`;
+
+  // Calculate days until wedding
+  $: {
+    const weddingDateTime = new Date(`${data.settings.weddingDate}T${data.settings.weddingTime}`);
     const today = new Date();
     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const weddingStart = new Date(
-      weddingDate.getFullYear(),
-      weddingDate.getMonth(),
-      weddingDate.getDate()
+      weddingDateTime.getFullYear(),
+      weddingDateTime.getMonth(),
+      weddingDateTime.getDate()
     );
     daysUntil = Math.ceil((weddingStart - todayStart) / (1000 * 60 * 60 * 24));
+  }
 
-    // Format the date string
-    formattedDate = weddingDate.toLocaleDateString('en-US', {
+  // Format wedding date
+  $: {
+    const date = new Date(`${data.settings.weddingDate}T${data.settings.weddingTime}`);
+    formattedDate = date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      timeZone: 'America/Chicago' // Specify Central timezone
+      day: 'numeric'
     });
-  });
+  }
 </script>
 
 <svelte:head>
-  <title>{data.isPreview ? 'Home' : 'Coming Soon'} | Connor & Colette's Wedding</title>
+  <title>{coupleNames}'s Wedding</title>
 </svelte:head>
 
-{#if !data.isPreview}
-  <!-- Coming Soon Page -->
-  <div
-    class="min-h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-b from-white to-gray-50"
-  >
-    <div class="text-center max-w-2xl mx-auto">
-      <h1 class="text-5xl font-light mb-6">Connor & Colette</h1>
-      <p class="text-2xl text-gray-600 mb-2">Are getting married in {daysUntil} days</p>
-      <p class="text-xl text-gray-500 mb-8">{formattedDate}</p>
-      <div class="w-16 h-px bg-gray-300 mx-auto mb-8"></div>
-      <p class="text-gray-500">Website coming soon</p>
+<div class="min-h-screen flex flex-col items-center justify-center p-4">
+  <h1 class="text-4xl font-bold mb-8">{coupleNames}</h1>
+
+  {#if data.settings.showCountdown}
+    <div class="text-2xl mb-8">
+      {daysUntil} days until our wedding
     </div>
+  {/if}
+
+  <div class="text-xl mb-8">
+    {formattedDate}
   </div>
-{:else}
-  <!-- Full Home Page for Preview -->
-  <div
-    class="min-h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-b from-white to-gray-50"
-  >
-    <div class="text-center max-w-2xl mx-auto">
-      <h1 class="text-5xl font-light mb-6">Connor & Colette</h1>
-      <p class="text-2xl text-gray-600 mb-2">Are getting married!</p>
-      <p class="text-xl text-gray-500 mb-8">{formattedDate}</p>
-      <div class="w-16 h-px bg-gray-300 mx-auto mb-8"></div>
-      <div class="space-y-4">
-        <p class="text-gray-600">Join us for our special day</p>
-        <div class="flex justify-center gap-4">
-          <a
-            href="/details"
-            class="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
-          >
-            View Details
-          </a>
-          <a
-            href="/rsvp"
-            class="px-6 py-2 border border-black rounded-full hover:bg-gray-50 transition-colors"
-          >
-            RSVP Now
-          </a>
-        </div>
-      </div>
-    </div>
+
+  <div class="text-lg mb-8">
+    {data.settings.venueName}
   </div>
-{/if}
+
+  <div class="text-lg mb-8">
+    {data.settings.venueAddress}
+  </div>
+
+  {#if !data.settings.restrictToHomePage}
+    <a
+      href="/rsvp"
+      class="bg-primary text-white px-8 py-3 rounded-full text-lg hover:bg-primary/90 transition-colors"
+    >
+      RSVP
+    </a>
+  {/if}
+</div>
