@@ -454,7 +454,7 @@
               <input
                 type="text"
                 bind:value={theme.colors.primary}
-                class="flex-1 p-2 border rounded"
+                class="w-full max-w-[200px] p-2 border rounded"
               />
             </div>
             <p class="text-xs text-gray-500 mt-1">
@@ -474,7 +474,7 @@
               <input
                 type="text"
                 bind:value={theme.colors.secondary}
-                class="flex-1 p-2 border rounded"
+                class="w-full max-w-[200px] p-2 border rounded"
               />
             </div>
             <p class="text-xs text-gray-500 mt-1">Used for secondary elements and highlights</p>
@@ -492,7 +492,7 @@
               <input
                 type="text"
                 bind:value={theme.colors.accent}
-                class="flex-1 p-2 border rounded"
+                class="w-full max-w-[200px] p-2 border rounded"
               />
             </div>
             <p class="text-xs text-gray-500 mt-1">
@@ -509,7 +509,11 @@
                 bind:value={theme.colors.text}
                 class="p-0 h-8 w-16 border rounded"
               />
-              <input type="text" bind:value={theme.colors.text} class="flex-1 p-2 border rounded" />
+              <input
+                type="text"
+                bind:value={theme.colors.text}
+                class="w-full max-w-[200px] p-2 border rounded"
+              />
             </div>
             <p class="text-xs text-gray-500 mt-1">Used for main text content</p>
           </div>
@@ -526,7 +530,7 @@
               <input
                 type="text"
                 bind:value={theme.colors.background}
-                class="flex-1 p-2 border rounded"
+                class="w-full max-w-[200px] p-2 border rounded"
               />
             </div>
             <p class="text-xs text-gray-500 mt-1">Main background color of the site</p>
