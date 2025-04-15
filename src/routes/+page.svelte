@@ -56,11 +56,11 @@
     {formattedDate}
   </div>
 
-  <div class="text-lg mb-8">
+  <div class="text-2xl font-medium mb-4">
     {data.settings.venueName}
   </div>
 
-  <div class="text-lg mb-8">
+  <div class="text-lg mb-8 whitespace-pre-wrap">
     {data.settings.venueAddress}
   </div>
 
