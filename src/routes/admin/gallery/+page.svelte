@@ -498,6 +498,18 @@
     </button>
   </div>
 
+  <button
+    class="bg-green-500 text-white px-4 py-2 rounded mb-4"
+    on:click={saveOrder}
+    disabled={saving || $images.length === 0}
+  >
+    {#if saving}
+      Saving Order...
+    {:else}
+      Save Order
+    {/if}
+  </button>
+
   <div class="gallery mt-4">
     {#if fetching}
       <p>Loading images...</p>
