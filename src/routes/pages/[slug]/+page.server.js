@@ -1,6 +1,9 @@
 // src/routes/pages/[slug]/+page.server.js
 
-export async function load({ params, platform, setHeaders }) {
+export async function load({ params, platform, setHeaders, depends }) {
+  // Add a dependency on the slug parameter
+  depends(`app:page:${params.slug}`);
+
   const { slug } = params;
 
   try {
@@ -8,8 +11,10 @@ export async function load({ params, platform, setHeaders }) {
     const timestamp = Date.now();
     console.log(`Loading page [${slug}] at ${timestamp}`);
 
-    // Get the list of pages with a fresh request
-    const pagesList = await platform.env.IMAGES_KV.get('page_builder_pages_list');
+    // Get the list of pages with a fresh request - force cache bypass
+    const pagesList = await platform.env.IMAGES_KV.get('page_builder_pages_list', {
+      cacheTtl: 0 // Bypass cache
+    });
     let pagesData = pagesList ? JSON.parse(pagesList) : [];
 
     // Find the page with the matching slug
@@ -22,8 +27,10 @@ export async function load({ params, platform, setHeaders }) {
 
     console.log(`Found page info for [${slug}]:`, pageInfo);
 
-    // Get the full page data
-    const pageData = await platform.env.IMAGES_KV.get(`page_builder_page:${pageInfo.id}`);
+    // Get the full page data - force cache bypass
+    const pageData = await platform.env.IMAGES_KV.get(`page_builder_page:${pageInfo.id}`, {
+      cacheTtl: 0 // Bypass cache
+    });
 
     if (!pageData) {
       console.error(`Page content not found for ID: ${pageInfo.id}`);
@@ -31,6 +38,9 @@ export async function load({ params, platform, setHeaders }) {
     }
 
     const page = JSON.parse(pageData);
+
+    // Log the page ID for debugging
+    console.log(`Successfully loaded page ID: ${page.id}, slug: ${page.slug}`);
 
     // Set cache control headers to avoid browser caching
     setHeaders({
@@ -42,7 +52,8 @@ export async function load({ params, platform, setHeaders }) {
     return {
       page,
       slug,
-      timestamp
+      timestamp,
+      id: page.id // Explicitly include ID for keying
     };
   } catch (err) {
     console.error(`Error loading page [${slug}]:`, err);

@@ -16,27 +16,47 @@
 
   export let data;
 
-  // Extract the page data
-  const { page: pageData } = data;
+  // Extract the page data reactively
+  $: pageData = data.page;
+  $: pageId = data.id;
+  $: timestamp = data.timestamp;
+  $: slug = data.slug;
 
   // Debug logs
   onMount(() => {
-    console.log(`Page mounted: ${$page.url.pathname}`, pageData);
+    console.log(`Page mounted: ${$page.url.pathname}`, {
+      id: pageId,
+      slug: slug,
+      name: pageData.name,
+      timestamp: timestamp
+    });
   });
 
   afterUpdate(() => {
-    console.log(`Page updated: ${$page.url.pathname}`, pageData);
+    console.log(`Page updated: ${$page.url.pathname}`, {
+      id: pageId,
+      slug: slug,
+      name: pageData.name,
+      timestamp: timestamp
+    });
   });
 </script>
 
 <svelte:head>
   <title>{pageData.name} | Connor & Colette Wedding</title>
+  <!-- Add meta refresh to ensure page refreshes if data is stale -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 </svelte:head>
 
 <GlobalLightbox />
 
-<div class="custom-page" key={pageData.id}>
+<!-- Use pageId instead of pageData.id for more reliable keying -->
+<div class="custom-page" id={pageId} data-timestamp={timestamp} data-slug={slug}>
   <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mb-4 text-2xl font-bold">{pageData.name}</div>
+
     {#if !pageData.sections || pageData.sections.length === 0}
       <div class="py-12 text-center text-gray-500">
         <p>This page has no content sections yet.</p>

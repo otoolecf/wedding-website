@@ -5,6 +5,7 @@
   import { onMount } from 'svelte';
   import { getGoogleFontsUrl } from '$lib/theme/fonts';
   import { initRouterDebug, navigateTo } from '$lib/router';
+  import { invalidate } from '$app/navigation';
 
   export let data;
 
@@ -118,8 +119,20 @@
   $: isRestricted = data.settings?.restrictToHomePage;
 
   // Handle navigation with explicit method
-  function handleNav(e, url) {
+  async function handleNav(e, url) {
     e.preventDefault();
+
+    // Extract the slug from the URL
+    const slugMatch = url.match(/\/pages\/([^\/]+)/);
+    const slug = slugMatch ? slugMatch[1] : null;
+
+    if (slug) {
+      // Manually invalidate the data dependency for this page
+      await invalidate(`app:page:${slug}`);
+      console.log(`Invalidated cache for slug: ${slug}`);
+    }
+
+    // Navigate to the new URL
     navigateTo(url);
   }
 </script>
