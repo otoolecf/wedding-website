@@ -55,27 +55,34 @@ export async function POST({ request, platform }) {
         }
 
         const imageBuffer = await originalImage.arrayBuffer();
+        const contentType = originalImage.httpMetadata?.contentType || 'image/jpeg';
 
-        // Create a new Response with the image
-        const response = new Response(imageBuffer, {
-          headers: {
-            'Content-Type': originalImage.httpMetadata?.contentType || 'image/jpeg'
-          }
+        // Save the original image first
+        await platform.env.IMAGES_BUCKET.put(r2_key, imageBuffer, {
+          httpMetadata: { contentType }
         });
 
         // Generate thumbnail (200px width)
-        const thumbnailResponse = await response.clone().image({
-          width: 200,
-          fit: 'inside'
+        const thumbnailUrl = `${platform.env.IMAGES_BUCKET_SITE_URL}/${r2_key}?width=200&fit=inside`;
+        const thumbnailResponse = await fetch(thumbnailUrl);
+        if (!thumbnailResponse.ok) {
+          throw new Error(`Failed to generate thumbnail: ${thumbnailResponse.statusText}`);
+        }
+        const thumbnailBuffer = await thumbnailResponse.arrayBuffer();
+        await platform.env.IMAGES_BUCKET.put(`${r2_key}_thumb`, thumbnailBuffer, {
+          httpMetadata: { contentType }
         });
-        await platform.env.IMAGES_BUCKET.put(`${r2_key}_thumb`, thumbnailResponse.body);
 
         // Generate medium size (800px width)
-        const mediumResponse = await response.clone().image({
-          width: 800,
-          fit: 'inside'
+        const mediumUrl = `${platform.env.IMAGES_BUCKET_SITE_URL}/${r2_key}?width=800&fit=inside`;
+        const mediumResponse = await fetch(mediumUrl);
+        if (!mediumResponse.ok) {
+          throw new Error(`Failed to generate medium size: ${mediumResponse.statusText}`);
+        }
+        const mediumBuffer = await mediumResponse.arrayBuffer();
+        await platform.env.IMAGES_BUCKET.put(`${r2_key}_medium`, mediumBuffer, {
+          httpMetadata: { contentType }
         });
-        await platform.env.IMAGES_BUCKET.put(`${r2_key}_medium`, mediumResponse.body);
 
         // Update metadata with variants
         metadata.variants = {
