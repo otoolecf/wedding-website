@@ -112,7 +112,7 @@
 <AdminNav />
 
 <div class="min-h-screen bg-gray-50">
-  <div class="bg-white shadow-sm border-b">
+  <div class="bg-white shadow-sm border-b sticky top-0 z-10">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center">
         <a href="/admin/pages" class="text-gray-500 hover:text-gray-700 mr-3">
@@ -171,14 +171,14 @@
     <div class="max-w-7xl mx-auto px-4 py-12 text-center">
       <p>Loading page...</p>
     </div>
-  {:else if previewMode}
+
     <!-- Preview Mode -->
     <div class="max-w-5xl mx-auto px-4 py-4 bg-white mt-4 shadow-sm rounded mb-8">
       <PagePreview {sections} />
     </div>
   {:else}
     <!-- Editor Mode -->
-    <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-6">
+    <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-6 overflow-y-auto">
       <!-- Section List -->
       <div class="col-span-12 md:col-span-4 lg:col-span-3">
         <div class="bg-white p-4 rounded shadow-sm">

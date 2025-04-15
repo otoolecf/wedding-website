@@ -600,10 +600,13 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
   }
 
   .sections-container {
     flex: 1;
+    overflow-y: auto;
   }
 
   /* Make sure the preview properly displays formatted content */
