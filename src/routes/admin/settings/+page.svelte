@@ -286,13 +286,13 @@
               <input
                 type="text"
                 bind:value={page.name}
-                class="flex-1 p-2 border rounded"
+                class="w-full max-w-[200px] p-2 border rounded"
                 placeholder="Page Name"
               />
               <input
                 type="text"
                 bind:value={page.slug}
-                class="flex-1 p-2 border rounded"
+                class="w-full max-w-[200px] p-2 border rounded"
                 placeholder="URL Slug"
               />
               <input
@@ -314,7 +314,7 @@
           type="text"
           id="venueName"
           bind:value={settings.venueName}
-          class="w-full p-2 border rounded"
+          class="w-full p-3 border rounded text-lg font-medium"
           required
         />
       </div>
@@ -326,7 +326,7 @@
         <textarea
           id="venueAddress"
           bind:value={settings.venueAddress}
-          class="w-full p-2 border rounded"
+          class="w-full p-2 border rounded whitespace-pre-wrap"
           rows="3"
           required
         ></textarea>
