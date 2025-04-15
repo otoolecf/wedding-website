@@ -60,7 +60,7 @@
     {data.settings.venueName}
   </div>
 
-  <div class="text-lg mb-8 whitespace-pre-wrap">
+  <div class="text-lg text-center mb-8 whitespace-pre-wrap">
     {data.settings.venueAddress}
   </div>
 

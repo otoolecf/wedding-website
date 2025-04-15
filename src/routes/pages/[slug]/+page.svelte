@@ -63,3 +63,41 @@
     {/if}
   </div>
 </div>
+
+<style>
+  :global(.text-section h1),
+  :global(.content-container h1) {
+    font-size: 2rem !important;
+    font-weight: bold !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.2 !important;
+  }
+
+  :global(.text-section h2),
+  :global(.content-container h2) {
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.3 !important;
+  }
+
+  :global(.text-section h3),
+  :global(.content-container h3) {
+    font-size: 1.25rem !important;
+    font-weight: bold !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.4 !important;
+  }
+
+  :global(.text-section h4),
+  :global(.content-container h4) {
+    font-size: 1rem !important;
+    font-weight: bold !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.4 !important;
+  }
+</style>
