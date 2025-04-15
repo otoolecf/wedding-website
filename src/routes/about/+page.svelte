@@ -33,18 +33,7 @@
     </p>
 
     <p class="mb-4 leading-relaxed">
-      He wrote about his whole experience building this thing on GitHub. If you're curious about:
-    </p>
-
-    <ul class="list-disc pl-5 mb-6 space-y-2">
-      <li>Strong opinions on SvelteKit and React</li>
-      <li>How Cloudflare's free tier saves some money</li>
-      <li>Connor's opinions on AI coding tools</li>
-      <li>Why he'd do some things differently next time</li>
-    </ul>
-
-    <p class="leading-relaxed">
-      Check out <a
+      He wrote about his whole experience building this thing, check out <a
         href="https://github.com/otoolecf/wedding-website/blob/main/JOURNEY.md"
         class="text-primary hover:underline"
         target="_blank"
