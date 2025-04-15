@@ -11,11 +11,18 @@
   import DividerSection from '$lib/components/page-builder/sections/DividerSection.svelte';
   import ButtonSection from '$lib/components/page-builder/sections/ButtonSection.svelte';
   import GlobalLightbox from '$lib/components/GlobalLightbox.svelte';
+  import { onMount } from 'svelte';
+  import { invalidate } from '$app/navigation';
 
   export let data;
 
   // Extract the page data
   const { page } = data;
+
+  // Force a fresh load when the component mounts
+  onMount(async () => {
+    await invalidate('all');
+  });
 </script>
 
 <svelte:head>
