@@ -267,7 +267,7 @@
 <!-- New Page Modal -->
 {#if showNewPageModal}
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
       <h2 class="text-xl font-semibold mb-4">Create New Page</h2>
 
       <div class="space-y-4">
@@ -289,9 +289,9 @@
           <label for="page-slug" class="block text-sm font-medium text-gray-700 mb-1">
             Page Slug
           </label>
-          <div class="flex">
+          <div class="flex w-full">
             <span
-              class="inline-flex items-center px-3 bg-gray-100 text-gray-500 border border-r-0 rounded-l"
+              class="inline-flex items-center px-3 bg-gray-100 text-gray-500 border border-r-0 rounded-l whitespace-nowrap"
             >
               /pages/
             </span>
@@ -300,7 +300,7 @@
               type="text"
               bind:value={newPage.slug}
               on:input={handleSlugInput}
-              class="flex-1 p-2 border rounded-r"
+              class="flex-1 p-2 border rounded-r min-w-0"
               placeholder="about-us"
             />
           </div>
