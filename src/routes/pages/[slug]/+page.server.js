@@ -11,9 +11,9 @@ export async function load({ params, platform, setHeaders, depends }) {
     const timestamp = Date.now();
     console.log(`Loading page [${slug}] at ${timestamp}`);
 
-    // Get the list of pages with a fresh request - force cache bypass
+    // Get the list of pages with a fresh request - use minimum allowed TTL
     const pagesList = await platform.env.IMAGES_KV.get('page_builder_pages_list', {
-      cacheTtl: 0 // Bypass cache
+      cacheTtl: 60 // Minimum allowed value is 60 seconds
     });
     let pagesData = pagesList ? JSON.parse(pagesList) : [];
 
@@ -27,9 +27,9 @@ export async function load({ params, platform, setHeaders, depends }) {
 
     console.log(`Found page info for [${slug}]:`, pageInfo);
 
-    // Get the full page data - force cache bypass
+    // Get the full page data - use minimum allowed TTL
     const pageData = await platform.env.IMAGES_KV.get(`page_builder_page:${pageInfo.id}`, {
-      cacheTtl: 0 // Bypass cache
+      cacheTtl: 60 // Minimum allowed value is 60 seconds
     });
 
     if (!pageData) {
