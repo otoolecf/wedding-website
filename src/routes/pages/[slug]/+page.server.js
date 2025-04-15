@@ -5,8 +5,8 @@ export async function load({ params, platform }) {
 
   try {
     // Get the list of pages
-    const pagesList = await platform.env.IMAGES_KV.get('page_builder_pages_list');
-    let pagesData = pagesList ? JSON.parse(pagesList) : [];
+    const pagesList = await platform.env.IMAGES_KV.get('page_builder_pages_list', { type: 'json' });
+    let pagesData = pagesList || [];
 
     // Find the page with the matching slug
     const pageInfo = pagesData.find((page) => page.slug === slug);
@@ -16,16 +16,16 @@ export async function load({ params, platform }) {
     }
 
     // Get the full page data
-    const pageData = await platform.env.IMAGES_KV.get(`page_builder_page:${pageInfo.id}`);
+    const pageData = await platform.env.IMAGES_KV.get(`page_builder_page:${pageInfo.id}`, {
+      type: 'json'
+    });
 
     if (!pageData) {
       throw new Error('Page content not found');
     }
 
-    const page = JSON.parse(pageData);
-
     return {
-      page,
+      page: pageData,
       slug
     };
   } catch (err) {
