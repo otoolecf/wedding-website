@@ -35,6 +35,7 @@
   let useCustomFontInput = { heading: false, body: false };
   let selectedFile = null;
   let previewUrl = null;
+  let savedTheme = null; // Add this to store the saved theme state
 
   // Filtered fonts based on selected category
   $: filteredFonts = fontCategory === 'all' ? allFonts : fontOptions[fontCategory] || allFonts;
@@ -65,6 +66,7 @@
       if (response.ok) {
         const data = await response.json();
         theme = data.theme;
+        savedTheme = JSON.parse(JSON.stringify(data.theme)); // Store the initial saved theme
       }
     } catch (err) {
       error = "Couldn't load theme settings";
@@ -97,6 +99,7 @@
 
       if (response.ok) {
         status = 'Theme saved successfully!';
+        savedTheme = JSON.parse(JSON.stringify(theme)); // Update the saved theme
       } else {
         throw new Error('Failed to save theme settings');
       }
@@ -128,14 +131,30 @@
 
   function cancelPreview() {
     preview = false;
-    // Reset to original styles from CSS variables
-    document.documentElement.style.removeProperty('--color-primary');
-    document.documentElement.style.removeProperty('--color-secondary');
-    document.documentElement.style.removeProperty('--color-accent');
-    document.documentElement.style.removeProperty('--color-text');
-    document.documentElement.style.removeProperty('--color-background');
-    document.documentElement.style.removeProperty('--font-heading');
-    document.documentElement.style.removeProperty('--font-body');
+    if (savedTheme) {
+      // Restore the saved theme state
+      theme = JSON.parse(JSON.stringify(savedTheme));
+      // Reapply the saved theme's CSS variables
+      document.documentElement.style.setProperty('--color-primary', savedTheme.colors.primary);
+      document.documentElement.style.setProperty('--color-secondary', savedTheme.colors.secondary);
+      document.documentElement.style.setProperty('--color-accent', savedTheme.colors.accent);
+      document.documentElement.style.setProperty('--color-text', savedTheme.colors.text);
+      document.documentElement.style.setProperty(
+        '--color-background',
+        savedTheme.colors.background
+      );
+      document.documentElement.style.setProperty('--font-heading', savedTheme.fonts.heading);
+      document.documentElement.style.setProperty('--font-body', savedTheme.fonts.body);
+    } else {
+      // Fallback to removing CSS variables if no saved theme exists
+      document.documentElement.style.removeProperty('--color-primary');
+      document.documentElement.style.removeProperty('--color-secondary');
+      document.documentElement.style.removeProperty('--color-accent');
+      document.documentElement.style.removeProperty('--color-text');
+      document.documentElement.style.removeProperty('--color-background');
+      document.documentElement.style.removeProperty('--font-heading');
+      document.documentElement.style.removeProperty('--font-body');
+    }
   }
 
   function resetTheme() {
@@ -157,6 +176,7 @@
       }
     };
     selectedPresetId = '';
+    fontCategory = 'all'; // Reset font category to default
     cancelPreview();
   }
 
