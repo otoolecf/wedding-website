@@ -27,9 +27,9 @@
       There is a link to the github at the bottom of the page, you can click it to see all the code
       and some setup instructions. It's probably overkill if you're not somewhat technical, but hey,
       it's an option! You can contact Connor directly if you are interested, he is happy to help and
-      can get you set up quite fast. Once the site is set up, you don't need any coding or anything,
-      you can do everything from an admin section on the site. The admin interface lets you change
-      colors, fonts, add pages, upload photos, and manage RSVPs.
+      can get you set up relatively quickly. Once the site is set up, you don't need any coding or
+      anything, you can do everything from an admin section on the site. The admin interface lets
+      you change colors, fonts, add pages, upload photos, and manage RSVPs.
     </p>
 
     <p class="mb-4 leading-relaxed">
