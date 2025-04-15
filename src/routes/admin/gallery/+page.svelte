@@ -28,7 +28,7 @@
   let assigning = false;
   let multiAssigning = false;
   let editing = false;
-  let generatingVariants = false;
+  let generatingSingleVariant = false;
   let error = null;
 
   // Fetch both images and assignments on mount
@@ -408,11 +408,11 @@
     return `Assigned to ${locations.length} locations`;
   }
 
-  async function generateVariants() {
-    generatingVariants = true;
+  async function generateVariantsForImage(imageId) {
+    generatingSingleVariant = true;
     error = null;
     try {
-      const response = await fetch('/api/admin/gallery/generate-variants', {
+      const response = await fetch(`/api/admin/gallery/generate-variants/${imageId}`, {
         method: 'POST'
       });
 
@@ -421,17 +421,18 @@
       }
 
       const data = await response.json();
-      alert(
-        `Variant generation complete!\nProcessed: ${data.results.processed}\nSkipped: ${data.results.skipped}\nErrors: ${data.results.errors.length}`
-      );
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
+      alert('Variants generated successfully!');
       // Refresh the images to show the new variants
       await fetchImages();
     } catch (err) {
       error = 'Failed to generate variants';
       console.error(err);
     } finally {
-      generatingVariants = false;
+      generatingSingleVariant = false;
     }
   }
 </script>
@@ -441,17 +442,6 @@
 <div class="p-4">
   <div class="flex justify-between items-center mb-4">
     <h1 class="text-2xl font-bold">Gallery Admin Panel</h1>
-    <button
-      class="bg-purple-500 text-white px-4 py-2 rounded"
-      on:click={generateVariants}
-      disabled={generatingVariants}
-    >
-      {#if generatingVariants}
-        Generating Variants...
-      {:else}
-        Generate Image Variants
-      {/if}
-    </button>
   </div>
   {#if error}
     <div class="bg-red-50 text-red-600 p-4 rounded mb-4">
@@ -563,6 +553,20 @@
               >
                 Edit Info
               </button>
+
+              {#if !image.variants || !image.variants.medium || !image.variants.thumbnail}
+                <button
+                  class="bg-purple-500 text-white px-2 py-1 rounded text-sm"
+                  on:click={() => generateVariantsForImage(image.id)}
+                  disabled={generatingSingleVariant}
+                >
+                  {#if generatingSingleVariant}
+                    Generating...
+                  {:else}
+                    Generate Variants
+                  {/if}
+                </button>
+              {/if}
             </div>
 
             <div class="flex justify-between mt-2">
