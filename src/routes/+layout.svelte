@@ -4,7 +4,7 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { getGoogleFontsUrl } from '$lib/theme/fonts';
-  import { enhance } from '$app/forms';
+  import { initRouterDebug, navigateTo } from '$lib/router';
 
   export let data;
 
@@ -70,6 +70,7 @@
       customFontsToLoad = processThemeFonts(data.theme);
     }
     await loadCustomPages();
+    initRouterDebug();
   });
 
   // Function to apply theme to CSS variables
@@ -115,6 +116,12 @@
 
   // Check if site is restricted to home page only
   $: isRestricted = data.settings?.restrictToHomePage;
+
+  // Handle navigation with explicit method
+  function handleNav(e, url) {
+    e.preventDefault();
+    navigateTo(url);
+  }
 </script>
 
 <svelte:head>
@@ -131,23 +138,31 @@
   {#if !isRestricted}
     <nav class="max-w-4xl mx-auto px-4 py-4">
       <ul class="flex gap-6 justify-center">
-        {#each allPages as page}
+        {#each allPages as pageItem}
           <li>
             <a
-              href={page.slug
-                ? page.id.startsWith('page_')
-                  ? `/pages/${page.slug}`
-                  : `/${page.slug}`
+              href={pageItem.slug
+                ? pageItem.id.startsWith('page_')
+                  ? `/pages/${pageItem.slug}`
+                  : `/${pageItem.slug}`
                 : '/'}
-              class:active={data.pathname ===
-                (page.slug
-                  ? page.id.startsWith('page_')
-                    ? `/pages/${page.slug}`
-                    : `/${page.slug}`
+              class:active={$page.url.pathname ===
+                (pageItem.slug
+                  ? pageItem.id.startsWith('page_')
+                    ? `/pages/${pageItem.slug}`
+                    : `/${pageItem.slug}`
                   : '/')}
-              use:enhance
+              on:click|preventDefault={(e) =>
+                handleNav(
+                  e,
+                  pageItem.slug
+                    ? pageItem.id.startsWith('page_')
+                      ? `/pages/${pageItem.slug}`
+                      : `/${pageItem.slug}`
+                    : '/'
+                )}
             >
-              {page.name}
+              {pageItem.name}
             </a>
           </li>
         {/each}

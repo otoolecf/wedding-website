@@ -11,27 +11,38 @@
   import DividerSection from '$lib/components/page-builder/sections/DividerSection.svelte';
   import ButtonSection from '$lib/components/page-builder/sections/ButtonSection.svelte';
   import GlobalLightbox from '$lib/components/GlobalLightbox.svelte';
+  import { page } from '$app/stores';
+  import { onMount, afterUpdate } from 'svelte';
 
   export let data;
 
   // Extract the page data
-  const { page } = data;
+  const { page: pageData } = data;
+
+  // Debug logs
+  onMount(() => {
+    console.log(`Page mounted: ${$page.url.pathname}`, pageData);
+  });
+
+  afterUpdate(() => {
+    console.log(`Page updated: ${$page.url.pathname}`, pageData);
+  });
 </script>
 
 <svelte:head>
-  <title>{page.name} | Connor & Colette Wedding</title>
+  <title>{pageData.name} | Connor & Colette Wedding</title>
 </svelte:head>
 
 <GlobalLightbox />
 
-<div class="custom-page">
+<div class="custom-page" key={pageData.id}>
   <div class="max-w-7xl mx-auto px-4 py-8">
-    {#if !page.sections || page.sections.length === 0}
+    {#if !pageData.sections || pageData.sections.length === 0}
       <div class="py-12 text-center text-gray-500">
         <p>This page has no content sections yet.</p>
       </div>
     {:else}
-      {#each page.sections as section (section.id)}
+      {#each pageData.sections as section (section.id)}
         <div class="section-wrapper mb-8">
           {#if section.type === SECTION_TYPES.TEXT}
             <TextSection properties={section.properties} />
