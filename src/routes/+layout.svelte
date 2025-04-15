@@ -4,6 +4,7 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { getGoogleFontsUrl } from '$lib/theme/fonts';
+  import { enhance } from '$app/forms';
 
   export let data;
 
@@ -144,6 +145,7 @@
                     ? `/pages/${page.slug}`
                     : `/${page.slug}`
                   : '/')}
+              use:enhance
             >
               {page.name}
             </a>
