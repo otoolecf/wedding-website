@@ -28,7 +28,7 @@
     if (photos.length === 0) return;
 
     const galleryImages = photos.map((photo) => ({
-      src: photo.src,
+      src: photo.variants.original,
       alt: photo.alt || photo.id,
       caption: photo.caption
     }));
@@ -67,7 +67,7 @@
         >
           <div class="relative overflow-hidden transition-all duration-300">
             <img
-              src={photo.src}
+              src={photo.variants.thumbnail}
               alt={photo.alt || photo.id}
               class="w-full aspect-[4/3] object-contain bg-transparent transition-transform duration-300 group-hover:scale-105"
             />
