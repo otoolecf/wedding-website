@@ -31,29 +31,32 @@ export async function POST({ request, platform }) {
 
     console.log(`[${requestId}] File hashed: ${fileHash}, File extension: ${fileExtension}`);
 
-    // Create a new Response with the image
-    const response = new Response(fileBuffer, {
-      headers: {
-        'Content-Type': file.type || 'image/jpeg'
-      }
-    });
-
-    // Generate thumbnail (200px width)
-    const thumbnailResponse = await response.clone().image({
-      width: 200,
-      fit: 'inside'
-    });
-    await platform.env.IMAGES_BUCKET.put(`${fileHash}_thumb`, thumbnailResponse.body);
-
-    // Generate medium size (800px width)
-    const mediumResponse = await response.clone().image({
-      width: 800,
-      fit: 'inside'
-    });
-    await platform.env.IMAGES_BUCKET.put(`${fileHash}_medium`, mediumResponse.body);
-
     // Save original
     await platform.env.IMAGES_BUCKET.put(fileHash, file);
+    console.log(`[${requestId}] Original image saved to R2 successfully`);
+
+    // Generate thumbnail (200px width)
+    const thumbnailUrl = `${platform.env.IMAGES_BUCKET_SITE_URL}/${fileHash}?width=200&fit=inside`;
+    const thumbnailResponse = await fetch(thumbnailUrl);
+    if (!thumbnailResponse.ok) {
+      throw new Error(`Failed to generate thumbnail: ${thumbnailResponse.statusText}`);
+    }
+    const thumbnailBuffer = await thumbnailResponse.arrayBuffer();
+    await platform.env.IMAGES_BUCKET.put(`${fileHash}_thumb`, thumbnailBuffer, {
+      httpMetadata: { contentType: file.type || 'image/jpeg' }
+    });
+
+    // Generate medium size (800px width)
+    const mediumUrl = `${platform.env.IMAGES_BUCKET_SITE_URL}/${fileHash}?width=800&fit=inside`;
+    const mediumResponse = await fetch(mediumUrl);
+    if (!mediumResponse.ok) {
+      throw new Error(`Failed to generate medium size: ${mediumResponse.statusText}`);
+    }
+    const mediumBuffer = await mediumResponse.arrayBuffer();
+    await platform.env.IMAGES_BUCKET.put(`${fileHash}_medium`, mediumBuffer, {
+      httpMetadata: { contentType: file.type || 'image/jpeg' }
+    });
+
     console.log(`[${requestId}] Image variants saved to R2 successfully`);
 
     const img_uuid = uuidv4();
