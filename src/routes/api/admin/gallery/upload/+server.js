@@ -1,6 +1,5 @@
 // src/routes/api/admin/gallery/upload/+server.js
 import { v4 as uuidv4 } from 'uuid';
-import sharp from 'sharp';
 
 export async function POST({ request, platform }) {
   const jsonResponse = (data, status = 200) =>
@@ -32,21 +31,26 @@ export async function POST({ request, platform }) {
 
     console.log(`[${requestId}] File hashed: ${fileHash}, File extension: ${fileExtension}`);
 
-    // Create image variants using Sharp
-    const imageBuffer = Buffer.from(fileBuffer);
-    const sharpImage = sharp(imageBuffer);
+    // Create a new Response with the image
+    const response = new Response(fileBuffer, {
+      headers: {
+        'Content-Type': file.type || 'image/jpeg'
+      }
+    });
 
     // Generate thumbnail (200px width)
-    const thumbnailBuffer = await sharpImage
-      .resize(200, null, { withoutEnlargement: true })
-      .toBuffer();
-    await platform.env.IMAGES_BUCKET.put(`${fileHash}_thumb`, thumbnailBuffer);
+    const thumbnailResponse = await response.clone().image({
+      width: 200,
+      fit: 'inside'
+    });
+    await platform.env.IMAGES_BUCKET.put(`${fileHash}_thumb`, thumbnailResponse.body);
 
     // Generate medium size (800px width)
-    const mediumBuffer = await sharpImage
-      .resize(800, null, { withoutEnlargement: true })
-      .toBuffer();
-    await platform.env.IMAGES_BUCKET.put(`${fileHash}_medium`, mediumBuffer);
+    const mediumResponse = await response.clone().image({
+      width: 800,
+      fit: 'inside'
+    });
+    await platform.env.IMAGES_BUCKET.put(`${fileHash}_medium`, mediumResponse.body);
 
     // Save original
     await platform.env.IMAGES_BUCKET.put(fileHash, file);

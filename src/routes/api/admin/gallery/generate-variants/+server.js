@@ -1,5 +1,3 @@
-import sharp from 'sharp';
-
 export async function POST({ request, platform }) {
   const jsonResponse = (data, status = 200) =>
     new Response(JSON.stringify(data), {
@@ -56,22 +54,28 @@ export async function POST({ request, platform }) {
           continue;
         }
 
-        const imageBuffer = Buffer.from(await originalImage.arrayBuffer());
-        const sharpImage = sharp(imageBuffer);
+        const imageBuffer = await originalImage.arrayBuffer();
+
+        // Create a new Response with the image
+        const response = new Response(imageBuffer, {
+          headers: {
+            'Content-Type': originalImage.httpMetadata?.contentType || 'image/jpeg'
+          }
+        });
 
         // Generate thumbnail (200px width)
-        const thumbnailBuffer = await sharpImage
-          .clone()
-          .resize(200, null, { withoutEnlargement: true })
-          .toBuffer();
-        await platform.env.IMAGES_BUCKET.put(`${r2_key}_thumb`, thumbnailBuffer);
+        const thumbnailResponse = await response.clone().image({
+          width: 200,
+          fit: 'inside'
+        });
+        await platform.env.IMAGES_BUCKET.put(`${r2_key}_thumb`, thumbnailResponse.body);
 
         // Generate medium size (800px width)
-        const mediumBuffer = await sharpImage
-          .clone()
-          .resize(800, null, { withoutEnlargement: true })
-          .toBuffer();
-        await platform.env.IMAGES_BUCKET.put(`${r2_key}_medium`, mediumBuffer);
+        const mediumResponse = await response.clone().image({
+          width: 800,
+          fit: 'inside'
+        });
+        await platform.env.IMAGES_BUCKET.put(`${r2_key}_medium`, mediumResponse.body);
 
         // Update metadata with variants
         metadata.variants = {
