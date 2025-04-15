@@ -2,6 +2,7 @@
 <script>
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
+  import AdminNav from '$lib/components/AdminNav.svelte';
 
   let isDeploying = false;
   let deploymentStatus = null;
@@ -40,6 +41,8 @@
     }
   }
 </script>
+
+<AdminNav />
 
 <div class="container mx-auto px-4 py-8">
   <h1 class="text-3xl font-bold mb-6">Content Deployment</h1>
