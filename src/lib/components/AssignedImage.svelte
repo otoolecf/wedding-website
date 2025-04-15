@@ -15,13 +15,14 @@
   let loading = true;
   let error = false;
 
-  onMount(async () => {
-    if (!locationId) {
-      console.warn('No locationId provided to AssignedImage');
-      loading = false;
-      return;
-    }
+  // React to locationId changes
+  $: if (locationId) {
+    loadImage();
+  }
 
+  async function loadImage() {
+    loading = true;
+    error = false;
     try {
       // Check if this is a direct image ID (UUID format)
       const isImageId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
@@ -69,6 +70,15 @@
     } finally {
       loading = false;
     }
+  }
+
+  onMount(async () => {
+    if (!locationId) {
+      console.warn('No locationId provided to AssignedImage');
+      loading = false;
+      return;
+    }
+    await loadImage();
   });
 
   // Open the image in a lightbox when clicked

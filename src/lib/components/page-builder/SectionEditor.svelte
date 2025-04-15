@@ -338,14 +338,10 @@
     // Update the store
     pageBuilderStore.updateSection(section.id, updates);
 
-    // Force a re-render of the preview
+    // Force a re-render of the preview when image is updated
     if (propName === 'imageId') {
-      setTimeout(() => {
-        if (editors['content']) {
-          const content = editors['content'].getContent();
-          updateProperty('content', content);
-        }
-      }, 100);
+      // Create a new section object to force reactivity
+      section = { ...section, properties: { ...section.properties, imageId: value } };
     }
   }
 
