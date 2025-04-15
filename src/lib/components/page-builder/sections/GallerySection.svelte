@@ -65,9 +65,9 @@
         const img = item.querySelector('img');
         const captionText = item.querySelector('.caption-text');
         if (img && captionText) {
-          const alt = img.getAttribute('alt') || '';
-          const caption = alt.replace(/^Image for /, '');
-          captionText.textContent = caption || 'No caption';
+          // Get the caption from the data-caption attribute
+          const caption = img.getAttribute('data-caption') || 'No caption';
+          captionText.textContent = caption;
         }
       });
     }, 100);
@@ -95,6 +95,7 @@
             locationId={imageId}
             className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
             enableLightbox={false}
+            data-caption={image.caption || ''}
           />
           <div
             class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end"

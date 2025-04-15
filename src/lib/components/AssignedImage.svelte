@@ -98,6 +98,7 @@
       on:click={handleClick}
       on:keydown={(e) => e.key === 'Enter' && handleClick()}
       tabindex={enableLightbox ? '0' : undefined}
+      data-caption={image.caption || ''}
     />
   {:else if fallbackSrc}
     <img src={fallbackSrc} {alt} class={className} />
