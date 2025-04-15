@@ -55,7 +55,7 @@
 <!-- Use pageId instead of pageData.id for more reliable keying -->
 <div class="custom-page" id={pageId} data-timestamp={timestamp} data-slug={slug}>
   <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="mb-4 text-center font-bold">
+    <div class="mb-4 text-section text-center font-bold">
       <h1>
         {pageData.name}
       </h1>
