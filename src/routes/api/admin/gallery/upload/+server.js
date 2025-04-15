@@ -84,13 +84,14 @@ export async function POST({ request, platform }) {
     console.log(`[${requestId}] currentState.images: `, currentState.images);
 
     // Add the new image to the current state
+    const baseUrl = `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}`;
     const newImage = {
       id: img_uuid,
       r2_key: img_key,
       kv_id: `image:${img_uuid}`,
-      src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}`,
+      src: baseUrl,
       variants: {
-        original: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}`,
+        original: baseUrl,
         medium: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}_medium`,
         thumbnail: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}_thumb`
       }
