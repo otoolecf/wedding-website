@@ -554,7 +554,7 @@
                 Edit Info
               </button>
 
-              {#if !image.variants || !image.variants.medium || !image.variants.thumbnail}
+              {#if !image.variants || !image.variants.medium || !image.variants.thumbnail || image.variants.original === image.variants.medium || image.variants.original === image.variants.thumbnail}
                 <button
                   class="bg-purple-500 text-white px-2 py-1 rounded text-sm"
                   on:click={() => generateVariantsForImage(image.id)}
