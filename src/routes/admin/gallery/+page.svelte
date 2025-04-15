@@ -28,6 +28,7 @@
   let assigning = false;
   let multiAssigning = false;
   let editing = false;
+  let generatingVariants = false;
   let error = null;
 
   // Fetch both images and assignments on mount
@@ -406,12 +407,52 @@
 
     return `Assigned to ${locations.length} locations`;
   }
+
+  async function generateVariants() {
+    generatingVariants = true;
+    error = null;
+    try {
+      const response = await fetch('/api/admin/gallery/generate-variants', {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate variants');
+      }
+
+      const data = await response.json();
+      alert(
+        `Variant generation complete!\nProcessed: ${data.results.processed}\nSkipped: ${data.results.skipped}\nErrors: ${data.results.errors.length}`
+      );
+
+      // Refresh the images to show the new variants
+      await fetchImages();
+    } catch (err) {
+      error = 'Failed to generate variants';
+      console.error(err);
+    } finally {
+      generatingVariants = false;
+    }
+  }
 </script>
 
 <AdminNav />
 
 <div class="p-4">
-  <h1 class="text-2xl font-bold mb-4">Gallery Admin Panel</h1>
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold">Gallery Admin Panel</h1>
+    <button
+      class="bg-purple-500 text-white px-4 py-2 rounded"
+      on:click={generateVariants}
+      disabled={generatingVariants}
+    >
+      {#if generatingVariants}
+        Generating Variants...
+      {:else}
+        Generate Image Variants
+      {/if}
+    </button>
+  </div>
   {#if error}
     <div class="bg-red-50 text-red-600 p-4 rounded mb-4">
       {error}
@@ -485,7 +526,7 @@
           >
             <div class="w-full h-32 flex items-center justify-center bg-transparent">
               <img
-                src={image.src}
+                src={image.variants.thumbnail}
                 alt={image.id}
                 class="max-w-full max-h-32 object-contain rounded"
               />

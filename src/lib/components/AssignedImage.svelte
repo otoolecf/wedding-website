@@ -9,6 +9,7 @@
   export let className = '';
   export let fallbackSrc = '';
   export let enableLightbox = true; // Set to false to disable lightbox
+  export let size = 'medium'; // 'thumbnail', 'medium', or 'original'
 
   // State
   let image = null;
@@ -48,24 +49,12 @@
           image = imageData;
         }
       } else {
-        // If it's a location ID, fetch the assigned image
-        console.log(`Fetching assigned image for location: ${locationId}`);
-        const response = await fetch(`/api/images/assigned/${locationId}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        if (!data.image) {
-          console.warn(`No image data returned for location: ${locationId}`);
-          error = true;
-        } else {
-          console.log(`Successfully loaded image for location: ${locationId}`, data.image);
-          image = data.image;
-        }
+        // Handle other location types (if any)
+        console.warn(`Unsupported location ID format: ${locationId}`);
+        error = true;
       }
     } catch (err) {
-      console.error(`Error loading image for ${locationId}:`, err);
+      console.error('Error loading image:', err);
       error = true;
     } finally {
       loading = false;
@@ -81,41 +70,40 @@
     await loadImage();
   });
 
-  // Open the image in a lightbox when clicked
   function handleClick() {
-    if (!enableLightbox || !image) return;
-
-    openLightbox([
-      {
-        src: image.src,
-        alt: alt || image.alt || `Image for ${locationId}`,
+    if (enableLightbox && image) {
+      openLightbox({
+        src: image.variants.original,
+        alt: image.alt || alt,
         caption: image.caption || ''
-      }
-    ]);
+      });
+    }
   }
 </script>
 
-{#if loading}
-  <!-- Loading state -->
-  <div class="bg-gray-200 animate-pulse {className}" style="min-height: 100px"></div>
-{:else if image}
-  <!-- Image loaded successfully -->
-  <div
-    class="{enableLightbox ? 'cursor-pointer' : ''} w-full h-full"
-    on:click={handleClick}
-    on:keydown={(e) => enableLightbox && e.key === 'Enter' && handleClick()}
-    tabindex={enableLightbox ? '0' : undefined}
-    role={enableLightbox ? 'button' : undefined}
-    aria-label={enableLightbox ? `View ${alt || image.alt || 'image'}` : undefined}
-  >
-    <img src={image.src} alt={alt || image.alt || `Image for ${locationId}`} class={className} />
-  </div>
-{:else if fallbackSrc}
-  <!-- No assigned image, but fallback available -->
-  <img src={fallbackSrc} alt={alt || `Fallback image for ${locationId}`} class={className} />
-{:else}
-  <!-- Error or no image available -->
-  <div class="bg-gray-100 flex items-center justify-center {className}" style="min-height: 100px">
-    <span class="text-gray-500 text-sm">No image available</span>
-  </div>
-{/if}
+<div class="relative">
+  {#if loading}
+    <div class="w-full h-full flex items-center justify-center bg-gray-100">
+      <div class="animate-pulse">Loading...</div>
+    </div>
+  {:else if error}
+    <div class="w-full h-full flex items-center justify-center bg-red-50 text-red-500">
+      Failed to load image
+    </div>
+  {:else if image}
+    <img
+      src={image.variants[size] || image.variants.medium}
+      alt={image.alt || alt}
+      class={className}
+      on:click={handleClick}
+      on:keydown={(e) => e.key === 'Enter' && handleClick()}
+      tabindex={enableLightbox ? '0' : undefined}
+    />
+  {:else if fallbackSrc}
+    <img src={fallbackSrc} {alt} class={className} />
+  {:else}
+    <div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+      No image
+    </div>
+  {/if}
+</div>

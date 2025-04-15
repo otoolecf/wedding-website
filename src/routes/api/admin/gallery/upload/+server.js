@@ -1,5 +1,6 @@
 // src/routes/api/admin/gallery/upload/+server.js
 import { v4 as uuidv4 } from 'uuid';
+import sharp from 'sharp';
 
 export async function POST({ request, platform }) {
   const jsonResponse = (data, status = 200) =>
@@ -31,12 +32,36 @@ export async function POST({ request, platform }) {
 
     console.log(`[${requestId}] File hashed: ${fileHash}, File extension: ${fileExtension}`);
 
-    // Save the file to R2
-    await platform.env.IMAGES_BUCKET.put(fileHash, file);
-    console.log(`[${requestId}] File saved to R2 successfully`);
+    // Create image variants using Sharp
+    const imageBuffer = Buffer.from(fileBuffer);
+    const sharpImage = sharp(imageBuffer);
 
-    const img_uuid = uuidv4(); // Use a UUID for the image identifier
-    const img_metadata = { r2_key: img_key, version: Date.now() }; // Add a version timestamp
+    // Generate thumbnail (200px width)
+    const thumbnailBuffer = await sharpImage
+      .resize(200, null, { withoutEnlargement: true })
+      .toBuffer();
+    await platform.env.IMAGES_BUCKET.put(`${fileHash}_thumb`, thumbnailBuffer);
+
+    // Generate medium size (800px width)
+    const mediumBuffer = await sharpImage
+      .resize(800, null, { withoutEnlargement: true })
+      .toBuffer();
+    await platform.env.IMAGES_BUCKET.put(`${fileHash}_medium`, mediumBuffer);
+
+    // Save original
+    await platform.env.IMAGES_BUCKET.put(fileHash, file);
+    console.log(`[${requestId}] Image variants saved to R2 successfully`);
+
+    const img_uuid = uuidv4();
+    const img_metadata = {
+      r2_key: img_key,
+      version: Date.now(),
+      variants: {
+        original: img_key,
+        medium: `${img_key}_medium`,
+        thumbnail: `${img_key}_thumb`
+      }
+    };
     await platform.env.IMAGES_KV.put(`image:${img_uuid}`, JSON.stringify(img_metadata));
     console.log(`[${requestId}] Image metadata saved to KV store`);
 
@@ -59,7 +84,12 @@ export async function POST({ request, platform }) {
       id: img_uuid,
       r2_key: img_key,
       kv_id: `image:${img_uuid}`,
-      src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}`
+      src: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}`,
+      variants: {
+        original: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}`,
+        medium: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}_medium`,
+        thumbnail: `${platform.env.IMAGES_BUCKET_SITE_URL}/${img_key}_thumb`
+      }
     };
 
     const updatedImages = [...currentState.images, newImage];

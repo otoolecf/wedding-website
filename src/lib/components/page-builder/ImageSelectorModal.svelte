@@ -95,7 +95,7 @@
                 aria-selected={currentSelection === image.id}
               >
                 <img
-                  src={image.src}
+                  src={image.variants.thumbnail}
                   alt={image.alt || ''}
                   class="w-full h-32 object-cover rounded"
                 />

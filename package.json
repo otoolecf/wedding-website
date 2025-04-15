@@ -36,6 +36,7 @@
     "@tailwindcss/typography": "^0.5.15",
     "axios": "^1.7.9",
     "papaparse": "^5.5.2",
+    "sharp": "^0.34.1",
     "uuid": "^11.0.5"
   }
 }
