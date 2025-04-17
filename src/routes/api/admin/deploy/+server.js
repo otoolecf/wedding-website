@@ -53,18 +53,31 @@ export async function POST({ request, platform }) {
 
     // Copy R2 objects
     const previewObjects = await platform.env.IMAGES_BUCKET.list();
+    let r2ObjectsCopied = 0;
+
     for (const object of previewObjects.objects) {
       const objectData = await platform.env.IMAGES_BUCKET.get(object.key);
+
       if (objectData) {
-        await platform.env.PROD_IMAGES_BUCKET.put(object.key, objectData);
+        // Convert the object data to ArrayBuffer for proper handling
+        const objectBuffer = await objectData.arrayBuffer();
+
+        // Include content type metadata when copying
+        const contentType = objectData.httpMetadata?.contentType || 'application/octet-stream';
+
+        await platform.env.PROD_IMAGES_BUCKET.put(object.key, objectBuffer, {
+          httpMetadata: { contentType }
+        });
+
         console.log(`[${requestId}] Copied R2 object: ${object.key}`);
+        r2ObjectsCopied++;
       }
     }
 
     return jsonResponse({
       message: 'Deployment successful',
       kvKeysCopied: contentKeys.length,
-      r2ObjectsCopied: previewObjects.objects.length
+      r2ObjectsCopied: r2ObjectsCopied
     });
   } catch (error) {
     console.error(`[${requestId}] Deployment failed:`, error);
