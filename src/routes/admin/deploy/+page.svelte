@@ -51,7 +51,12 @@
     {#if isPreview}
       <p class="mb-4">
         This will copy all content (images, themes, pages, etc.) from the preview environment to
-        production. RSVP and guest list data will not be affected.
+        production. RSVP and guest list data will not be affected. <strong
+          ><i
+            >NOTE: This can take several minutes, depending on the amount of data! Leave the tab
+            open and running.</i
+          ></strong
+        >
       </p>
 
       <button
