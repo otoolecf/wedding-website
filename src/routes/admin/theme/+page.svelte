@@ -676,7 +676,7 @@
         style="font-family: {theme.fonts.heading}; color: {theme.colors
           .primary}; font-size: 2rem; margin-bottom: 1rem;"
       >
-        Connor & Colette
+        Bride & Groom
       </h1>
 
       <p style="margin-bottom: 1.5rem;">

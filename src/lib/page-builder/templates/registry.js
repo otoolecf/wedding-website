@@ -25,15 +25,15 @@ export const registryTemplate = {
         columns: [
           {
             content:
-              '<div class="bg-white p-6 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"><img src="https://picsum.photos/seed/target/400/200" alt="Target" class="w-full h-48 object-cover rounded mb-4"/><h2 class="text-xl font-medium mb-2 text-primary">Target</h2><p class="text-secondary text-sm">Home essentials and decor</p></div>'
+              '<div class="bg-white p-6 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"><img src="https://placehold.co/400x200?text=Registry+1" alt="Registry 1" class="w-full h-48 object-cover rounded mb-4"/><h2 class="text-xl font-medium mb-2 text-primary">Registry Name</h2><p class="text-secondary text-sm">Description of registry items</p></div>'
           },
           {
             content:
-              '<div class="bg-white p-6 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"><img src="https://picsum.photos/seed/amazon/400/200" alt="Amazon" class="w-full h-48 object-cover rounded mb-4"/><h2 class="text-xl font-medium mb-2 text-primary">Amazon</h2><p class="text-secondary text-sm">Everything under the sun</p></div>'
+              '<div class="bg-white p-6 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"><img src="https://placehold.co/400x200?text=Registry+2" alt="Registry 2" class="w-full h-48 object-cover rounded mb-4"/><h2 class="text-xl font-medium mb-2 text-primary">Registry Name</h2><p class="text-secondary text-sm">Description of registry items</p></div>'
           },
           {
             content:
-              '<div class="bg-white p-6 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"><img src="https://picsum.photos/seed/crate/400/200" alt="Crate & Barrel" class="w-full h-48 object-cover rounded mb-4"/><h2 class="text-xl font-medium mb-2 text-primary">Crate & Barrel</h2><p class="text-secondary text-sm">Kitchen and entertaining must-haves</p></div>'
+              '<div class="bg-white p-6 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"><img src="https://placehold.co/400x200?text=Registry+3" alt="Registry 3" class="w-full h-48 object-cover rounded mb-4"/><h2 class="text-xl font-medium mb-2 text-primary">Registry Name</h2><p class="text-secondary text-sm">Description of registry items</p></div>'
           }
         ],
         count: '3',

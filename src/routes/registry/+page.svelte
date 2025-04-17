@@ -4,6 +4,12 @@
 
   let showVenmo = false;
 
+  // Compute couple names based on order preference
+  $: coupleNames =
+    $page.data.settings.nameOrder === 'groom-first'
+      ? `${$page.data.settings.groomName} & ${$page.data.settings.brideName}`
+      : `${$page.data.settings.brideName} & ${$page.data.settings.groomName}`;
+
   export const load = async ({ fetch }) => {
     const response = await fetch('/api/admin/settings');
     const { settings } = await response.json();
@@ -16,7 +22,7 @@
 </script>
 
 <svelte:head>
-  <title>Registry | Connor & Colette Wedding</title>
+  <title>Registry | {coupleNames} Wedding</title>
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-12">

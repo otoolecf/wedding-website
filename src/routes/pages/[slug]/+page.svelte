@@ -14,6 +14,12 @@
   import { page } from '$app/stores';
   import { onMount, afterUpdate } from 'svelte';
 
+  // Compute couple names based on order preference
+  $: coupleNames =
+    $page.data.settings.nameOrder === 'groom-first'
+      ? `${$page.data.settings.groomName} & ${$page.data.settings.brideName}`
+      : `${$page.data.settings.brideName} & ${$page.data.settings.groomName}`;
+
   export let data;
 
   // Extract the page data reactively
@@ -43,7 +49,7 @@
 </script>
 
 <svelte:head>
-  <title>{pageData.name} | Connor & Colette Wedding</title>
+  <title>{pageData.name} | {coupleNames} Wedding</title>
   <!-- Add meta refresh to ensure page refreshes if data is stale -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />

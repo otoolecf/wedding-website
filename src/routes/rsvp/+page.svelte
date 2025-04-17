@@ -2,6 +2,13 @@
 <script>
   import { formSettings } from '$lib/stores/formSettings';
   import { onMount, onDestroy } from 'svelte';
+  import { page } from '$app/stores';
+
+  // Compute couple names based on order preference
+  $: coupleNames =
+    $page.data.settings.nameOrder === 'groom-first'
+      ? `${$page.data.settings.groomName} & ${$page.data.settings.brideName}`
+      : `${$page.data.settings.brideName} & ${$page.data.settings.groomName}`;
 
   let formData = {
     name: '',
@@ -159,7 +166,7 @@
 </script>
 
 <svelte:head>
-  <title>RSVP | Connor & Colette Wedding</title>
+  <title>RSVP | {coupleNames} Wedding</title>
 </svelte:head>
 
 <div class="max-w-2xl mx-auto px-4 py-12">

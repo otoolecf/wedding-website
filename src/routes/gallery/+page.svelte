@@ -2,10 +2,17 @@
   import { onMount } from 'svelte';
   import { openLightbox } from '$lib/stores/lightbox';
   import GlobalLightbox from '$lib/components/GlobalLightbox.svelte';
+  import { page } from '$app/stores';
 
   let photos = [];
   let error = null;
   let loading = true;
+
+  // Compute couple names based on order preference
+  $: coupleNames =
+    $page.data.settings.nameOrder === 'groom-first'
+      ? `${$page.data.settings.groomName} & ${$page.data.settings.brideName}`
+      : `${$page.data.settings.brideName} & ${$page.data.settings.groomName}`;
 
   onMount(async () => {
     try {
@@ -38,7 +45,7 @@
 </script>
 
 <svelte:head>
-  <title>Gallery | Connor & Colette Wedding</title>
+  <title>Gallery | {coupleNames} Wedding</title>
 </svelte:head>
 
 <GlobalLightbox />
