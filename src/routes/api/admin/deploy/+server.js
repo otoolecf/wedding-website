@@ -15,7 +15,10 @@ export async function POST({ request, platform }) {
   }
 
   // Check if we're in preview environment
-  if (platform.env.ENVIRONMENT !== 'preview') {
+  if (
+    platform.env.ENVIRONMENT !== 'preview' &&
+    (!platform.env.IS_PREVIEW || platform.env.IS_PREVIEW !== '1')
+  ) {
     console.error(`[${requestId}] Deployment attempted in non-preview environment`);
     return jsonResponse({ error: 'Deployment is only allowed from preview environment' }, 403);
   }
