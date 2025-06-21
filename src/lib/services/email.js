@@ -1,17 +1,18 @@
 export async function buildRsvpEmailContent(
   rsvpData,
   platform,
-  templateOverride = null
+  templateOverride = null,
+  templateType = 'confirmation'
 ) {
-  console.log('Building RSVP email content for:', rsvpData.name);
+  console.log('Building RSVP email content for:', rsvpData.name, 'with template type:', templateType);
 
-  // Get the latest email template if not provided
+  // Get the template for the specified type if not provided
   let templateResult = null;
   if (!templateOverride) {
-    console.log('Fetching email template...');
+    console.log('Fetching email template for type:', templateType);
     templateResult = await platform.env.RSVPS.prepare(
-      'SELECT template FROM email_templates ORDER BY created_at DESC LIMIT 1'
-    ).first();
+      'SELECT template FROM email_templates WHERE template_type = ? ORDER BY created_at DESC LIMIT 1'
+    ).bind(templateType).first();
     console.log('Template result:', templateResult);
   }
 
@@ -138,7 +139,7 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform, overrideEmai
     email: overrideEmail || rsvpData.email
   });
 
-  const emailContent = await buildRsvpEmailContent(rsvpData, platform, templateOverride);
+  const emailContent = await buildRsvpEmailContent(rsvpData, platform, templateOverride, 'confirmation');
 
   console.log('Sending email via Brevo API...');
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -183,7 +184,7 @@ export async function sendEmailBlast(platform, templateOverride = null) {
   let sent = 0;
   for (const rsvp of results.results) {
     try {
-      await sendRsvpConfirmationEmail(rsvp, platform, null, templateOverride);
+      await sendBlastEmail(rsvp, platform, null, templateOverride);
       sent++;
     } catch (err) {
       console.error('Failed to send email to', rsvp.email, err);
@@ -191,5 +192,68 @@ export async function sendEmailBlast(platform, templateOverride = null) {
   }
 
   return { total: results.results.length, sent };
+}
+
+export async function sendBlastEmail(rsvpData, platform, overrideEmail = null, templateOverride = null) {
+  console.log('Starting blast email send process for:', {
+    name: rsvpData.name,
+    email: overrideEmail || rsvpData.email
+  });
+
+  // For blast emails, we don't include form data - just use the template as-is
+  let emailContent;
+  if (templateOverride) {
+    emailContent = templateOverride;
+  } else {
+    const templateResult = await platform.env.RSVPS.prepare(
+      'SELECT template FROM email_templates WHERE template_type = ? ORDER BY created_at DESC LIMIT 1'
+    ).bind('blast').first();
+    
+    emailContent = templateResult?.template || `
+      <h2>Important Wedding Update</h2>
+      <p>Dear Wedding Guests,</p>
+      
+      <p>We wanted to share some important information about our upcoming wedding celebration.</p>
+      
+      <p>Please feel free to reach out if you have any questions.</p>
+      
+      <p>Looking forward to celebrating with you!</p>
+      <p>Connor & Colette</p>
+    `;
+  }
+
+  console.log('Sending blast email via Brevo API...');
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'api-key': platform.env.BREVO_API_KEY
+    },
+    body: JSON.stringify({
+      sender: {
+        name: platform.env.EMAIL_SENDER_NAME,
+        email: platform.env.EMAIL_SENDER_ADDRESS
+      },
+      to: [
+        {
+          email: overrideEmail || rsvpData.email,
+          name: rsvpData.name
+        }
+      ],
+      subject: 'Wedding Update - Connor & Colette',
+      htmlContent: emailContent
+    })
+  });
+
+  console.log('Brevo API response status:', response.status);
+  const responseData = await response.json();
+  console.log('Brevo API response:', responseData);
+
+  if (!response.ok) {
+    throw new Error(`Failed to send email: ${responseData.message}`);
+  }
+
+  return responseData;
 }
 

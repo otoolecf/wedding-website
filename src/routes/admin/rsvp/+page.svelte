@@ -20,7 +20,9 @@
   let guestList = [];
   let activeTab = 'dashboard';
   let settings = {};
-  let emailTemplate = '';
+  let confirmationTemplate = '';
+  let blastTemplate = '';
+  let currentTemplateType = 'confirmation';
   let previewHtml = '';
   let testEmail = '';
   let editorInitialized = false;
@@ -77,42 +79,52 @@
         return count;
       }, 0);
 
-      await loadEmailTemplate();
+      await loadEmailTemplates();
     } catch (err) {
       error = 'Failed to load RSVPs';
       console.error(err);
     }
   });
 
-  async function loadEmailTemplate() {
+  async function loadEmailTemplates() {
     try {
-      const response = await fetch('/api/admin/email-template');
-      if (response.ok) {
-        const data = await response.json();
-        // No need to escape or replace anything since we're using a different format
-        emailTemplate = data.template;
-        await updatePreview();
+      // Load confirmation template
+      const confirmationResponse = await fetch('/api/admin/email-template?type=confirmation');
+      if (confirmationResponse.ok) {
+        const confirmationData = await confirmationResponse.json();
+        confirmationTemplate = confirmationData.template;
       }
+
+      // Load blast template
+      const blastResponse = await fetch('/api/admin/email-template?type=blast');
+      if (blastResponse.ok) {
+        const blastData = await blastResponse.json();
+        blastTemplate = blastData.template;
+      }
+
+      await updatePreview();
     } catch (err) {
-      console.error('Error loading email template:', err);
+      console.error('Error loading email templates:', err);
     }
   }
 
   async function saveEmailTemplate() {
     try {
-      // No need to replace anything since we're using a different format
-      const templateToSave = emailTemplate;
+      const templateToSave = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
 
       const response = await fetch('/api/admin/email-template', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ template: templateToSave })
+        body: JSON.stringify({ 
+          template: templateToSave,
+          templateType: currentTemplateType
+        })
       });
 
       if (response.ok) {
-        alert('Email template saved successfully!');
+        alert(`${currentTemplateType === 'confirmation' ? 'Confirmation' : 'Blast'} email template saved successfully!`);
         await updatePreview();
       } else {
         throw new Error('Failed to save email template');
@@ -125,10 +137,14 @@
 
   async function updatePreview() {
     try {
+      const templateToPreview = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
       const response = await fetch('/api/admin/email-preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ template: emailTemplate })
+        body: JSON.stringify({ 
+          template: templateToPreview,
+          templateType: currentTemplateType
+        })
       });
       if (response.ok) {
         const data = await response.json();
@@ -142,10 +158,15 @@
   async function sendTestEmail() {
     if (!testEmail) return;
     try {
+      const templateToSend = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
       const response = await fetch('/api/admin/send-test-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: testEmail })
+        body: JSON.stringify({ 
+          email: testEmail,
+          template: templateToSend,
+          templateType: currentTemplateType
+        })
       });
       if (response.ok) {
         alert('Test email sent!');
@@ -159,12 +180,12 @@
   }
 
   async function sendEmailBlast() {
-    if (!confirm('Send email to all RSVP guests?')) return;
+    if (!confirm('Send email blast to all RSVP guests?')) return;
     try {
       const response = await fetch('/api/admin/email-blast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ template: emailTemplate })
+        body: JSON.stringify({ template: blastTemplate })
       });
       if (response.ok) {
         alert('Email blast sent!');
@@ -319,6 +340,18 @@
     activeTab = tab;
   }
 
+  function setTemplateType(type) {
+    currentTemplateType = type;
+    
+    // Update editor content when switching template types
+    if (editor && editorInitialized) {
+      const templateContent = type === 'confirmation' ? confirmationTemplate : blastTemplate;
+      editor.setContent(templateContent || '');
+    }
+    
+    updatePreview();
+  }
+
   async function handleSaveSettings() {
     const success = await saveFormSettings(settings);
     if (success) {
@@ -440,12 +473,18 @@
         editor = ed;
         ed.on('init', () => {
           console.log('Editor initialized');
-          ed.setContent(emailTemplate || '');
+          const currentTemplate = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+          ed.setContent(currentTemplate || '');
           editorInitialized = true;
         });
 
         ed.on('change', () => {
-          emailTemplate = ed.getContent();
+          const content = ed.getContent();
+          if (currentTemplateType === 'confirmation') {
+            confirmationTemplate = content;
+          } else {
+            blastTemplate = content;
+          }
           updatePreview();
         });
       }
@@ -908,22 +947,51 @@
     </div>
   {:else if activeTab === 'email'}
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-medium mb-6">Email Template</h2>
+      <h2 class="text-xl font-medium mb-6">Email Templates</h2>
+      
+      <!-- Template Type Selector -->
+      <div class="mb-6">
+        <div class="border-b border-gray-200">
+          <nav class="-mb-px flex space-x-8">
+            <button
+              class={`${
+                currentTemplateType === 'confirmation'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm`}
+              on:click={() => setTemplateType('confirmation')}
+            >
+              RSVP Confirmation Template
+            </button>
+            <button
+              class={`${
+                currentTemplateType === 'blast'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm`}
+              on:click={() => setTemplateType('blast')}
+            >
+              Email Blast Template
+            </button>
+          </nav>
+        </div>
+      </div>
+      
       <div class="space-y-6">
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700 mb-1">Template Content</label>
           <div class="border rounded">
             <div id="email-template-editor" class="editor-container"></div>
             <div class="p-4 text-sm bg-gray-50 text-gray-600 border-t">
-              <h4 class="font-medium mb-2">How to use this editor:</h4>
-              <p class="mb-4">
-                This editor allows you to customize the text that appears before and after the RSVP
-                form data in the confirmation email. The form data section will be automatically
-                inserted where you place the <code>[[form_data]]</code> placeholder.
-              </p>
+              {#if currentTemplateType === 'confirmation'}
+                <h4 class="font-medium mb-2">RSVP Confirmation Template:</h4>
+                <p class="mb-4">
+                  This template is used for automatic confirmation emails sent when guests submit their RSVP.
+                  The form data section will be automatically inserted where you place the <code>[[form_data]]</code> placeholder.
+                </p>
 
-              <h4 class="font-medium mb-2">Example Structure:</h4>
-              <pre class="bg-white p-3 rounded border mb-4 text-xs">
+                <h4 class="font-medium mb-2">Example Structure:</h4>
+                <pre class="bg-white p-3 rounded border mb-4 text-xs">
 &lt;h2&gt;Thank you for your RSVP!&lt;/h2&gt;
 &lt;p&gt;Here's a summary of your response:&lt;/p&gt;
 
@@ -932,14 +1000,37 @@
 &lt;p&gt;If you need to make any changes to your RSVP, please contact us directly.&lt;/p&gt;
 &lt;p&gt;We look forward to celebrating with you!&lt;/p&gt;</pre>
 
-              <h4 class="font-medium mb-2">Available Placeholder:</h4>
-              <p class="mb-2">Use this placeholder in your template:</p>
-              <ul class="list-disc list-inside space-y-1">
-                <li>
-                  <code>[[form_data]]</code> - This will be replaced with the guest's form responses,
-                  including partner information if applicable
-                </li>
-              </ul>
+                <h4 class="font-medium mb-2">Available Placeholder:</h4>
+                <p class="mb-2">Use this placeholder in your template:</p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>
+                    <code>[[form_data]]</code> - This will be replaced with the guest's form responses,
+                    including partner information if applicable
+                  </li>
+                </ul>
+              {:else}
+                <h4 class="font-medium mb-2">Email Blast Template:</h4>
+                <p class="mb-4">
+                  This template is used for manual email blasts sent to all RSVP guests.
+                  No form data is included - this is for general announcements and updates.
+                </p>
+
+                <h4 class="font-medium mb-2">Example Structure:</h4>
+                <pre class="bg-white p-3 rounded border mb-4 text-xs">
+&lt;h2&gt;Important Wedding Update&lt;/h2&gt;
+&lt;p&gt;Dear Wedding Guests,&lt;/p&gt;
+
+&lt;p&gt;We wanted to share some important information about our upcoming wedding celebration.&lt;/p&gt;
+
+&lt;p&gt;Please feel free to reach out if you have any questions.&lt;/p&gt;
+
+&lt;p&gt;Looking forward to celebrating with you!&lt;/p&gt;
+&lt;p&gt;Connor &amp; Colette&lt;/p&gt;</pre>
+
+                <p class="mb-2">
+                  <strong>Note:</strong> Email blast templates don't use placeholders - they are sent as-is to all guests.
+                </p>
+              {/if}
             </div>
           </div>
         </div>
@@ -971,14 +1062,16 @@
             on:click={saveEmailTemplate}
             class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
           >
-            Save Template
+            Save {currentTemplateType === 'confirmation' ? 'Confirmation' : 'Blast'} Template
           </button>
-          <button
-            on:click={sendEmailBlast}
-            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
-          >
-            Send to All Guests
-          </button>
+          {#if currentTemplateType === 'blast'}
+            <button
+              on:click={sendEmailBlast}
+              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+            >
+              Send Blast to All Guests
+            </button>
+          {/if}
         </div>
       </div>
     </div>
