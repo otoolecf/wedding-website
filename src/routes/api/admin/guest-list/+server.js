@@ -6,6 +6,7 @@ export async function GET({ platform }) {
       CREATE TABLE IF NOT EXISTS guest_list (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        email TEXT,
         partner_name TEXT,
         plus_one_allowed BOOLEAN DEFAULT FALSE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -40,6 +41,7 @@ export async function POST({ request, platform }) {
       CREATE TABLE IF NOT EXISTS guest_list (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        email TEXT,
         partner_name TEXT,
         plus_one_allowed BOOLEAN DEFAULT FALSE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -74,12 +76,13 @@ export async function POST({ request, platform }) {
       `
       INSERT INTO guest_list (
         name,
+        email,
         partner_name,
         plus_one_allowed
-      ) VALUES (?, ?, ?)
+      ) VALUES (?, ?, ?, ?)
       `
     )
-      .bind(guest.name, guest.partner_name || null, guest.plus_one_allowed ? 1 : 0)
+      .bind(guest.name, guest.email || null, guest.partner_name || null, guest.plus_one_allowed ? 1 : 0)
       .run();
 
     return new Response(JSON.stringify({ success: true }), {
