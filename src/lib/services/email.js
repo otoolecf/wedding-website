@@ -1,15 +1,20 @@
-export async function sendRsvpConfirmationEmail(rsvpData, platform) {
-  console.log('Starting email send process for RSVP:', {
-    name: rsvpData.name,
-    email: rsvpData.email
-  });
+export async function buildRsvpEmailContent(
+  rsvpData,
+  platform,
+  templateOverride = null
+) {
+  console.log('Building RSVP email content for:', rsvpData.name);
 
-  // Get the latest email template
-  console.log('Fetching email template...');
-  const templateResult = await platform.env.RSVPS.prepare(
-    'SELECT template FROM email_templates ORDER BY created_at DESC LIMIT 1'
-  ).first();
-  console.log('Template result:', templateResult);
+  // Get the latest email template if not provided
+  let templateResult = null;
+  if (!templateOverride) {
+    console.log('Fetching email template...');
+    templateResult = await platform.env.RSVPS.prepare(
+      'SELECT template FROM email_templates ORDER BY created_at DESC LIMIT 1'
+    ).first();
+    console.log('Template result:', templateResult);
+  }
+
 
   // Get form settings for field labels
   console.log('Fetching form settings...');
@@ -109,6 +114,7 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
   // Default template if none is configured
   console.log('Preparing email content...');
   let emailContent =
+    templateOverride ||
     templateResult?.template ||
     `
     <h2>Thank you for your RSVP!</h2>
@@ -122,6 +128,17 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
   // Replace the form data placeholder with the actual form data
   emailContent = emailContent.replace(/\[\[form_data\]\]/g, formDataSection);
   console.log('Final email content:', emailContent);
+
+  return emailContent;
+}
+
+export async function sendRsvpConfirmationEmail(rsvpData, platform, overrideEmail = null, templateOverride = null) {
+  console.log('Starting email send process for RSVP:', {
+    name: rsvpData.name,
+    email: overrideEmail || rsvpData.email
+  });
+
+  const emailContent = await buildRsvpEmailContent(rsvpData, platform, templateOverride);
 
   console.log('Sending email via Brevo API...');
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -138,7 +155,7 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
       },
       to: [
         {
-          email: rsvpData.email,
+          email: overrideEmail || rsvpData.email,
           name: rsvpData.name
         }
       ],
@@ -157,3 +174,22 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
 
   return responseData;
 }
+
+export async function sendEmailBlast(platform, templateOverride = null) {
+  const results = await platform.env.RSVPS.prepare(
+    "SELECT * FROM rsvps WHERE email IS NOT NULL AND email <> ''"
+  ).all();
+
+  let sent = 0;
+  for (const rsvp of results.results) {
+    try {
+      await sendRsvpConfirmationEmail(rsvp, platform, null, templateOverride);
+      sent++;
+    } catch (err) {
+      console.error('Failed to send email to', rsvp.email, err);
+    }
+  }
+
+  return { total: results.results.length, sent };
+}
+

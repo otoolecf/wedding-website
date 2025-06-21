@@ -21,6 +21,8 @@
   let activeTab = 'dashboard';
   let settings = {};
   let emailTemplate = '';
+  let previewHtml = '';
+  let testEmail = '';
   let editorInitialized = false;
   let editorStatus = { loading: false, error: null };
   let tinymceLoaded = false;
@@ -89,6 +91,7 @@
         const data = await response.json();
         // No need to escape or replace anything since we're using a different format
         emailTemplate = data.template;
+        await updatePreview();
       }
     } catch (err) {
       console.error('Error loading email template:', err);
@@ -110,12 +113,67 @@
 
       if (response.ok) {
         alert('Email template saved successfully!');
+        await updatePreview();
       } else {
         throw new Error('Failed to save email template');
       }
     } catch (err) {
       error = err.message;
       console.error('Error saving email template:', err);
+    }
+  }
+
+  async function updatePreview() {
+    try {
+      const response = await fetch('/api/admin/email-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template: emailTemplate })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        previewHtml = data.html;
+      }
+    } catch (err) {
+      console.error('Error updating preview:', err);
+    }
+  }
+
+  async function sendTestEmail() {
+    if (!testEmail) return;
+    try {
+      const response = await fetch('/api/admin/send-test-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: testEmail })
+      });
+      if (response.ok) {
+        alert('Test email sent!');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to send test email');
+      }
+    } catch (err) {
+      console.error('Error sending test email:', err);
+    }
+  }
+
+  async function sendEmailBlast() {
+    if (!confirm('Send email to all RSVP guests?')) return;
+    try {
+      const response = await fetch('/api/admin/email-blast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template: emailTemplate })
+      });
+      if (response.ok) {
+        alert('Email blast sent!');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to send emails');
+      }
+    } catch (err) {
+      console.error('Error sending emails:', err);
     }
   }
 
@@ -388,6 +446,7 @@
 
         ed.on('change', () => {
           emailTemplate = ed.getContent();
+          updatePreview();
         });
       }
     };
@@ -885,12 +944,40 @@
           </div>
         </div>
 
-        <div class="flex justify-end">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Preview</label>
+          <div class="border rounded p-4 bg-white max-h-96 overflow-auto">
+            {@html previewHtml}
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <input
+            type="email"
+            bind:value={testEmail}
+            placeholder="test@example.com"
+            class="flex-grow p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <button
+            on:click={sendTestEmail}
+            class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+          >
+            Send Test
+          </button>
+        </div>
+
+        <div class="flex justify-end space-x-4">
           <button
             on:click={saveEmailTemplate}
             class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
           >
             Save Template
+          </button>
+          <button
+            on:click={sendEmailBlast}
+            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+          >
+            Send to All Guests
           </button>
         </div>
       </div>
