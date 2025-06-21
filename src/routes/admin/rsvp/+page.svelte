@@ -32,6 +32,7 @@
   let tinymceLoaded = false;
   let editor = null;
   let previousTab = null;
+  let initializingEditor = false;
 
   // Computed property for subject binding
   $: currentSubject = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
@@ -58,6 +59,9 @@
   // Fetch data on component mount
   onMount(async () => {
     try {
+      // Add global error handler for TinyMCE
+      window.addEventListener('error', handleTinyMCEError);
+
       // Load form settings
       await loadFormSettings();
 
@@ -468,76 +472,85 @@
   }
 
   function initializeEditor() {
-    if (!window.tinymce) return;
+    if (!window.tinymce || initializingEditor) return;
+
+    initializingEditor = true;
 
     // Clean up any existing editor first
     cleanupEditor();
 
-    // Ensure the editor container exists and is empty
-    const container = document.getElementById('email-template-editor');
-    if (!container) {
-      console.error('Editor container not found');
-      return;
-    }
-    container.innerHTML = '';
-
-    const editorConfig = {
-      selector: '#email-template-editor',
-      height: 400,
-      menubar: false,
-      plugins: 'lists link code table',
-      toolbar: [
-        'undo redo | blocks | bold italic underline | forecolor backcolor | removeformat',
-        'alignleft aligncenter alignright | bullist numlist | link | code'
-      ],
-      block_formats:
-        'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Quote=blockquote',
-      content_style: `
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; }
-        .mce-content-body p { margin: 0; }
-        h1 { font-size: 2rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        h2 { font-size: 1.5rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        h4 { font-size: 1rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        blockquote { border-left: 4px solid #ccc; padding-left: 1rem; font-style: italic; }
-      `,
-      convert_urls: false,
-      relative_urls: false,
-      setup: (ed) => {
-        editor = ed;
-        ed.on('init', () => {
-          console.log('Editor initialized');
-          const currentTemplate = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
-          ed.setContent(currentTemplate || '');
-          editorInitialized = true;
-        });
-
-        ed.on('change', () => {
-          const content = ed.getContent();
-          if (currentTemplateType === 'confirmation') {
-            confirmationTemplate = content;
-          } else {
-            blastTemplate = content;
-          }
-          updatePreview();
-        });
+    // Add a small delay to ensure cleanup is complete
+    setTimeout(() => {
+      // Ensure the editor container exists and is empty
+      const container = document.getElementById('email-template-editor');
+      if (!container) {
+        console.error('Editor container not found');
+        initializingEditor = false;
+        return;
       }
-    };
+      container.innerHTML = '';
 
-    try {
-      window.tinymce
-        .init(editorConfig)
-        .then((editorInstances) => {
-          console.log('TinyMCE editor successfully initialized');
-        })
-        .catch((err) => {
-          console.error('Failed to initialize TinyMCE editor:', err);
-          editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
-        });
-    } catch (error) {
-      console.error('Error during editor initialization:', error);
-      editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
-    }
+      const editorConfig = {
+        selector: '#email-template-editor',
+        height: 400,
+        menubar: false,
+        plugins: 'lists link code table',
+        toolbar: [
+          'undo redo | blocks | bold italic underline | forecolor backcolor | removeformat',
+          'alignleft aligncenter alignright | bullist numlist | link | code'
+        ],
+        block_formats:
+          'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Quote=blockquote',
+        content_style: `
+          body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; }
+          .mce-content-body p { margin: 0; }
+          h1 { font-size: 2rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+          h2 { font-size: 1.5rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+          h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+          h4 { font-size: 1rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+          blockquote { border-left: 4px solid #ccc; padding-left: 1rem; font-style: italic; }
+        `,
+        convert_urls: false,
+        relative_urls: false,
+        setup: (ed) => {
+          editor = ed;
+          ed.on('init', () => {
+            console.log('Editor initialized');
+            const currentTemplate = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+            ed.setContent(currentTemplate || '');
+            editorInitialized = true;
+            initializingEditor = false;
+          });
+
+          ed.on('change', () => {
+            const content = ed.getContent();
+            if (currentTemplateType === 'confirmation') {
+              confirmationTemplate = content;
+            } else {
+              blastTemplate = content;
+            }
+            updatePreview();
+          });
+        }
+      };
+
+      try {
+        window.tinymce
+          .init(editorConfig)
+          .then((editorInstances) => {
+            console.log('TinyMCE editor successfully initialized');
+          })
+          .catch((err) => {
+            console.error('Failed to initialize TinyMCE editor:', err);
+            editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
+            initializingEditor = false;
+          });
+      } catch (error) {
+        console.error('Error during editor initialization:', error);
+        editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
+        initializingEditor = false;
+      }
+    }, 100);
   }
 
   // Watch for activeTab changes to reinitialize the editor when needed
@@ -566,7 +579,24 @@
 
   onDestroy(() => {
     cleanupEditor();
+    // Remove global error handler
+    window.removeEventListener('error', handleTinyMCEError);
   });
+
+  // Global error handler function
+  function handleTinyMCEError(event) {
+    if (event.error && event.error.message && event.error.message.includes('NS_ERROR_UNEXPECTED')) {
+      console.warn('TinyMCE cleanup error caught and handled:', event.error);
+      event.preventDefault();
+      // Reset editor state
+      editor = null;
+      editorInitialized = false;
+      const container = document.getElementById('email-template-editor');
+      if (container) {
+        container.innerHTML = '';
+      }
+    }
+  }
 </script>
 
 <AdminNav />

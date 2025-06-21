@@ -23,6 +23,9 @@
 
   // Add TinyMCE script if not already loaded
   onMount(() => {
+    // Add global error handler for TinyMCE
+    window.addEventListener('error', handleTinyMCEError);
+
     loadTinyMCE();
 
     // Keep track of the currently selected section
@@ -114,7 +117,20 @@
 
   onDestroy(() => {
     cleanupEditors();
+    // Remove global error handler
+    window.removeEventListener('error', handleTinyMCEError);
   });
+
+  // Global error handler function
+  function handleTinyMCEError(event) {
+    if (event.error && event.error.message && event.error.message.includes('NS_ERROR_UNEXPECTED')) {
+      console.warn('TinyMCE cleanup error caught and handled:', event.error);
+      event.preventDefault();
+      // Reset editor state
+      editors = {};
+      editorInitialized = {};
+    }
+  }
 
   // Watch for section changes to reinitialize editors when needed
   $: if (section && tinymceLoaded && initialized) {
