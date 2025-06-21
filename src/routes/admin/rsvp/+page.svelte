@@ -33,6 +33,18 @@
   let editor = null;
   let previousTab = null;
 
+  // Computed property for subject binding
+  $: currentSubject = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
+
+  // Function to update the correct subject variable
+  function updateSubject(value) {
+    if (currentTemplateType === 'confirmation') {
+      confirmationSubject = value;
+    } else {
+      blastSubject = value;
+    }
+  }
+
   // Subscribe to form settings
   const unsubscribe = formSettings.subscribe((value) => {
     settings = value;
@@ -1005,7 +1017,8 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Email Subject Line</label>
           <input
             type="text"
-            bind:value={currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject}
+            bind:value={currentSubject}
+            on:input={(e) => updateSubject(e.target.value)}
             placeholder={currentTemplateType === 'confirmation' ? 'RSVP Confirmation' : 'Wedding Update'}
             class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
           />
