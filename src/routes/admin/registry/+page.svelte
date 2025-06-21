@@ -120,8 +120,9 @@
         <h3 class="text-xl font-medium mb-4">Add New Registry</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label for="registry-name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input
+              id="registry-name"
               type="text"
               bind:value={newRegistry.name}
               class="w-full p-2 border rounded"
@@ -129,8 +130,9 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+            <label for="registry-url" class="block text-sm font-medium text-gray-700 mb-1">URL</label>
             <input
+              id="registry-url"
               type="url"
               bind:value={newRegistry.url}
               class="w-full p-2 border rounded"
@@ -138,8 +140,9 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+            <label for="registry-image" class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
             <input
+              id="registry-image"
               type="url"
               bind:value={newRegistry.image}
               class="w-full p-2 border rounded"
@@ -147,8 +150,9 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label for="registry-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <input
+              id="registry-description"
               type="text"
               bind:value={newRegistry.description}
               class="w-full p-2 border rounded"
@@ -180,8 +184,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <label for="honeymoon-title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
           <input
+            id="honeymoon-title"
             type="text"
             bind:value={settings.registries.honeymoonFund.title}
             class="w-full p-2 border rounded"
@@ -189,8 +194,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <label for="honeymoon-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea
+            id="honeymoon-description"
             bind:value={settings.registries.honeymoonFund.description}
             class="w-full p-2 border rounded"
             rows="3"
@@ -198,8 +204,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
+          <label for="honeymoon-button-text" class="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
           <input
+            id="honeymoon-button-text"
             type="text"
             bind:value={settings.registries.honeymoonFund.buttonText}
             class="w-full p-2 border rounded"
@@ -207,8 +214,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Venmo Username</label>
+          <label for="honeymoon-venmo" class="block text-sm font-medium text-gray-700 mb-1">Venmo Username</label>
           <input
+            id="honeymoon-venmo"
             type="text"
             bind:value={settings.registries.honeymoonFund.venmoUsername}
             class="w-full p-2 border rounded"

@@ -1,15 +1,21 @@
-export async function sendRsvpConfirmationEmail(rsvpData, platform) {
-  console.log('Starting email send process for RSVP:', {
-    name: rsvpData.name,
-    email: rsvpData.email
-  });
+export async function buildRsvpEmailContent(
+  rsvpData,
+  platform,
+  templateOverride = null,
+  templateType = 'confirmation'
+) {
+  console.log('Building RSVP email content for:', rsvpData.name, 'with template type:', templateType);
 
-  // Get the latest email template
-  console.log('Fetching email template...');
-  const templateResult = await platform.env.RSVPS.prepare(
-    'SELECT template FROM email_templates ORDER BY created_at DESC LIMIT 1'
-  ).first();
-  console.log('Template result:', templateResult);
+  // Get the template for the specified type if not provided
+  let templateResult = null;
+  if (!templateOverride) {
+    console.log('Fetching email template for type:', templateType);
+    templateResult = await platform.env.RSVPS.prepare(
+      'SELECT template FROM email_templates WHERE template_type = ? ORDER BY created_at DESC LIMIT 1'
+    ).bind(templateType).first();
+    console.log('Template result:', templateResult);
+  }
+
 
   // Get form settings for field labels
   console.log('Fetching form settings...');
@@ -109,6 +115,7 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
   // Default template if none is configured
   console.log('Preparing email content...');
   let emailContent =
+    templateOverride ||
     templateResult?.template ||
     `
     <h2>Thank you for your RSVP!</h2>
@@ -122,6 +129,30 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
   // Replace the form data placeholder with the actual form data
   emailContent = emailContent.replace(/\[\[form_data\]\]/g, formDataSection);
   console.log('Final email content:', emailContent);
+
+  return emailContent;
+}
+
+export async function sendRsvpConfirmationEmail(rsvpData, platform, overrideEmail = null, templateOverride = null, subjectOverride = null) {
+  console.log('Starting email send process for RSVP:', {
+    name: rsvpData.name,
+    email: overrideEmail || rsvpData.email
+  });
+
+  const emailContent = await buildRsvpEmailContent(rsvpData, platform, templateOverride, 'confirmation');
+
+  // Get the subject line from the template or use override
+  let subject = 'RSVP Confirmation'; // Default subject
+  if (subjectOverride) {
+    subject = subjectOverride;
+  } else if (!templateOverride) {
+    const templateResult = await platform.env.RSVPS.prepare(
+      'SELECT subject FROM email_templates WHERE template_type = ? ORDER BY created_at DESC LIMIT 1'
+    ).bind('confirmation').first();
+    if (templateResult?.subject) {
+      subject = templateResult.subject;
+    }
+  }
 
   console.log('Sending email via Brevo API...');
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -138,11 +169,11 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
       },
       to: [
         {
-          email: rsvpData.email,
+          email: overrideEmail || rsvpData.email,
           name: rsvpData.name
         }
       ],
-      subject: 'RSVP Confirmation - Connor & Colette Wedding',
+      subject: subject,
       htmlContent: emailContent
     })
   });
@@ -157,3 +188,96 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform) {
 
   return responseData;
 }
+
+export async function sendEmailBlast(platform, templateOverride = null, subjectOverride = null) {
+  const results = await platform.env.RSVPS.prepare(
+    "SELECT * FROM guest_list WHERE email IS NOT NULL AND email <> ''"
+  ).all();
+
+  let sent = 0;
+  for (const guest of results.results) {
+    try {
+      await sendBlastEmail(guest, platform, null, templateOverride, subjectOverride);
+      sent++;
+    } catch (err) {
+      console.error('Failed to send email to', guest.email, err);
+    }
+  }
+
+  return { total: results.results.length, sent };
+}
+
+export async function sendBlastEmail(rsvpData, platform, overrideEmail = null, templateOverride = null, subjectOverride = null) {
+  console.log('Starting blast email send process for:', {
+    name: rsvpData.name,
+    email: overrideEmail || rsvpData.email
+  });
+
+  // For blast emails, we don't include form data - just use the template as-is
+  let emailContent;
+  let subject = 'Wedding Update'; // Default subject
+  
+  if (templateOverride) {
+    emailContent = templateOverride;
+  } else {
+    const templateResult = await platform.env.RSVPS.prepare(
+      'SELECT template, subject FROM email_templates WHERE template_type = ? ORDER BY created_at DESC LIMIT 1'
+    ).bind('blast').first();
+    
+    emailContent = templateResult?.template || `
+      <h2>Important Wedding Update</h2>
+      <p>Dear Wedding Guests,</p>
+      
+      <p>We wanted to share some important information about our upcoming wedding celebration.</p>
+      
+      <p>Please feel free to reach out if you have any questions.</p>
+      
+      <p>Looking forward to celebrating with you!</p>
+      <p>Connor & Colette</p>
+    `;
+    
+    if (templateResult?.subject) {
+      subject = templateResult.subject;
+    }
+  }
+
+  // Use subject override if provided
+  if (subjectOverride) {
+    subject = subjectOverride;
+  }
+
+  console.log('Sending blast email via Brevo API...');
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'api-key': platform.env.BREVO_API_KEY
+    },
+    body: JSON.stringify({
+      sender: {
+        name: platform.env.EMAIL_SENDER_NAME,
+        email: platform.env.EMAIL_SENDER_ADDRESS
+      },
+      to: [
+        {
+          email: overrideEmail || rsvpData.email,
+          name: rsvpData.name
+        }
+      ],
+      subject: subject,
+      htmlContent: emailContent
+    })
+  });
+
+  console.log('Brevo API response status:', response.status);
+  const responseData = await response.json();
+  console.log('Brevo API response:', responseData);
+
+  if (!response.ok) {
+    throw new Error(`Failed to send email: ${responseData.message}`);
+  }
+
+  return responseData;
+}
+

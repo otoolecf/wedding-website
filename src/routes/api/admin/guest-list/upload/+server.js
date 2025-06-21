@@ -81,11 +81,16 @@ export async function POST({ request, platform }) {
           `
           INSERT INTO guest_list (
             name,
+            email,
             partner_name
-          ) VALUES (?, ?)
+          ) VALUES (?, ?, ?)
           `
         )
-          .bind(record.name?.trim(), record.partner_name?.trim() || null)
+          .bind(
+            record.name?.trim(), 
+            record.email?.trim() || null, 
+            record.partner_name?.trim() || null
+          )
           .run();
         processedCount++;
       } catch (recordError) {

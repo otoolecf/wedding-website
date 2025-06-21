@@ -206,42 +206,59 @@
             <ul class="space-y-2 max-h-[70vh] overflow-y-auto pr-2">
               {#each sections as section, index}
                 {@const isSelected = section.id === selectedSectionId}
-                <li
-                  class="border rounded p-2 hover:bg-gray-50 cursor-pointer transition-colors flex items-center justify-between {isSelected
-                    ? 'bg-blue-50 border-blue-300'
-                    : ''}"
-                  on:click={() => selectSection(section.id)}
-                >
-                  <div class="flex items-center">
-                    <span
-                      class="text-xs bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center mr-2"
-                    >
-                      {index + 1}
-                    </span>
-                    <span>{getSectionTypeName(section.type)}</span>
-                  </div>
+                <li>
+                  <div
+                    class="w-full text-left border rounded p-2 hover:bg-gray-50 cursor-pointer transition-colors flex items-center justify-between {isSelected
+                      ? 'bg-blue-50 border-blue-300'
+                      : ''}"
+                    on:click={() => selectSection(section.id)}
+                    on:keydown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        selectSection(section.id);
+                      }
+                    }}
+                    tabindex="0"
+                    role="button"
+                    aria-label="Select {getSectionTypeName(section.type)} section"
+                  >
+                    <div class="flex items-center">
+                      <span
+                        class="text-xs bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center mr-2"
+                      >
+                        {index + 1}
+                      </span>
+                      <span>{getSectionTypeName(section.type)}</span>
+                    </div>
 
-                  <div class="flex space-x-1">
-                    <button
-                      class="text-gray-500 hover:text-gray-700"
-                      disabled={index === 0}
-                      on:click|stopPropagation={() => moveSectionUp(section.id)}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      class="text-gray-500 hover:text-gray-700"
-                      disabled={index === sections.length - 1}
-                      on:click|stopPropagation={() => moveSectionDown(section.id)}
-                    >
-                      ↓
-                    </button>
-                    <button
-                      class="text-red-500 hover:text-red-700"
-                      on:click|stopPropagation={() => removeSection(section.id)}
-                    >
-                      ×
-                    </button>
+                    <div class="flex space-x-1">
+                      <button
+                        type="button"
+                        class="text-gray-500 hover:text-gray-700"
+                        disabled={index === 0}
+                        on:click|stopPropagation={() => moveSectionUp(section.id)}
+                        aria-label="Move section up"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        class="text-gray-500 hover:text-gray-700"
+                        disabled={index === sections.length - 1}
+                        on:click|stopPropagation={() => moveSectionDown(section.id)}
+                        aria-label="Move section down"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        class="text-red-500 hover:text-red-700"
+                        on:click|stopPropagation={() => removeSection(section.id)}
+                        aria-label="Remove section"
+                      >
+                        ×
+                      </button>
+                    </div>
                   </div>
                 </li>
               {/each}
