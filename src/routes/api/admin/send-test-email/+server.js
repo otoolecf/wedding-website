@@ -11,7 +11,7 @@ export async function POST({ request, platform }) {
   if (!jwt) return jsonResponse({ error: 'Unauthorized' }, 401);
 
   try {
-    const { email, template, templateType } = await request.json();
+    const { email, template, templateType, subject } = await request.json();
     if (!email) return jsonResponse({ error: 'Email is required' }, 400);
 
     let rsvp = await platform.env.RSVPS.prepare(
@@ -32,9 +32,9 @@ export async function POST({ request, platform }) {
     }
 
     if (templateType === 'blast') {
-      await sendBlastEmail(rsvp, platform, email, template);
+      await sendBlastEmail(rsvp, platform, email, template, subject);
     } else {
-      await sendRsvpConfirmationEmail(rsvp, platform, email, template);
+      await sendRsvpConfirmationEmail(rsvp, platform, email, template, subject);
     }
     
     return jsonResponse({ success: true });

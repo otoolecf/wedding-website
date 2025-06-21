@@ -11,13 +11,34 @@ export async function GET({ platform, url }) {
       // Column might already exist, ignore the error
       console.log('Column template_type might already exist:', error.message);
     }
+
+    // Add subject column if it doesn't exist
+    try {
+      await platform.env.RSVPS.prepare(
+        'ALTER TABLE email_templates ADD COLUMN subject TEXT'
+      ).run();
+    } catch (error) {
+      // Column might already exist, ignore the error
+      console.log('Column subject might already exist:', error.message);
+    }
     
     const template = await platform.env.RSVPS.prepare(
       'SELECT * FROM email_templates WHERE template_type = ? ORDER BY created_at DESC LIMIT 1'
     ).bind(templateType).first();
 
+    // Set default subjects if none exist
+    let subject = template?.subject;
+    if (!subject) {
+      if (templateType === 'confirmation') {
+        subject = 'RSVP Confirmation';
+      } else if (templateType === 'blast') {
+        subject = 'Wedding Update';
+      }
+    }
+
     return new Response(JSON.stringify({ 
       template: template?.template || '',
+      subject: subject,
       templateType: templateType
     }), {
       headers: { 'Content-Type': 'application/json' }
@@ -33,7 +54,7 @@ export async function GET({ platform, url }) {
 
 export async function POST({ request, platform }) {
   try {
-    const { template, templateType } = await request.json();
+    const { template, templateType, subject } = await request.json();
 
     if (!template) {
       return new Response(JSON.stringify({ error: 'Template is required' }), {
@@ -93,7 +114,7 @@ export async function POST({ request, platform }) {
         
         // Insert default blast template (only if it doesn't exist)
         await platform.env.RSVPS.prepare(`
-          INSERT OR IGNORE INTO email_templates (template, template_type) VALUES (?, ?)
+          INSERT OR IGNORE INTO email_templates (template, template_type, subject) VALUES (?, ?, ?)
         `).bind(
           `<h2>Important Wedding Update</h2>
           <p>Dear Wedding Guests,</p>
@@ -103,8 +124,9 @@ export async function POST({ request, platform }) {
           <p>Please feel free to reach out if you have any questions.</p>
           
           <p>Looking forward to celebrating with you!</p>
-          <p>Connor & Colette</p>`,
-          'blast'
+          <p>Bride & Groom</p>`,
+          'blast',
+          'Wedding Update'
         ).run();
         
         console.log('Migration completed successfully');
@@ -134,6 +156,16 @@ export async function POST({ request, platform }) {
       }
     }
 
+    // Add subject column if it doesn't exist
+    try {
+      await platform.env.RSVPS.prepare(
+        'ALTER TABLE email_templates ADD COLUMN subject TEXT'
+      ).run();
+    } catch (error) {
+      // Column might already exist, ignore the error
+      console.log('Column subject might already exist:', error.message);
+    }
+
     // Update existing template of this type or insert new one
     const existingTemplate = await platform.env.RSVPS.prepare(
       'SELECT id FROM email_templates WHERE template_type = ?'
@@ -143,16 +175,16 @@ export async function POST({ request, platform }) {
     if (existingTemplate) {
       // Update existing template
       result = await platform.env.RSVPS.prepare(
-        'UPDATE email_templates SET template = ?, created_at = CURRENT_TIMESTAMP WHERE template_type = ?'
+        'UPDATE email_templates SET template = ?, subject = ?, created_at = CURRENT_TIMESTAMP WHERE template_type = ?'
       )
-        .bind(template, templateType)
+        .bind(template, subject, templateType)
         .run();
     } else {
       // Insert new template
       result = await platform.env.RSVPS.prepare(
-        'INSERT INTO email_templates (template, template_type) VALUES (?, ?)'
+        'INSERT INTO email_templates (template, template_type, subject) VALUES (?, ?, ?)'
       )
-        .bind(template, templateType)
+        .bind(template, templateType, subject)
         .run();
     }
 

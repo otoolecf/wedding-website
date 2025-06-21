@@ -22,6 +22,8 @@
   let settings = {};
   let confirmationTemplate = '';
   let blastTemplate = '';
+  let confirmationSubject = '';
+  let blastSubject = '';
   let currentTemplateType = 'confirmation';
   let previewHtml = '';
   let testEmail = '';
@@ -93,6 +95,7 @@
       if (confirmationResponse.ok) {
         const confirmationData = await confirmationResponse.json();
         confirmationTemplate = confirmationData.template;
+        confirmationSubject = confirmationData.subject || 'RSVP Confirmation';
       }
 
       // Load blast template
@@ -100,6 +103,7 @@
       if (blastResponse.ok) {
         const blastData = await blastResponse.json();
         blastTemplate = blastData.template;
+        blastSubject = blastData.subject || 'Wedding Update';
       }
 
       await updatePreview();
@@ -111,6 +115,7 @@
   async function saveEmailTemplate() {
     try {
       const templateToSave = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+      const subjectToSave = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
 
       const response = await fetch('/api/admin/email-template', {
         method: 'POST',
@@ -119,6 +124,7 @@
         },
         body: JSON.stringify({ 
           template: templateToSave,
+          subject: subjectToSave,
           templateType: currentTemplateType
         })
       });
@@ -159,12 +165,16 @@
     if (!testEmail) return;
     try {
       const templateToSend = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+      const subjectToSend = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
       const response = await fetch('/api/admin/send-test-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ 
           email: testEmail,
           template: templateToSend,
+          subject: subjectToSend,
           templateType: currentTemplateType
         })
       });
@@ -180,12 +190,17 @@
   }
 
   async function sendEmailBlast() {
-    if (!confirm('Send email blast to all RSVP guests?')) return;
+    if (!confirm('Send email blast to all guests?')) return;
     try {
       const response = await fetch('/api/admin/email-blast', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ template: blastTemplate })
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          template: blastTemplate,
+          subject: blastSubject
+        })
       });
       if (response.ok) {
         alert('Email blast sent!');
@@ -347,6 +362,13 @@
     if (editor && editorInitialized) {
       const templateContent = type === 'confirmation' ? confirmationTemplate : blastTemplate;
       editor.setContent(templateContent || '');
+    }
+    
+    // Update subject line input when switching template types
+    const subjectInput = document.querySelector('input[type="text"]');
+    if (subjectInput) {
+      const subjectValue = type === 'confirmation' ? confirmationSubject : blastSubject;
+      subjectInput.value = subjectValue;
     }
     
     updatePreview();
@@ -978,6 +1000,17 @@
       </div>
       
       <div class="space-y-6">
+        <!-- Subject Line Input -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email Subject Line</label>
+          <input
+            type="text"
+            bind:value={currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject}
+            placeholder={currentTemplateType === 'confirmation' ? 'RSVP Confirmation' : 'Wedding Update'}
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700 mb-1">Template Content</label>
           <div class="border rounded">

@@ -133,13 +133,26 @@ export async function buildRsvpEmailContent(
   return emailContent;
 }
 
-export async function sendRsvpConfirmationEmail(rsvpData, platform, overrideEmail = null, templateOverride = null) {
+export async function sendRsvpConfirmationEmail(rsvpData, platform, overrideEmail = null, templateOverride = null, subjectOverride = null) {
   console.log('Starting email send process for RSVP:', {
     name: rsvpData.name,
     email: overrideEmail || rsvpData.email
   });
 
   const emailContent = await buildRsvpEmailContent(rsvpData, platform, templateOverride, 'confirmation');
+
+  // Get the subject line from the template or use override
+  let subject = 'RSVP Confirmation'; // Default subject
+  if (subjectOverride) {
+    subject = subjectOverride;
+  } else if (!templateOverride) {
+    const templateResult = await platform.env.RSVPS.prepare(
+      'SELECT subject FROM email_templates WHERE template_type = ? ORDER BY created_at DESC LIMIT 1'
+    ).bind('confirmation').first();
+    if (templateResult?.subject) {
+      subject = templateResult.subject;
+    }
+  }
 
   console.log('Sending email via Brevo API...');
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -160,7 +173,7 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform, overrideEmai
           name: rsvpData.name
         }
       ],
-      subject: 'RSVP Confirmation - Connor & Colette Wedding',
+      subject: subject,
       htmlContent: emailContent
     })
   });
@@ -176,25 +189,25 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform, overrideEmai
   return responseData;
 }
 
-export async function sendEmailBlast(platform, templateOverride = null) {
+export async function sendEmailBlast(platform, templateOverride = null, subjectOverride = null) {
   const results = await platform.env.RSVPS.prepare(
-    "SELECT * FROM rsvps WHERE email IS NOT NULL AND email <> ''"
+    "SELECT * FROM guest_list WHERE email IS NOT NULL AND email <> ''"
   ).all();
 
   let sent = 0;
-  for (const rsvp of results.results) {
+  for (const guest of results.results) {
     try {
-      await sendBlastEmail(rsvp, platform, null, templateOverride);
+      await sendBlastEmail(guest, platform, null, templateOverride, subjectOverride);
       sent++;
     } catch (err) {
-      console.error('Failed to send email to', rsvp.email, err);
+      console.error('Failed to send email to', guest.email, err);
     }
   }
 
   return { total: results.results.length, sent };
 }
 
-export async function sendBlastEmail(rsvpData, platform, overrideEmail = null, templateOverride = null) {
+export async function sendBlastEmail(rsvpData, platform, overrideEmail = null, templateOverride = null, subjectOverride = null) {
   console.log('Starting blast email send process for:', {
     name: rsvpData.name,
     email: overrideEmail || rsvpData.email
@@ -202,11 +215,13 @@ export async function sendBlastEmail(rsvpData, platform, overrideEmail = null, t
 
   // For blast emails, we don't include form data - just use the template as-is
   let emailContent;
+  let subject = 'Wedding Update'; // Default subject
+  
   if (templateOverride) {
     emailContent = templateOverride;
   } else {
     const templateResult = await platform.env.RSVPS.prepare(
-      'SELECT template FROM email_templates WHERE template_type = ? ORDER BY created_at DESC LIMIT 1'
+      'SELECT template, subject FROM email_templates WHERE template_type = ? ORDER BY created_at DESC LIMIT 1'
     ).bind('blast').first();
     
     emailContent = templateResult?.template || `
@@ -220,6 +235,15 @@ export async function sendBlastEmail(rsvpData, platform, overrideEmail = null, t
       <p>Looking forward to celebrating with you!</p>
       <p>Connor & Colette</p>
     `;
+    
+    if (templateResult?.subject) {
+      subject = templateResult.subject;
+    }
+  }
+
+  // Use subject override if provided
+  if (subjectOverride) {
+    subject = subjectOverride;
   }
 
   console.log('Sending blast email via Brevo API...');
@@ -241,7 +265,7 @@ export async function sendBlastEmail(rsvpData, platform, overrideEmail = null, t
           name: rsvpData.name
         }
       ],
-      subject: 'Wedding Update - Connor & Colette',
+      subject: subject,
       htmlContent: emailContent
     })
   });

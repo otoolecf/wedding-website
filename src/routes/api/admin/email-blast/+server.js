@@ -11,8 +11,8 @@ export async function POST({ request, platform }) {
   if (!jwt) return jsonResponse({ error: 'Unauthorized' }, 401);
 
   try {
-    const { template } = await request.json();
-    const result = await sendEmailBlast(platform, template);
+    const { template, subject } = await request.json();
+    const result = await sendEmailBlast(platform, template, subject);
     return jsonResponse({ success: true, ...result });
   } catch (error) {
     console.error('Error sending email blast:', error);
