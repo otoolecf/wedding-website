@@ -43,7 +43,7 @@ id = "REPLACE_WITH_YOUR_KV_ID"
 [[env.production.d1_databases]]
 binding = "RSVPS"
 database_name = "wedding-rsvps-prod"
-database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
+database_id = "5f4ee888-0757-44bf-8a69-49566936ae45"
 
 [[env.production.r2_buckets]]
 binding = "IMAGES_BUCKET"

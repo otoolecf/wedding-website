@@ -20,12 +20,31 @@
   let guestList = [];
   let activeTab = 'dashboard';
   let settings = {};
-  let emailTemplate = '';
+  let confirmationTemplate = '';
+  let blastTemplate = '';
+  let confirmationSubject = '';
+  let blastSubject = '';
+  let currentTemplateType = 'confirmation';
+  let previewHtml = '';
+  let testEmail = '';
   let editorInitialized = false;
   let editorStatus = { loading: false, error: null };
   let tinymceLoaded = false;
   let editor = null;
   let previousTab = null;
+  let initializingEditor = false;
+
+  // Computed property for subject binding
+  $: currentSubject = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
+
+  // Function to update the correct subject variable
+  function updateSubject(value) {
+    if (currentTemplateType === 'confirmation') {
+      confirmationSubject = value;
+    } else {
+      blastSubject = value;
+    }
+  }
 
   // Subscribe to form settings
   const unsubscribe = formSettings.subscribe((value) => {
@@ -40,6 +59,9 @@
   // Fetch data on component mount
   onMount(async () => {
     try {
+      // Add global error handler for TinyMCE
+      window.addEventListener('error', handleTinyMCEError);
+
       // Load form settings
       await loadFormSettings();
 
@@ -75,47 +97,135 @@
         return count;
       }, 0);
 
-      await loadEmailTemplate();
+      await loadEmailTemplates();
     } catch (err) {
       error = 'Failed to load RSVPs';
       console.error(err);
     }
   });
 
-  async function loadEmailTemplate() {
+  async function loadEmailTemplates() {
     try {
-      const response = await fetch('/api/admin/email-template');
-      if (response.ok) {
-        const data = await response.json();
-        // No need to escape or replace anything since we're using a different format
-        emailTemplate = data.template;
+      // Load confirmation template
+      const confirmationResponse = await fetch('/api/admin/email-template?type=confirmation');
+      if (confirmationResponse.ok) {
+        const confirmationData = await confirmationResponse.json();
+        confirmationTemplate = confirmationData.template;
+        confirmationSubject = confirmationData.subject || 'RSVP Confirmation';
       }
+
+      // Load blast template
+      const blastResponse = await fetch('/api/admin/email-template?type=blast');
+      if (blastResponse.ok) {
+        const blastData = await blastResponse.json();
+        blastTemplate = blastData.template;
+        blastSubject = blastData.subject || 'Wedding Update';
+      }
+
+      await updatePreview();
     } catch (err) {
-      console.error('Error loading email template:', err);
+      console.error('Error loading email templates:', err);
     }
   }
 
   async function saveEmailTemplate() {
     try {
-      // No need to replace anything since we're using a different format
-      const templateToSave = emailTemplate;
+      const templateToSave = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+      const subjectToSave = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
 
       const response = await fetch('/api/admin/email-template', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ template: templateToSave })
+        body: JSON.stringify({ 
+          template: templateToSave,
+          subject: subjectToSave,
+          templateType: currentTemplateType
+        })
       });
 
       if (response.ok) {
-        alert('Email template saved successfully!');
+        alert(`${currentTemplateType === 'confirmation' ? 'Confirmation' : 'Blast'} email template saved successfully!`);
+        await updatePreview();
       } else {
         throw new Error('Failed to save email template');
       }
     } catch (err) {
       error = err.message;
       console.error('Error saving email template:', err);
+    }
+  }
+
+  async function updatePreview() {
+    try {
+      const templateToPreview = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+      const response = await fetch('/api/admin/email-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          template: templateToPreview,
+          templateType: currentTemplateType
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        previewHtml = data.html;
+      }
+    } catch (err) {
+      console.error('Error updating preview:', err);
+    }
+  }
+
+  async function sendTestEmail() {
+    if (!testEmail) return;
+    try {
+      const templateToSend = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+      const subjectToSend = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
+      const response = await fetch('/api/admin/send-test-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          email: testEmail,
+          template: templateToSend,
+          subject: subjectToSend,
+          templateType: currentTemplateType
+        })
+      });
+      if (response.ok) {
+        alert('Test email sent!');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to send test email');
+      }
+    } catch (err) {
+      console.error('Error sending test email:', err);
+    }
+  }
+
+  async function sendEmailBlast() {
+    if (!confirm('Send email blast to all guests?')) return;
+    try {
+      const response = await fetch('/api/admin/email-blast', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          template: blastTemplate,
+          subject: blastSubject
+        })
+      });
+      if (response.ok) {
+        alert('Email blast sent!');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to send emails');
+      }
+    } catch (err) {
+      console.error('Error sending emails:', err);
     }
   }
 
@@ -261,6 +371,25 @@
     activeTab = tab;
   }
 
+  function setTemplateType(type) {
+    currentTemplateType = type;
+    
+    // Update editor content when switching template types
+    if (editor && editorInitialized) {
+      const templateContent = type === 'confirmation' ? confirmationTemplate : blastTemplate;
+      editor.setContent(templateContent || '');
+    }
+    
+    // Update subject line input when switching template types
+    const subjectInput = document.querySelector('input[type="text"]');
+    if (subjectInput) {
+      const subjectValue = type === 'confirmation' ? confirmationSubject : blastSubject;
+      subjectInput.value = subjectValue;
+    }
+    
+    updatePreview();
+  }
+
   async function handleSaveSettings() {
     const success = await saveFormSettings(settings);
     if (success) {
@@ -343,69 +472,85 @@
   }
 
   function initializeEditor() {
-    if (!window.tinymce) return;
+    if (!window.tinymce || initializingEditor) return;
+
+    initializingEditor = true;
 
     // Clean up any existing editor first
     cleanupEditor();
 
-    // Ensure the editor container exists and is empty
-    const container = document.getElementById('email-template-editor');
-    if (!container) {
-      console.error('Editor container not found');
-      return;
-    }
-    container.innerHTML = '';
-
-    const editorConfig = {
-      selector: '#email-template-editor',
-      height: 400,
-      menubar: false,
-      plugins: 'lists link code table',
-      toolbar: [
-        'undo redo | blocks | bold italic underline | forecolor backcolor | removeformat',
-        'alignleft aligncenter alignright | bullist numlist | link | code'
-      ],
-      block_formats:
-        'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Quote=blockquote',
-      content_style: `
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; }
-        .mce-content-body p { margin: 0; }
-        h1 { font-size: 2rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        h2 { font-size: 1.5rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        h4 { font-size: 1rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        blockquote { border-left: 4px solid #ccc; padding-left: 1rem; font-style: italic; }
-      `,
-      convert_urls: false,
-      relative_urls: false,
-      setup: (ed) => {
-        editor = ed;
-        ed.on('init', () => {
-          console.log('Editor initialized');
-          ed.setContent(emailTemplate || '');
-          editorInitialized = true;
-        });
-
-        ed.on('change', () => {
-          emailTemplate = ed.getContent();
-        });
+    // Add a small delay to ensure cleanup is complete
+    setTimeout(() => {
+      // Ensure the editor container exists and is empty
+      const container = document.getElementById('email-template-editor');
+      if (!container) {
+        console.error('Editor container not found');
+        initializingEditor = false;
+        return;
       }
-    };
+      container.innerHTML = '';
 
-    try {
-      window.tinymce
-        .init(editorConfig)
-        .then((editorInstances) => {
-          console.log('TinyMCE editor successfully initialized');
-        })
-        .catch((err) => {
-          console.error('Failed to initialize TinyMCE editor:', err);
-          editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
-        });
-    } catch (error) {
-      console.error('Error during editor initialization:', error);
-      editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
-    }
+      const editorConfig = {
+        selector: '#email-template-editor',
+        height: 400,
+        menubar: false,
+        plugins: 'lists link code table',
+        toolbar: [
+          'undo redo | blocks | bold italic underline | forecolor backcolor | removeformat',
+          'alignleft aligncenter alignright | bullist numlist | link | code'
+        ],
+        block_formats:
+          'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Quote=blockquote',
+        content_style: `
+          body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; }
+          .mce-content-body p { margin: 0; }
+          h1 { font-size: 2rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+          h2 { font-size: 1.5rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+          h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+          h4 { font-size: 1rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+          blockquote { border-left: 4px solid #ccc; padding-left: 1rem; font-style: italic; }
+        `,
+        convert_urls: false,
+        relative_urls: false,
+        setup: (ed) => {
+          editor = ed;
+          ed.on('init', () => {
+            console.log('Editor initialized');
+            const currentTemplate = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+            ed.setContent(currentTemplate || '');
+            editorInitialized = true;
+            initializingEditor = false;
+          });
+
+          ed.on('change', () => {
+            const content = ed.getContent();
+            if (currentTemplateType === 'confirmation') {
+              confirmationTemplate = content;
+            } else {
+              blastTemplate = content;
+            }
+            updatePreview();
+          });
+        }
+      };
+
+      try {
+        window.tinymce
+          .init(editorConfig)
+          .then((editorInstances) => {
+            console.log('TinyMCE editor successfully initialized');
+          })
+          .catch((err) => {
+            console.error('Failed to initialize TinyMCE editor:', err);
+            editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
+            initializingEditor = false;
+          });
+      } catch (error) {
+        console.error('Error during editor initialization:', error);
+        editorStatus.error = 'Failed to initialize editor. Please try refreshing the page.';
+        initializingEditor = false;
+      }
+    }, 100);
   }
 
   // Watch for activeTab changes to reinitialize the editor when needed
@@ -434,7 +579,24 @@
 
   onDestroy(() => {
     cleanupEditor();
+    // Remove global error handler
+    window.removeEventListener('error', handleTinyMCEError);
   });
+
+  // Global error handler function
+  function handleTinyMCEError(event) {
+    if (event.error && event.error.message && event.error.message.includes('NS_ERROR_UNEXPECTED')) {
+      console.warn('TinyMCE cleanup error caught and handled:', event.error);
+      event.preventDefault();
+      // Reset editor state
+      editor = null;
+      editorInitialized = false;
+      const container = document.getElementById('email-template-editor');
+      if (container) {
+        container.innerHTML = '';
+      }
+    }
+  }
 </script>
 
 <AdminNav />
@@ -849,22 +1011,63 @@
     </div>
   {:else if activeTab === 'email'}
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-medium mb-6">Email Template</h2>
+      <h2 class="text-xl font-medium mb-6">Email Templates</h2>
+      
+      <!-- Template Type Selector -->
+      <div class="mb-6">
+        <div class="border-b border-gray-200">
+          <nav class="-mb-px flex space-x-8">
+            <button
+              class={`${
+                currentTemplateType === 'confirmation'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm`}
+              on:click={() => setTemplateType('confirmation')}
+            >
+              RSVP Confirmation Template
+            </button>
+            <button
+              class={`${
+                currentTemplateType === 'blast'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm`}
+              on:click={() => setTemplateType('blast')}
+            >
+              Email Blast Template
+            </button>
+          </nav>
+        </div>
+      </div>
+      
       <div class="space-y-6">
+        <!-- Subject Line Input -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email Subject Line</label>
+          <input
+            type="text"
+            bind:value={currentSubject}
+            on:input={(e) => updateSubject(e.target.value)}
+            placeholder={currentTemplateType === 'confirmation' ? 'RSVP Confirmation' : 'Wedding Update'}
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700 mb-1">Template Content</label>
           <div class="border rounded">
             <div id="email-template-editor" class="editor-container"></div>
             <div class="p-4 text-sm bg-gray-50 text-gray-600 border-t">
-              <h4 class="font-medium mb-2">How to use this editor:</h4>
-              <p class="mb-4">
-                This editor allows you to customize the text that appears before and after the RSVP
-                form data in the confirmation email. The form data section will be automatically
-                inserted where you place the <code>[[form_data]]</code> placeholder.
-              </p>
+              {#if currentTemplateType === 'confirmation'}
+                <h4 class="font-medium mb-2">RSVP Confirmation Template:</h4>
+                <p class="mb-4">
+                  This template is used for automatic confirmation emails sent when guests submit their RSVP.
+                  The form data section will be automatically inserted where you place the <code>[[form_data]]</code> placeholder.
+                </p>
 
-              <h4 class="font-medium mb-2">Example Structure:</h4>
-              <pre class="bg-white p-3 rounded border mb-4 text-xs">
+                <h4 class="font-medium mb-2">Example Structure:</h4>
+                <pre class="bg-white p-3 rounded border mb-4 text-xs">
 &lt;h2&gt;Thank you for your RSVP!&lt;/h2&gt;
 &lt;p&gt;Here's a summary of your response:&lt;/p&gt;
 
@@ -873,25 +1076,78 @@
 &lt;p&gt;If you need to make any changes to your RSVP, please contact us directly.&lt;/p&gt;
 &lt;p&gt;We look forward to celebrating with you!&lt;/p&gt;</pre>
 
-              <h4 class="font-medium mb-2">Available Placeholder:</h4>
-              <p class="mb-2">Use this placeholder in your template:</p>
-              <ul class="list-disc list-inside space-y-1">
-                <li>
-                  <code>[[form_data]]</code> - This will be replaced with the guest's form responses,
-                  including partner information if applicable
-                </li>
-              </ul>
+                <h4 class="font-medium mb-2">Available Placeholder:</h4>
+                <p class="mb-2">Use this placeholder in your template:</p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>
+                    <code>[[form_data]]</code> - This will be replaced with the guest's form responses,
+                    including partner information if applicable
+                  </li>
+                </ul>
+              {:else}
+                <h4 class="font-medium mb-2">Email Blast Template:</h4>
+                <p class="mb-4">
+                  This template is used for manual email blasts sent to all RSVP guests.
+                  No form data is included - this is for general announcements and updates.
+                </p>
+
+                <h4 class="font-medium mb-2">Example Structure:</h4>
+                <pre class="bg-white p-3 rounded border mb-4 text-xs">
+&lt;h2&gt;Important Wedding Update&lt;/h2&gt;
+&lt;p&gt;Dear Wedding Guests,&lt;/p&gt;
+
+&lt;p&gt;We wanted to share some important information about our upcoming wedding celebration.&lt;/p&gt;
+
+&lt;p&gt;Please feel free to reach out if you have any questions.&lt;/p&gt;
+
+&lt;p&gt;Looking forward to celebrating with you!&lt;/p&gt;
+&lt;p&gt;Connor &amp; Colette&lt;/p&gt;</pre>
+
+                <p class="mb-2">
+                  <strong>Note:</strong> Email blast templates don't use placeholders - they are sent as-is to all guests.
+                </p>
+              {/if}
             </div>
           </div>
         </div>
 
-        <div class="flex justify-end">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Preview</label>
+          <div class="border rounded p-4 bg-white max-h-96 overflow-auto">
+            {@html previewHtml}
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <input
+            type="email"
+            bind:value={testEmail}
+            placeholder="test@example.com"
+            class="flex-grow p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <button
+            on:click={sendTestEmail}
+            class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+          >
+            Send Test
+          </button>
+        </div>
+
+        <div class="flex justify-end space-x-4">
           <button
             on:click={saveEmailTemplate}
             class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
           >
-            Save Template
+            Save {currentTemplateType === 'confirmation' ? 'Confirmation' : 'Blast'} Template
           </button>
+          {#if currentTemplateType === 'blast'}
+            <button
+              on:click={sendEmailBlast}
+              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+            >
+              Send Blast to All Guests
+            </button>
+          {/if}
         </div>
       </div>
     </div>

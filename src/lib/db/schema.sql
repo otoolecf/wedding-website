@@ -26,6 +26,7 @@ DROP TABLE IF EXISTS guest_list;
 CREATE TABLE guest_list (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
+  email TEXT,
   partner_name TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -35,3 +36,6 @@ CREATE INDEX idx_guest_list_name ON guest_list(name);
 
 -- Create an index on partner_name for faster lookups
 CREATE INDEX idx_guest_list_partner_name ON guest_list(partner_name);
+
+-- Create an index on email for faster lookups
+CREATE INDEX idx_guest_list_email ON guest_list(email);
