@@ -51,50 +51,66 @@ export async function POST({ request, platform }) {
 
     // First, ensure the template_type column exists and properly migrate existing data
     try {
+      // Check if migration has already been completed by looking for existing template_type values
+      const hasTemplateTypes = await platform.env.RSVPS.prepare(
+        'SELECT COUNT(*) as count FROM email_templates WHERE template_type IS NOT NULL'
+      ).first();
+      
+      const needsMigration = !hasTemplateTypes || hasTemplateTypes.count === 0;
+      
       await platform.env.RSVPS.prepare(
         'ALTER TABLE email_templates ADD COLUMN template_type TEXT DEFAULT "confirmation"'
       ).run();
       
-      console.log('Added template_type column, running migration logic...');
+      console.log('Added template_type column, checking if migration is needed...');
       
-      // Update existing templates to be confirmation type
-      await platform.env.RSVPS.prepare(
-        'UPDATE email_templates SET template_type = "confirmation" WHERE template_type IS NULL'
-      ).run();
-      
-      // Keep only the most recent template and mark it as confirmation
-      // First, get the ID of the most recent template
-      const mostRecent = await platform.env.RSVPS.prepare(
-        'SELECT id FROM email_templates ORDER BY created_at DESC LIMIT 1'
-      ).first();
-      
-      if (mostRecent) {
-        // Delete all templates except the most recent one
-        await platform.env.RSVPS.prepare(
-          'DELETE FROM email_templates WHERE id != ? AND template_type = "confirmation"'
-        ).bind(mostRecent.id).run();
+      // Only run migration if we haven't migrated before
+      if (needsMigration) {
+        console.log('Running migration logic...');
         
-        // Ensure the most recent one is marked as confirmation
+        // Update existing templates to be confirmation type
         await platform.env.RSVPS.prepare(
-          'UPDATE email_templates SET template_type = "confirmation" WHERE id = ?'
-        ).bind(mostRecent.id).run();
+          'UPDATE email_templates SET template_type = "confirmation" WHERE template_type IS NULL'
+        ).run();
+        
+        // Keep only the most recent template and mark it as confirmation
+        // First, get the ID of the most recent template
+        const mostRecent = await platform.env.RSVPS.prepare(
+          'SELECT id FROM email_templates ORDER BY created_at DESC LIMIT 1'
+        ).first();
+        
+        if (mostRecent) {
+          // Delete all templates except the most recent one
+          await platform.env.RSVPS.prepare(
+            'DELETE FROM email_templates WHERE id != ? AND template_type = "confirmation"'
+          ).bind(mostRecent.id).run();
+          
+          // Ensure the most recent one is marked as confirmation
+          await platform.env.RSVPS.prepare(
+            'UPDATE email_templates SET template_type = "confirmation" WHERE id = ?'
+          ).bind(mostRecent.id).run();
+        }
+        
+        // Insert default blast template (only if it doesn't exist)
+        await platform.env.RSVPS.prepare(`
+          INSERT OR IGNORE INTO email_templates (template, template_type) VALUES (?, ?)
+        `).bind(
+          `<h2>Important Wedding Update</h2>
+          <p>Dear Wedding Guests,</p>
+          
+          <p>We wanted to share some important information about our upcoming wedding celebration.</p>
+          
+          <p>Please feel free to reach out if you have any questions.</p>
+          
+          <p>Looking forward to celebrating with you!</p>
+          <p>Connor & Colette</p>`,
+          'blast'
+        ).run();
+        
+        console.log('Migration completed successfully');
+      } else {
+        console.log('Migration already completed, skipping...');
       }
-      
-      // Insert default blast template (only if it doesn't exist)
-      await platform.env.RSVPS.prepare(`
-        INSERT OR IGNORE INTO email_templates (template, template_type) VALUES (?, ?)
-      `).bind(
-        `<h2>Important Wedding Update</h2>
-        <p>Dear Wedding Guests,</p>
-        
-        <p>We wanted to share some important information about our upcoming wedding celebration.</p>
-        
-        <p>Please feel free to reach out if you have any questions.</p>
-        
-        <p>Looking forward to celebrating with you!</p>
-        <p>Connor & Colette</p>`,
-        'blast'
-      ).run();
       
       // Create unique constraint on template_type to ensure only one template per type
       try {
@@ -105,8 +121,6 @@ export async function POST({ request, platform }) {
         // Index might already exist
         console.log('Unique index might already exist:', indexError.message);
       }
-      
-      console.log('Migration completed successfully');
       
     } catch (error) {
       // Column might already exist, just update null values
