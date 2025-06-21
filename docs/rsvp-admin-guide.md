@@ -92,6 +92,7 @@ Configure labels for the following form fields:
    - Customize email template
    - Preview email content
    - Test email delivery
+   - Send email blast to all RSVPs
    - Automatic sending on RSVP submission
 
 ## Data Export

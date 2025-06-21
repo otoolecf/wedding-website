@@ -102,6 +102,21 @@ export async function POST({ request, platform }) {
       );
     }
 
+    // Update guest list email if it's different or empty
+    if (primary.email && primary.email !== guestCheck.email) {
+      try {
+        await platform.env.RSVPS.prepare(
+          'UPDATE guest_list SET email = ? WHERE id = ?'
+        )
+          .bind(primary.email, guestCheck.id)
+          .run();
+        console.log(`[${requestId}] Updated guest list email for ${primary.name}`);
+      } catch (emailUpdateError) {
+        console.warn(`[${requestId}] Failed to update guest list email:`, emailUpdateError);
+        // Don't fail the request if guest list update fails
+      }
+    }
+
     // Check if this is an update
     const existingRsvp = await platform.env.RSVPS.prepare(
       'SELECT * FROM rsvps WHERE LOWER(name) = LOWER(?) OR LOWER(email) = LOWER(?)'
