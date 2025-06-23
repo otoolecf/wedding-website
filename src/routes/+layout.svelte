@@ -149,8 +149,8 @@
 
 <header class="fixed w-full top-0 bg-white/90 backdrop-blur-sm shadow-sm z-50">
   {#if !isRestricted}
-    <nav class="max-w-4xl mx-auto px-4 py-4">
-      <ul class="flex gap-6 justify-center">
+    <nav class="max-w-4xl mx-auto px-4 py-4 overflow-x-auto">
+      <ul class="flex gap-6 justify-start sm:justify-center whitespace-nowrap">
         {#each allPages as pageItem}
           <li>
             <a
