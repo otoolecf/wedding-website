@@ -4,6 +4,7 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { getGoogleFontsUrl } from '$lib/theme/fonts';
+  import { Menu, X } from 'svelte-lucide-icons';
   import { initRouterDebug, navigateTo } from '$lib/router';
   import { invalidate } from '$app/navigation';
 
@@ -118,8 +119,17 @@
   // Check if site is restricted to home page only
   $: isRestricted = data.settings?.restrictToHomePage;
 
+  let isMobileMenuOpen = false;
+
+  function toggleMobileMenu() {
+    isMobileMenuOpen = !isMobileMenuOpen;
+  }
+
   // Handle navigation with explicit method
   async function handleNav(e, url) {
+    if (isMobileMenuOpen) {
+      toggleMobileMenu(); // Close mobile menu on navigation
+    }
     e.preventDefault();
 
     // Extract the slug from the URL
@@ -149,8 +159,24 @@
 
 <header class="fixed w-full top-0 bg-white/90 backdrop-blur-sm shadow-sm z-50">
   {#if !isRestricted}
-    <nav class="max-w-4xl mx-auto px-4 py-4 overflow-hidden">
-      <ul class="flex gap-6 justify-center overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0">
+    <nav class="max-w-4xl mx-auto px-4 py-2 h-16 flex items-center justify-between">
+      <a href="/" on:click|preventDefault={(e) => handleNav(e, '/')} class="text-lg font-semibold">
+        {coupleNames}
+      </a>
+
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden">
+        <button on:click={toggleMobileMenu} aria-label="Open navigation menu">
+          {#if isMobileMenuOpen}
+            <X size={24} />
+          {:else}
+            <Menu size={24} />
+          {/if}
+        </button>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <ul class="hidden md:flex gap-6 justify-center">
         {#each allPages as pageItem}
           <li class="flex-shrink-0">
             <a
@@ -181,8 +207,45 @@
         {/each}
       </ul>
     </nav>
+
+    <!-- Mobile Navigation Menu -->
+    {#if isMobileMenuOpen}
+      <div class="md:hidden fixed inset-x-0 top-16 bg-white/95 backdrop-blur-sm shadow-lg p-4 z-40">
+        <ul class="flex flex-col gap-4">
+          {#each allPages as pageItem}
+            <li>
+              <a
+                href={pageItem.slug
+                  ? pageItem.id.startsWith('page_')
+                    ? `/pages/${pageItem.slug}`
+                    : `/${pageItem.slug}`
+                  : '/'}
+                class="block py-2 text-center"
+                class:active={$page.url.pathname ===
+                  (pageItem.slug
+                    ? pageItem.id.startsWith('page_')
+                      ? `/pages/${pageItem.slug}`
+                      : `/${pageItem.slug}`
+                    : '/')}
+                on:click|preventDefault={(e) =>
+                  handleNav(
+                    e,
+                    pageItem.slug
+                      ? pageItem.id.startsWith('page_')
+                        ? `/pages/${pageItem.slug}`
+                        : `/${pageItem.slug}`
+                      : '/'
+                  )}
+              >
+                {pageItem.name}
+              </a>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
   {:else}
-    <div class="h-16"></div>
+    <div class="h-16"></div> <!-- Placeholder for header height when navigation is restricted -->
   {/if}
 </header>
 
