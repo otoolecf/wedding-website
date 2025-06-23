@@ -160,9 +160,9 @@
 <header class="fixed w-full top-0 bg-white/90 backdrop-blur-sm shadow-sm z-50">
   {#if !isRestricted}
     <nav class="max-w-4xl mx-auto px-4 py-2 h-16 flex items-center justify-between">
-      <a href="/" on:click|preventDefault={(e) => handleNav(e, '/')} class="text-lg font-semibold">
+      <!-- <a href="/" on:click|preventDefault={(e) => handleNav(e, '/')} class="text-lg font-semibold">
         {coupleNames}
-      </a>
+      </a> -->
 
       <!-- Mobile Menu Button -->
       <div class="md:hidden">
@@ -245,7 +245,8 @@
       </div>
     {/if}
   {:else}
-    <div class="h-16"></div> <!-- Placeholder for header height when navigation is restricted -->
+    <div class="h-16"></div>
+    <!-- Placeholder for header height when navigation is restricted -->
   {/if}
 </header>
 
