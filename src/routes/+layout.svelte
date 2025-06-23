@@ -178,7 +178,7 @@
       <!-- Desktop Navigation -->
       <ul class="hidden md:flex gap-6 justify-center">
         {#each allPages as pageItem}
-          <li>
+          <li class="flex-shrink-0">
             <a
               href={pageItem.slug
                 ? pageItem.id.startsWith('page_')
