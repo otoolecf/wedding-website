@@ -460,7 +460,11 @@
               </div>
 
               <div class="space-y-2">
-                <label class="block">Will they be attending?</label>
+                <label class="block">
+                  {(settings.attendanceQuestion || 'Will you be attending?')
+                    .replace(/\byou\b/gi, 'they')
+                    .replace(/\bYou\b/g, 'They')}
+                </label>
                 <div class="space-x-4">
                   <label class="inline-flex items-center">
                     <input
@@ -486,7 +490,12 @@
 
               {#if partnerFormData.attending === 'yes'}
                 <div class="space-y-2">
-                  <label class="block">Are they vegetarian?</label>
+                  <label class="block">
+                    {(settings.vegetarianQuestion || 'Are you vegetarian?')
+                      .replace(/\byou\b/gi, 'they')
+                      .replace(/\bYou\b/g, 'They')
+                      .replace(/\bAre\b/g, 'Are')}
+                  </label>
                   <div class="space-x-4">
                     <label class="inline-flex items-center">
                       <input
@@ -511,7 +520,9 @@
                 </div>
 
                 <div class="space-y-2">
-                  <label for="partner_food_allergies" class="block">Any food allergies?</label>
+                  <label for="partner_food_allergies" class="block">
+                    {settings.foodAllergiesLabel || 'Any food allergies?'}
+                  </label>
                   <textarea
                     id="partner_food_allergies"
                     bind:value={partnerFormData.food_allergies}
@@ -523,7 +534,13 @@
                 </div>
 
                 <div class="space-y-2">
-                  <label class="block">Are they planning on staying at the lodging?</label>
+                  <label class="block">
+                    {(settings.lodgingQuestion || 'Are you planning on staying at the lodging?')
+                      .replace(/\byou\b/gi, 'they')
+                      .replace(/\bYou\b/g, 'They')
+                      .replace(/\bAre\b/g, 'Are')
+                      .replace(/\byour\b/g, 'their')}
+                  </label>
                   <div class="space-x-4">
                     <label class="inline-flex items-center">
                       <input
@@ -548,9 +565,15 @@
                 </div>
 
                 <div class="space-y-2">
-                  <label class="block"
-                    >Are they planning on joining the transport to and from our lodging?</label
-                  >
+                  <label class="block">
+                    {(
+                      settings.transportQuestion ||
+                      'Are you planning on joining the transport to and from our lodging?'
+                    )
+                      .replace(/\byou\b/gi, 'they')
+                      .replace(/\bYou\b/g, 'They')
+                      .replace(/\bAre\b/g, 'Are')}
+                  </label>
                   <div class="space-x-4">
                     <label class="inline-flex items-center">
                       <input
@@ -575,7 +598,11 @@
                 </div>
 
                 <div class="space-y-2">
-                  <label for="partner_song" class="block">Song requests?</label>
+                  <label for="partner_song" class="block">
+                    {(settings.songRequestLabel || 'What song will get you on the dance floor?')
+                      .replace(/\byou\b/gi, 'them')
+                      .replace(/\bYou\b/g, 'They')}
+                  </label>
                   <input
                     type="text"
                     id="partner_song"
@@ -583,14 +610,13 @@
                     autocomplete="off"
                     class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                     style="focus-ring-color: var(--color-primary)"
-                    placeholder="What song will get them on the dance floor?"
                   />
                 </div>
 
                 <div class="space-y-2">
-                  <label for="partner_special_notes" class="block"
-                    >Any special note for the couple?</label
-                  >
+                  <label for="partner_special_notes" class="block">
+                    {settings.specialNotesLabel || 'Any special note for the couple?'}
+                  </label>
                   <textarea
                     id="partner_special_notes"
                     bind:value={partnerFormData.special_notes}
