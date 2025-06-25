@@ -538,7 +538,8 @@
                     {(settings.lodgingQuestion || 'Are you planning on staying at the lodging?')
                       .replace(/\byou\b/gi, 'they')
                       .replace(/\bYou\b/g, 'They')
-                      .replace(/\bAre\b/g, 'Are')}
+                      .replace(/\bAre\b/g, 'Are')
+                      .replace(/\byour\b/g, 'their')}
                   </label>
                   <div class="space-x-4">
                     <label class="inline-flex items-center">
