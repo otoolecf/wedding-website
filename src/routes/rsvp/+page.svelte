@@ -71,7 +71,7 @@
   });
 
   async function searchName() {
-    if (!formData.name.trim()) {
+    if (!formData.name.trim() || formData.name.trim().length < 2) {
       nameSearchResults = [];
       guestInfo = null;
       showPartnerForm = false;
@@ -314,7 +314,13 @@
               <label class="block">{settings.attendanceQuestion || 'Will you be attending?'}</label>
               <div class="space-x-4">
                 <label class="inline-flex items-center">
-                  <input type="radio" bind:group={formData.attending} value="yes" class="mr-2" required />
+                  <input
+                    type="radio"
+                    bind:group={formData.attending}
+                    value="yes"
+                    class="mr-2"
+                    required
+                  />
                   Yes
                 </label>
                 <label class="inline-flex items-center">
@@ -371,7 +377,13 @@
                 >
                 <div class="space-x-4">
                   <label class="inline-flex items-center">
-                    <input type="radio" bind:group={formData.lodging} value="yes" class="mr-2" required />
+                    <input
+                      type="radio"
+                      bind:group={formData.lodging}
+                      value="yes"
+                      class="mr-2"
+                      required
+                    />
                     Yes
                   </label>
                   <label class="inline-flex items-center">
