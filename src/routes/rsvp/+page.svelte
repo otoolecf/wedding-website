@@ -13,23 +13,23 @@
   let formData = {
     name: '',
     email: '',
-    attending: 'yes',
+    attending: '',
     guests: 0,
-    is_vegetarian: 'no',
+    is_vegetarian: '',
     food_allergies: '',
-    lodging: 'no',
-    using_transport: 'no',
+    lodging: '',
+    using_transport: '',
     song: '',
     special_notes: ''
   };
 
   let partnerFormData = {
     name: '',
-    attending: 'yes',
-    is_vegetarian: 'no',
+    attending: '',
+    is_vegetarian: '',
     food_allergies: '',
-    lodging: 'no',
-    using_transport: 'no',
+    lodging: '',
+    using_transport: '',
     song: '',
     special_notes: ''
   };
@@ -101,16 +101,25 @@
 
     if (guest.partner) {
       showPartnerForm = true;
-      partnerFormData.name = guest.partner.name;
+      partnerFormData = {
+        name: guest.partner.name,
+        attending: '',
+        is_vegetarian: '',
+        food_allergies: '',
+        lodging: '',
+        using_transport: '',
+        song: '',
+        special_notes: ''
+      };
     } else {
       showPartnerForm = false;
       partnerFormData = {
         name: '',
-        attending: 'yes',
-        is_vegetarian: 'no',
+        attending: '',
+        is_vegetarian: '',
         food_allergies: '',
-        lodging: 'no',
-        using_transport: 'no',
+        lodging: '',
+        using_transport: '',
         song: '',
         special_notes: ''
       };
@@ -120,6 +129,27 @@
   async function handleSubmit() {
     if (!guestInfo) {
       error = 'Please search and select your name from the guest list';
+      return;
+    }
+
+    const primaryRequired = ['attending'];
+    if (formData.attending === 'yes') {
+      primaryRequired.push('is_vegetarian', 'lodging', 'using_transport');
+    }
+
+    const missingPrimary = primaryRequired.filter((f) => !formData[f]);
+
+    let missingPartner = [];
+    if (showPartnerForm && partnerFormData.name) {
+      const partnerRequired = ['attending'];
+      if (partnerFormData.attending === 'yes') {
+        partnerRequired.push('is_vegetarian', 'lodging', 'using_transport');
+      }
+      missingPartner = partnerRequired.filter((f) => !partnerFormData[f]);
+    }
+
+    if (missingPrimary.length > 0 || missingPartner.length > 0) {
+      error = 'Please answer all required yes/no questions before submitting.';
       return;
     }
 
@@ -284,7 +314,7 @@
               <label class="block">{settings.attendanceQuestion || 'Will you be attending?'}</label>
               <div class="space-x-4">
                 <label class="inline-flex items-center">
-                  <input type="radio" bind:group={formData.attending} value="yes" class="mr-2" />
+                  <input type="radio" bind:group={formData.attending} value="yes" class="mr-2" required />
                   Yes
                 </label>
                 <label class="inline-flex items-center">
@@ -304,6 +334,7 @@
                       bind:group={formData.is_vegetarian}
                       value="yes"
                       class="mr-2"
+                      required
                     />
                     Yes
                   </label>
@@ -340,7 +371,7 @@
                 >
                 <div class="space-x-4">
                   <label class="inline-flex items-center">
-                    <input type="radio" bind:group={formData.lodging} value="yes" class="mr-2" />
+                    <input type="radio" bind:group={formData.lodging} value="yes" class="mr-2" required />
                     Yes
                   </label>
                   <label class="inline-flex items-center">
@@ -362,6 +393,7 @@
                       bind:group={formData.using_transport}
                       value="yes"
                       class="mr-2"
+                      required
                     />
                     Yes
                   </label>
@@ -424,6 +456,7 @@
                       bind:group={partnerFormData.attending}
                       value="yes"
                       class="mr-2"
+                      required
                     />
                     Yes
                   </label>
@@ -449,6 +482,7 @@
                         bind:group={partnerFormData.is_vegetarian}
                         value="yes"
                         class="mr-2"
+                        required
                       />
                       Yes
                     </label>
@@ -485,6 +519,7 @@
                         bind:group={partnerFormData.lodging}
                         value="yes"
                         class="mr-2"
+                        required
                       />
                       Yes
                     </label>
@@ -511,6 +546,7 @@
                         bind:group={partnerFormData.using_transport}
                         value="yes"
                         class="mr-2"
+                        required
                       />
                       Yes
                     </label>
