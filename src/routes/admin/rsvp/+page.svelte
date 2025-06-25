@@ -130,15 +130,17 @@
 
   async function saveEmailTemplate() {
     try {
-      const templateToSave = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
-      const subjectToSave = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
+      const templateToSave =
+        currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+      const subjectToSave =
+        currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
 
       const response = await fetch('/api/admin/email-template', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           template: templateToSave,
           subject: subjectToSave,
           templateType: currentTemplateType
@@ -146,7 +148,9 @@
       });
 
       if (response.ok) {
-        alert(`${currentTemplateType === 'confirmation' ? 'Confirmation' : 'Blast'} email template saved successfully!`);
+        alert(
+          `${currentTemplateType === 'confirmation' ? 'Confirmation' : 'Blast'} email template saved successfully!`
+        );
         await updatePreview();
       } else {
         throw new Error('Failed to save email template');
@@ -159,11 +163,12 @@
 
   async function updatePreview() {
     try {
-      const templateToPreview = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+      const templateToPreview =
+        currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
       const response = await fetch('/api/admin/email-preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           template: templateToPreview,
           templateType: currentTemplateType
         })
@@ -180,14 +185,16 @@
   async function sendTestEmail() {
     if (!testEmail) return;
     try {
-      const templateToSend = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
-      const subjectToSend = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
+      const templateToSend =
+        currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+      const subjectToSend =
+        currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
       const response = await fetch('/api/admin/send-test-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: testEmail,
           template: templateToSend,
           subject: subjectToSend,
@@ -213,7 +220,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           template: blastTemplate,
           subject: blastSubject
         })
@@ -242,7 +249,7 @@
       settings.attendanceQuestion || 'Attending',
       settings.vegetarianQuestion || 'Vegetarian',
       settings.foodAllergiesLabel || 'Food Allergies',
-      settings.lodgingQuestion || 'Staying at Melrose',
+      settings.lodgingQuestion || 'Staying at Lodging',
       settings.transportQuestion || 'Using Transport',
       settings.songRequestLabel || 'Song Request',
       settings.specialNotesLabel || 'Special Notes',
@@ -373,20 +380,20 @@
 
   function setTemplateType(type) {
     currentTemplateType = type;
-    
+
     // Update editor content when switching template types
     if (editor && editorInitialized) {
       const templateContent = type === 'confirmation' ? confirmationTemplate : blastTemplate;
       editor.setContent(templateContent || '');
     }
-    
+
     // Update subject line input when switching template types
     const subjectInput = document.querySelector('input[type="text"]');
     if (subjectInput) {
       const subjectValue = type === 'confirmation' ? confirmationSubject : blastSubject;
       subjectInput.value = subjectValue;
     }
-    
+
     updatePreview();
   }
 
@@ -516,7 +523,8 @@
           editor = ed;
           ed.on('init', () => {
             console.log('Editor initialized');
-            const currentTemplate = currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
+            const currentTemplate =
+              currentTemplateType === 'confirmation' ? confirmationTemplate : blastTemplate;
             ed.setContent(currentTemplate || '');
             editorInitialized = true;
             initializingEditor = false;
@@ -696,7 +704,7 @@
                 >Food Allergies</th
               >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                >Staying at Melrose</th
+                >Staying at Lodging</th
               >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                 >Using Transport</th
@@ -764,7 +772,7 @@
                   </td>
                   <td class="px-6 py-4">
                     <select
-                      bind:value={editedRsvp.staying_at_melrose}
+                      bind:value={editedRsvp.lodging}
                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                       <option value="yes">Yes</option>
@@ -850,12 +858,12 @@
                   <td class="px-6 py-4">
                     <span
                       class={`px-2 py-1 rounded-full text-xs ${
-                        rsvp.staying_at_melrose === 'yes'
+                        rsvp.lodging === 'yes'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {rsvp.staying_at_melrose === 'yes' ? 'Yes' : 'No'}
+                      {rsvp.lodging === 'yes' ? 'Yes' : 'No'}
                     </span>
                   </td>
                   <td class="px-6 py-4">
@@ -1012,7 +1020,7 @@
   {:else if activeTab === 'email'}
     <div class="bg-white rounded-lg shadow p-6">
       <h2 class="text-xl font-medium mb-6">Email Templates</h2>
-      
+
       <!-- Template Type Selector -->
       <div class="mb-6">
         <div class="border-b border-gray-200">
@@ -1040,7 +1048,7 @@
           </nav>
         </div>
       </div>
-      
+
       <div class="space-y-6">
         <!-- Subject Line Input -->
         <div class="space-y-2">
@@ -1049,7 +1057,9 @@
             type="text"
             bind:value={currentSubject}
             on:input={(e) => updateSubject(e.target.value)}
-            placeholder={currentTemplateType === 'confirmation' ? 'RSVP Confirmation' : 'Wedding Update'}
+            placeholder={currentTemplateType === 'confirmation'
+              ? 'RSVP Confirmation'
+              : 'Wedding Update'}
             class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
@@ -1062,8 +1072,9 @@
               {#if currentTemplateType === 'confirmation'}
                 <h4 class="font-medium mb-2">RSVP Confirmation Template:</h4>
                 <p class="mb-4">
-                  This template is used for automatic confirmation emails sent when guests submit their RSVP.
-                  The form data section will be automatically inserted where you place the <code>[[form_data]]</code> placeholder.
+                  This template is used for automatic confirmation emails sent when guests submit
+                  their RSVP. The form data section will be automatically inserted where you place
+                  the <code>[[form_data]]</code> placeholder.
                 </p>
 
                 <h4 class="font-medium mb-2">Example Structure:</h4>
@@ -1087,8 +1098,8 @@
               {:else}
                 <h4 class="font-medium mb-2">Email Blast Template:</h4>
                 <p class="mb-4">
-                  This template is used for manual email blasts sent to all RSVP guests.
-                  No form data is included - this is for general announcements and updates.
+                  This template is used for manual email blasts sent to all RSVP guests. No form
+                  data is included - this is for general announcements and updates.
                 </p>
 
                 <h4 class="font-medium mb-2">Example Structure:</h4>
@@ -1104,7 +1115,8 @@
 &lt;p&gt;Connor &amp; Colette&lt;/p&gt;</pre>
 
                 <p class="mb-2">
-                  <strong>Note:</strong> Email blast templates don't use placeholders - they are sent as-is to all guests.
+                  <strong>Note:</strong> Email blast templates don't use placeholders - they are sent
+                  as-is to all guests.
                 </p>
               {/if}
             </div>
