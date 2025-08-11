@@ -5,6 +5,7 @@
 
   let settings = {
     registries: {
+      introMessage: "Your presence at our wedding is the greatest gift of all. However, for those who have asked, we've created registries at the following stores:",
       externalRegistries: [],
       honeymoonFund: {
         enabled: true,
@@ -92,6 +93,22 @@
   {/if}
 
   <form on:submit|preventDefault={saveSettings} class="space-y-6">
+    <!-- Introduction Message -->
+    <div class="mb-8">
+      <h2 class="text-2xl font-light mb-6">Registry Introduction</h2>
+      <div>
+        <label for="intro-message" class="block text-sm font-medium text-gray-700 mb-1">Introduction Message</label>
+        <textarea
+          id="intro-message"
+          bind:value={settings.registries.introMessage}
+          class="w-full p-2 border rounded"
+          rows="3"
+          placeholder="Enter the message that will appear at the top of the registry page"
+        ></textarea>
+        <p class="text-sm text-gray-500 mt-1">This message appears at the top of the registry page to welcome guests.</p>
+      </div>
+    </div>
+
     <!-- External Registries -->
     <div class="mb-8">
       <h2 class="text-2xl font-light mb-6">External Registries</h2>
