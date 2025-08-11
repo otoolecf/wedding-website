@@ -60,8 +60,8 @@ export async function POST({ request, platform }) {
     }
 
     // Process each record
-    let processedCount = 0;
-    let skippedCount = 0;
+    let insertedCount = 0;
+    let updatedCount = 0;
     for (const record of data) {
       try {
         // Check if guest already exists
@@ -72,39 +72,53 @@ export async function POST({ request, platform }) {
           .first();
 
         if (existingGuest) {
-          skippedCount++;
-          continue;
-        }
-
-        // Insert the guest record
-        await platform.env.RSVPS.prepare(
-          `
-          INSERT INTO guest_list (
-            name,
-            email,
-            partner_name
-          ) VALUES (?, ?, ?)
-          `
-        )
-          .bind(
-            record.name?.trim(), 
-            record.email?.trim() || null, 
-            record.partner_name?.trim() || null
+          // Update existing guest record
+          await platform.env.RSVPS.prepare(
+            `
+            UPDATE guest_list 
+            SET email = ?, partner_name = ?
+            WHERE name = ?
+            `
           )
-          .run();
-        processedCount++;
+            .bind(
+              record.email?.trim() || null,
+              record.partner_name?.trim() || null,
+              record.name?.trim()
+            )
+            .run();
+          updatedCount++;
+        } else {
+          // Insert new guest record
+          await platform.env.RSVPS.prepare(
+            `
+            INSERT INTO guest_list (
+              name,
+              email,
+              partner_name
+            ) VALUES (?, ?, ?)
+            `
+          )
+            .bind(
+              record.name?.trim(), 
+              record.email?.trim() || null, 
+              record.partner_name?.trim() || null
+            )
+            .run();
+          insertedCount++;
+        }
       } catch (recordError) {
         console.error('Error processing record:', record, recordError);
-        throw new Error(`Failed to process record ${processedCount + 1}: ${record.name}`);
+        throw new Error(`Failed to process record ${insertedCount + updatedCount + 1}: ${record.name}`);
       }
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        count: processedCount,
-        skipped: skippedCount,
-        message: `Successfully processed ${processedCount} records, skipped ${skippedCount} duplicates`
+        inserted: insertedCount,
+        updated: updatedCount,
+        total: insertedCount + updatedCount,
+        message: `Successfully processed ${insertedCount + updatedCount} records (${insertedCount} new, ${updatedCount} updated)`
       }),
       {
         headers: { 'Content-Type': 'application/json' }
