@@ -29,8 +29,7 @@
   <h1 class="text-4xl text-center font-light mb-6">Registry</h1>
 
   <p class="text-center max-w-2xl mx-auto mb-12">
-    Your presence at our wedding is the greatest gift of all. However, for those who have asked,
-    we've created registries at the following stores:
+    {$page.data.settings.registries.introMessage || "Your presence at our wedding is the greatest gift of all. However, for those who have asked, we've created registries at the following stores:"}
   </p>
 
   <div class="grid md:grid-cols-3 gap-8">
