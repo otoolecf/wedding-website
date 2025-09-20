@@ -28,33 +28,6 @@ export async function POST({ request, platform }) {
     `
     ).run();
 
-    // Drop and recreate the table to ensure proper structure
-    try {
-      await platform.env.RSVPS.prepare('DROP TABLE rsvps').run();
-      await platform.env.RSVPS.prepare(
-        `
-        CREATE TABLE rsvps (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          email TEXT,
-          attending TEXT NOT NULL,
-          guests INTEGER DEFAULT 0,
-          is_vegetarian TEXT DEFAULT 'no',
-          food_allergies TEXT,
-          lodging TEXT DEFAULT 'no',
-          using_transport TEXT DEFAULT 'no',
-          song TEXT,
-          special_notes TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE(name)
-        )
-      `
-      ).run();
-    } catch (error) {
-      console.log('Error recreating table:', error.message);
-    }
-
     const data = await request.json();
     console.log(`[${requestId}] RSVP data:`, data);
 
