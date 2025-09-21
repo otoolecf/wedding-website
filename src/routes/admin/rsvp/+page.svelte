@@ -17,6 +17,7 @@
   let rsvpToDelete = null;
   let editingRsvp = null;
   let editedRsvp = null;
+  let creatingNew = false;
   let guestList = [];
   let activeTab = 'dashboard';
   let settings = {};
@@ -36,6 +37,23 @@
 
   // Computed property for subject binding
   $: currentSubject = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
+  
+  // Computed list of guests who haven't RSVPed yet
+  $: availableGuests = (() => {
+    const rsvpedNames = new Set(rsvps.map(r => r.name.toLowerCase()));
+    const available = [];
+    
+    guestList.forEach(guest => {
+      if (!rsvpedNames.has(guest.name.toLowerCase())) {
+        available.push(guest.name);
+      }
+      if (guest.partner_name && !rsvpedNames.has(guest.partner_name.toLowerCase())) {
+        available.push(guest.partner_name);
+      }
+    });
+    
+    return available.sort();
+  })();
 
   // Function to update the correct subject variable
   function updateSubject(value) {
@@ -345,32 +363,73 @@
   function startEdit(rsvp) {
     editingRsvp = rsvp;
     editedRsvp = { ...rsvp };
+    creatingNew = false;
+  }
+
+  function startCreate() {
+    creatingNew = true;
+    editingRsvp = { id: 'new' };
+    editedRsvp = {
+      name: '',
+      email: '',
+      attending: 'yes',
+      guests: 0,
+      is_vegetarian: 'no',
+      food_allergies: '',
+      lodging: 'no',
+      using_transport: 'no',
+      song: '',
+      special_notes: ''
+    };
   }
 
   function cancelEdit() {
     editingRsvp = null;
     editedRsvp = null;
+    creatingNew = false;
   }
 
   async function saveEdit() {
     if (!editingRsvp || !editedRsvp) return;
 
     try {
-      const response = await fetch(`/api/admin/rsvps/${editingRsvp.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(editedRsvp)
-      });
+      if (creatingNew) {
+        // Create new RSVP using the main RSVP endpoint with skipEmail flag
+        const response = await fetch('/api/rsvp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            primary: editedRsvp,
+            skipEmail: true
+          })
+        });
 
-      if (!response.ok) throw new Error('Failed to update RSVP');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create RSVP');
+        }
+      } else {
+        // Update existing RSVP
+        const response = await fetch(`/api/admin/rsvps/${editingRsvp.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(editedRsvp)
+        });
+
+        if (!response.ok) throw new Error('Failed to update RSVP');
+      }
+      
       await loadRsvps();
       editingRsvp = null;
       editedRsvp = null;
+      creatingNew = false;
     } catch (err) {
       error = err.message;
-      console.error('Error updating RSVP:', err);
+      console.error(creatingNew ? 'Error creating RSVP:' : 'Error updating RSVP:', err);
     }
   }
 
@@ -689,6 +748,17 @@
 
     <!-- RSVP Table -->
     <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-lg font-semibold text-gray-900">RSVPs</h2>
+        <button
+          on:click={startCreate}
+          disabled={availableGuests.length === 0}
+          class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-300 disabled:cursor-not-allowed"
+          title={availableGuests.length === 0 ? 'All guests have already RSVPed' : 'Create a new RSVP'}
+        >
+          Create New RSVP
+        </button>
+      </div>
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
@@ -727,6 +797,114 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
+            {#if creatingNew}
+              <!-- New RSVP Creation Row -->
+              <tr class="bg-blue-50">
+                <td class="px-6 py-4">
+                  {#if availableGuests.length > 0}
+                    <select
+                      bind:value={editedRsvp.name}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">Select a guest</option>
+                      {#each availableGuests as guestName}
+                        <option value={guestName}>{guestName}</option>
+                      {/each}
+                    </select>
+                  {:else}
+                    <p class="text-gray-500 italic">All guests have RSVPed</p>
+                  {/if}
+                </td>
+                <td class="px-6 py-4">
+                  <input
+                    type="email"
+                    bind:value={editedRsvp.email}
+                    placeholder="Email address"
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </td>
+                <td class="px-6 py-4">
+                  <select
+                    bind:value={editedRsvp.attending}
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="yes">Attending</option>
+                    <option value="no">Not Attending</option>
+                  </select>
+                </td>
+                <td class="px-6 py-4">
+                  <select
+                    bind:value={editedRsvp.is_vegetarian}
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </td>
+                <td class="px-6 py-4">
+                  <input
+                    type="text"
+                    bind:value={editedRsvp.food_allergies}
+                    placeholder="None"
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </td>
+                <td class="px-6 py-4">
+                  <select
+                    bind:value={editedRsvp.lodging}
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </td>
+                <td class="px-6 py-4">
+                  <select
+                    bind:value={editedRsvp.using_transport}
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </td>
+                <td class="px-6 py-4">
+                  <input
+                    type="text"
+                    bind:value={editedRsvp.song}
+                    placeholder="Song request"
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </td>
+                <td class="px-6 py-4">
+                  <input
+                    type="text"
+                    bind:value={editedRsvp.special_notes}
+                    placeholder="Notes"
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </td>
+                <td class="px-6 py-4">
+                  <select
+                    bind:value={editedRsvp.lodging}
+                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </td>
+                <td class="px-6 py-4 text-gray-500">
+                  New
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                  <button on:click={saveEdit} class="text-green-600 hover:text-green-800">
+                    Create
+                  </button>
+                  <button on:click={cancelEdit} class="text-gray-600 hover:text-gray-800">
+                    Cancel
+                  </button>
+                </td>
+              </tr>
+            {/if}
             {#each rsvps as rsvp}
               <tr class="hover:bg-gray-50">
                 {#if editingRsvp?.id === rsvp.id}
