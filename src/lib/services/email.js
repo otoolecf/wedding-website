@@ -173,6 +173,12 @@ export async function sendRsvpConfirmationEmail(rsvpData, platform, overrideEmai
           name: rsvpData.name
         }
       ],
+      bcc: [
+        {
+          email: platform.env.EMAIL_SENDER_ADDRESS,
+          name: platform.env.EMAIL_SENDER_NAME
+        }
+      ],
       subject: subject,
       htmlContent: emailContent
     })
