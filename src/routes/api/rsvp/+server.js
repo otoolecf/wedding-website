@@ -210,8 +210,8 @@ export async function POST({ request, platform }) {
       }
     }
 
-    // Send confirmation email only for primary guest
-    if (primary.attending === 'yes') {
+    // Send confirmation email only for primary guest (unless skipEmail flag is set)
+    if (primary.attending === 'yes' && !data.skipEmail) {
       try {
         await sendRsvpConfirmationEmail(primary, platform);
         console.log(`[${requestId}] Confirmation email sent to ${primary.email}`);
