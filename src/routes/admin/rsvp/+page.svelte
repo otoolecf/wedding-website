@@ -37,6 +37,23 @@
 
   // Computed property for subject binding
   $: currentSubject = currentTemplateType === 'confirmation' ? confirmationSubject : blastSubject;
+  
+  // Computed list of guests who haven't RSVPed yet
+  $: availableGuests = (() => {
+    const rsvpedNames = new Set(rsvps.map(r => r.name.toLowerCase()));
+    const available = [];
+    
+    guestList.forEach(guest => {
+      if (!rsvpedNames.has(guest.name.toLowerCase())) {
+        available.push(guest.name);
+      }
+      if (guest.partner_name && !rsvpedNames.has(guest.partner_name.toLowerCase())) {
+        available.push(guest.partner_name);
+      }
+    });
+    
+    return available.sort();
+  })();
 
   // Function to update the correct subject variable
   function updateSubject(value) {
@@ -735,7 +752,9 @@
         <h2 class="text-lg font-semibold text-gray-900">RSVPs</h2>
         <button
           on:click={startCreate}
-          class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary"
+          disabled={availableGuests.length === 0}
+          class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-300 disabled:cursor-not-allowed"
+          title={availableGuests.length === 0 ? 'All guests have already RSVPed' : 'Create a new RSVP'}
         >
           Create New RSVP
         </button>
@@ -782,12 +801,19 @@
               <!-- New RSVP Creation Row -->
               <tr class="bg-blue-50">
                 <td class="px-6 py-4">
-                  <input
-                    type="text"
-                    bind:value={editedRsvp.name}
-                    placeholder="Guest name"
-                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+                  {#if availableGuests.length > 0}
+                    <select
+                      bind:value={editedRsvp.name}
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">Select a guest</option>
+                      {#each availableGuests as guestName}
+                        <option value={guestName}>{guestName}</option>
+                      {/each}
+                    </select>
+                  {:else}
+                    <p class="text-gray-500 italic">All guests have RSVPed</p>
+                  {/if}
                 </td>
                 <td class="px-6 py-4">
                   <input
