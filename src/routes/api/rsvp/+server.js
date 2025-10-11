@@ -61,11 +61,11 @@ export async function POST({ request, platform }) {
       );
     }
 
-    // Check if guest exists in guest list
+    // Check if guest exists in guest list (as primary guest or partner)
     const guestCheck = await platform.env.RSVPS.prepare(
-      'SELECT * FROM guest_list WHERE LOWER(name) = LOWER(?)'
+      'SELECT * FROM guest_list WHERE LOWER(name) = LOWER(?) OR LOWER(partner_name) = LOWER(?)'
     )
-      .bind(primary.name)
+      .bind(primary.name, primary.name)
       .first();
 
     if (!guestCheck) {
