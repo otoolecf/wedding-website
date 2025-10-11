@@ -786,9 +786,6 @@
                 >Special Notes</th
               >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                >Lodging</th
-              >
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                 >Submitted</th
               >
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
@@ -817,9 +814,9 @@
                 </td>
                 <td class="px-6 py-4">
                   <input
-                    type="email"
+                    type="text"
                     bind:value={editedRsvp.email}
-                    placeholder="Email address"
+                    placeholder="Email (optional for guests)"
                     class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </td>
@@ -882,15 +879,6 @@
                     placeholder="Notes"
                     class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
-                </td>
-                <td class="px-6 py-4">
-                  <select
-                    bind:value={editedRsvp.lodging}
-                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
                 </td>
                 <td class="px-6 py-4 text-gray-500">
                   New
@@ -980,15 +968,6 @@
                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </td>
-                  <td class="px-6 py-4">
-                    <select
-                      bind:value={editedRsvp.lodging}
-                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
-                  </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     {new Date(rsvp.created_at).toLocaleString()}
                   </td>
@@ -1064,17 +1043,6 @@
                     <div class="max-w-xs truncate">
                       {rsvp.special_notes || '-'}
                     </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span
-                      class={`px-2 py-1 rounded-full text-xs ${
-                        rsvp.lodging === 'yes'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {rsvp.lodging === 'yes' ? 'Yes' : 'No'}
-                    </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     {new Date(rsvp.created_at).toLocaleString()}
