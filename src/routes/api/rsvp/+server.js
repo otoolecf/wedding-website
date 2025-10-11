@@ -61,11 +61,11 @@ export async function POST({ request, platform }) {
       );
     }
 
-    // Check if guest exists in guest list
+    // Check if guest exists in guest list (as primary guest or partner)
     const guestCheck = await platform.env.RSVPS.prepare(
-      'SELECT * FROM guest_list WHERE LOWER(name) = LOWER(?)'
+      'SELECT * FROM guest_list WHERE LOWER(name) = LOWER(?) OR LOWER(partner_name) = LOWER(?)'
     )
-      .bind(primary.name)
+      .bind(primary.name, primary.name)
       .first();
 
     if (!guestCheck) {
@@ -95,11 +95,21 @@ export async function POST({ request, platform }) {
     }
 
     // Check if this is an update
-    const existingRsvp = await platform.env.RSVPS.prepare(
-      'SELECT * FROM rsvps WHERE LOWER(name) = LOWER(?) OR LOWER(email) = LOWER(?)'
-    )
-      .bind(primary.name, primary.email)
-      .first();
+    let existingRsvp;
+    if (primary.email) {
+      existingRsvp = await platform.env.RSVPS.prepare(
+        'SELECT * FROM rsvps WHERE LOWER(name) = LOWER(?) OR LOWER(email) = LOWER(?)'
+      )
+        .bind(primary.name, primary.email)
+        .first();
+    } else {
+      // If no email provided, only check by name
+      existingRsvp = await platform.env.RSVPS.prepare(
+        'SELECT * FROM rsvps WHERE LOWER(name) = LOWER(?)'
+      )
+        .bind(primary.name)
+        .first();
+    }
 
     const isUpdate = !!existingRsvp;
 
