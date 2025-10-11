@@ -42,10 +42,14 @@ export async function POST({ request, platform }) {
       );
     }
 
-    const { primary, partner } = data;
+    const { primary, partner, skipEmail } = data;
 
     // Validate required fields for primary guest
-    const requiredFields = ['name', 'email', 'attending'];
+    // Email is only required if we're sending a confirmation email
+    const requiredFields = ['name', 'attending'];
+    if (!skipEmail) {
+      requiredFields.push('email');
+    }
     const missingFields = requiredFields.filter((field) => !primary[field]);
     if (missingFields.length > 0) {
       return new Response(
