@@ -36,7 +36,7 @@
     }
   }
 
-  async function updatePageOrder(pageId, newOrder) {
+  async function updatePageOrder(pageId, newOrder, skipReload = false) {
     try {
       // Check if it's a default page
       const isDefaultPage = defaultPages.some((page) => page.id === pageId);
@@ -104,7 +104,58 @@
         if (!response.ok) throw new Error('Failed to update custom page order');
       }
 
-      await loadPages(); // Reload to get updated order
+      if (!skipReload) {
+        await loadPages(); // Reload to get updated order
+      }
+    } catch (e) {
+      error = e.message;
+    }
+  }
+
+  async function swapPages(page1, page2, order1, order2) {
+    try {
+      const isPage1Default = defaultPages.some((p) => p.id === page1.id);
+      const isPage2Default = defaultPages.some((p) => p.id === page2.id);
+
+      // If both are default pages or both are custom pages, handle them together
+      if (isPage1Default && isPage2Default) {
+        // Update both default pages in a single settings update
+        const settingsResponse = await fetch('/api/admin/settings');
+        if (!settingsResponse.ok) throw new Error('Failed to load settings');
+        const settingsData = await settingsResponse.json();
+
+        const updatedDefaultPages = settingsData.settings.defaultPages.map((page) => {
+          if (page.id === page1.id) {
+            return { ...page, order: order1 };
+          }
+          if (page.id === page2.id) {
+            return { ...page, order: order2 };
+          }
+          return page;
+        });
+
+        const updatedSettings = {
+          ...settingsData.settings,
+          defaultPages: updatedDefaultPages
+        };
+
+        const updateResponse = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedSettings)
+        });
+
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json();
+          throw new Error(errorData.error || 'Failed to update page order');
+        }
+      } else {
+        // Update each page individually
+        await updatePageOrder(page1.id, order1, true);
+        await updatePageOrder(page2.id, order2, true);
+      }
+
+      await loadPages();
     } catch (e) {
       error = e.message;
     }
@@ -120,8 +171,7 @@
     const prevOrder = typeof prevPage.order === 'number' ? prevPage.order : index - 1;
 
     // Swap the order values
-    await updatePageOrder(page.id, prevOrder);
-    await updatePageOrder(prevPage.id, currentOrder);
+    await swapPages(page, prevPage, prevOrder, currentOrder);
   }
 
   async function movePageDown(index) {
@@ -134,8 +184,7 @@
     const nextOrder = typeof nextPage.order === 'number' ? nextPage.order : index + 1;
 
     // Swap the order values
-    await updatePageOrder(page.id, nextOrder);
-    await updatePageOrder(nextPage.id, currentOrder);
+    await swapPages(page, nextPage, nextOrder, currentOrder);
   }
 </script>
 
