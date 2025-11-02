@@ -112,26 +112,32 @@
     }
   }
 
-  async function swapPages(page1, page2, order1, order2) {
+  async function reorderPages(newPageOrder) {
     try {
-      const isPage1Default = defaultPages.some((p) => p.id === page1.id);
-      const isPage2Default = defaultPages.some((p) => p.id === page2.id);
+      // Separate default and custom pages
+      const defaultPagesToUpdate = [];
+      const customPagesToUpdate = [];
 
-      // If both are default pages or both are custom pages, handle them together
-      if (isPage1Default && isPage2Default) {
-        // Update both default pages in a single settings update
+      newPageOrder.forEach((page, index) => {
+        const isDefault = defaultPages.some((p) => p.id === page.id);
+        const newOrder = index;
+
+        if (isDefault) {
+          defaultPagesToUpdate.push({ ...page, order: newOrder });
+        } else {
+          customPagesToUpdate.push({ ...page, order: newOrder });
+        }
+      });
+
+      // Update default pages if any
+      if (defaultPagesToUpdate.length > 0) {
         const settingsResponse = await fetch('/api/admin/settings');
         if (!settingsResponse.ok) throw new Error('Failed to load settings');
         const settingsData = await settingsResponse.json();
 
         const updatedDefaultPages = settingsData.settings.defaultPages.map((page) => {
-          if (page.id === page1.id) {
-            return { ...page, order: order1 };
-          }
-          if (page.id === page2.id) {
-            return { ...page, order: order2 };
-          }
-          return page;
+          const updated = defaultPagesToUpdate.find((p) => p.id === page.id);
+          return updated ? { ...page, order: updated.order } : page;
         });
 
         const updatedSettings = {
@@ -149,10 +155,11 @@
           const errorData = await updateResponse.json();
           throw new Error(errorData.error || 'Failed to update page order');
         }
-      } else {
-        // Update each page individually
-        await updatePageOrder(page1.id, order1, true);
-        await updatePageOrder(page2.id, order2, true);
+      }
+
+      // Update custom pages if any
+      for (const page of customPagesToUpdate) {
+        await updatePageOrder(page.id, page.order, true);
       }
 
       await loadPages();
@@ -163,48 +170,24 @@
 
   async function movePageUp(index) {
     if (index <= 0) return;
-    const page = pages[index];
-    const prevPage = pages[index - 1];
 
-    console.log('Moving up:', {
-      page: page.name,
-      pageOrder: page.order,
-      prevPage: prevPage.name,
-      prevOrder: prevPage.order,
-      index
-    });
+    // Create new order by moving the page up
+    const newOrder = [...pages];
+    const [movedPage] = newOrder.splice(index, 1);
+    newOrder.splice(index - 1, 0, movedPage);
 
-    // Ensure both pages have valid order values
-    const currentOrder = typeof page.order === 'number' ? page.order : index;
-    const prevOrder = typeof prevPage.order === 'number' ? prevPage.order : index - 1;
-
-    console.log('Swapping orders:', { currentOrder, prevOrder });
-
-    // Swap the order values
-    await swapPages(page, prevPage, prevOrder, currentOrder);
+    await reorderPages(newOrder);
   }
 
   async function movePageDown(index) {
     if (index >= pages.length - 1) return;
-    const page = pages[index];
-    const nextPage = pages[index + 1];
 
-    console.log('Moving down:', {
-      page: page.name,
-      pageOrder: page.order,
-      nextPage: nextPage.name,
-      nextOrder: nextPage.order,
-      index
-    });
+    // Create new order by moving the page down
+    const newOrder = [...pages];
+    const [movedPage] = newOrder.splice(index, 1);
+    newOrder.splice(index + 1, 0, movedPage);
 
-    // Ensure both pages have valid order values
-    const currentOrder = typeof page.order === 'number' ? page.order : index;
-    const nextOrder = typeof nextPage.order === 'number' ? nextPage.order : index + 1;
-
-    console.log('Swapping orders:', { currentOrder, nextOrder });
-
-    // Swap the order values
-    await swapPages(page, nextPage, nextOrder, currentOrder);
+    await reorderPages(newOrder);
   }
 </script>
 
