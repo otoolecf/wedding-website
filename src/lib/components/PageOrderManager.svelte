@@ -110,20 +110,32 @@
     }
   }
 
-  function movePageUp(index) {
+  async function movePageUp(index) {
     if (index <= 0) return;
     const page = pages[index];
     const prevPage = pages[index - 1];
-    const newOrder = typeof prevPage.order === 'number' ? prevPage.order - 1 : index - 1;
-    updatePageOrder(page.id, newOrder);
+
+    // Ensure both pages have valid order values
+    const currentOrder = typeof page.order === 'number' ? page.order : index;
+    const prevOrder = typeof prevPage.order === 'number' ? prevPage.order : index - 1;
+
+    // Swap the order values
+    await updatePageOrder(page.id, prevOrder);
+    await updatePageOrder(prevPage.id, currentOrder);
   }
 
-  function movePageDown(index) {
+  async function movePageDown(index) {
     if (index >= pages.length - 1) return;
     const page = pages[index];
     const nextPage = pages[index + 1];
-    const newOrder = typeof nextPage.order === 'number' ? nextPage.order + 1 : index + 1;
-    updatePageOrder(page.id, newOrder);
+
+    // Ensure both pages have valid order values
+    const currentOrder = typeof page.order === 'number' ? page.order : index;
+    const nextOrder = typeof nextPage.order === 'number' ? nextPage.order : index + 1;
+
+    // Swap the order values
+    await updatePageOrder(page.id, nextOrder);
+    await updatePageOrder(nextPage.id, currentOrder);
   }
 </script>
 
