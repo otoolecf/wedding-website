@@ -114,14 +114,16 @@
     if (index <= 0) return;
     const page = pages[index];
     const prevPage = pages[index - 1];
-    updatePageOrder(page.id, prevPage.order - 1);
+    const newOrder = typeof prevPage.order === 'number' ? prevPage.order - 1 : index - 1;
+    updatePageOrder(page.id, newOrder);
   }
 
   function movePageDown(index) {
     if (index >= pages.length - 1) return;
     const page = pages[index];
     const nextPage = pages[index + 1];
-    updatePageOrder(page.id, nextPage.order + 1);
+    const newOrder = typeof nextPage.order === 'number' ? nextPage.order + 1 : index + 1;
+    updatePageOrder(page.id, newOrder);
   }
 </script>
 
