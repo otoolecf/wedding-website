@@ -166,9 +166,19 @@
     const page = pages[index];
     const prevPage = pages[index - 1];
 
+    console.log('Moving up:', {
+      page: page.name,
+      pageOrder: page.order,
+      prevPage: prevPage.name,
+      prevOrder: prevPage.order,
+      index
+    });
+
     // Ensure both pages have valid order values
     const currentOrder = typeof page.order === 'number' ? page.order : index;
     const prevOrder = typeof prevPage.order === 'number' ? prevPage.order : index - 1;
+
+    console.log('Swapping orders:', { currentOrder, prevOrder });
 
     // Swap the order values
     await swapPages(page, prevPage, prevOrder, currentOrder);
@@ -179,9 +189,19 @@
     const page = pages[index];
     const nextPage = pages[index + 1];
 
+    console.log('Moving down:', {
+      page: page.name,
+      pageOrder: page.order,
+      nextPage: nextPage.name,
+      nextOrder: nextPage.order,
+      index
+    });
+
     // Ensure both pages have valid order values
     const currentOrder = typeof page.order === 'number' ? page.order : index;
     const nextOrder = typeof nextPage.order === 'number' ? nextPage.order : index + 1;
+
+    console.log('Swapping orders:', { currentOrder, nextOrder });
 
     // Swap the order values
     await swapPages(page, nextPage, nextOrder, currentOrder);
