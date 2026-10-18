@@ -8,6 +8,8 @@ export async function POST({ request, platform }) {
       headers: { 'Content-Type': 'application/json' }
     });
 
+  const requestId = crypto.randomUUID();
+
   // Validate JWT
   const jwt = request.headers.get('Cf-Access-Jwt-Assertion');
   if (!jwt) {
@@ -15,14 +17,13 @@ export async function POST({ request, platform }) {
     return jsonResponse({ error: 'Unauthorized' }, 401);
   }
 
-  const requestId = crypto.randomUUID();
   console.log(`[${requestId}] New upload request received`);
 
   try {
     const formData = await request.formData();
     const file = formData.get('file');
     const fileBuffer = await file.arrayBuffer();
-    const fileHashCrypto = await crypto.subtle.digest('MD5', fileBuffer);
+    const fileHashCrypto = await crypto.subtle.digest('SHA-256', fileBuffer);
     const hashArray = Array.from(new Uint8Array(fileHashCrypto));
     const fileHash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
@@ -39,7 +40,9 @@ export async function POST({ request, platform }) {
     const thumbnailUrl = `${platform.env.IMAGES_BUCKET_SITE_URL}/${fileHash}?width=200&fit=inside`;
     const thumbnailResponse = await fetch(thumbnailUrl);
     if (!thumbnailResponse.ok) {
-      throw new Error(`Failed to generate thumbnail: ${thumbnailResponse.statusText}`);
+      throw new Error(
+        `Thumbnail resize failed (HTTP ${thumbnailResponse.status} from ${platform.env.IMAGES_BUCKET_SITE_URL}). Check IMAGES_BUCKET_SITE_URL and that Image Resizing is enabled for the bucket domain.`
+      );
     }
     const thumbnailBuffer = await thumbnailResponse.arrayBuffer();
     await platform.env.IMAGES_BUCKET.put(`${fileHash}_thumb`, thumbnailBuffer, {
@@ -50,7 +53,9 @@ export async function POST({ request, platform }) {
     const mediumUrl = `${platform.env.IMAGES_BUCKET_SITE_URL}/${fileHash}?width=800&fit=inside`;
     const mediumResponse = await fetch(mediumUrl);
     if (!mediumResponse.ok) {
-      throw new Error(`Failed to generate medium size: ${mediumResponse.statusText}`);
+      throw new Error(
+        `Medium resize failed (HTTP ${mediumResponse.status} from ${platform.env.IMAGES_BUCKET_SITE_URL}). Check IMAGES_BUCKET_SITE_URL and that Image Resizing is enabled for the bucket domain.`
+      );
     }
     const mediumBuffer = await mediumResponse.arrayBuffer();
     await platform.env.IMAGES_BUCKET.put(`${fileHash}_medium`, mediumBuffer, {
@@ -116,6 +121,6 @@ export async function POST({ request, platform }) {
     });
   } catch (error) {
     console.error(`[${requestId}] Error processing upload:`, error);
-    return jsonResponse({ error: 'Upload failed' }, 500);
+    return jsonResponse({ error: 'Upload failed', details: error.message }, 500);
   }
 }
